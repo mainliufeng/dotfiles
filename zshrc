@@ -145,9 +145,3 @@ function virtualenv_prompt() {
   fi
 }
 RPROMPT='$(virtualenv_prompt)'
-
-## command alias
-alias mycli_uradar_work='mycli -h 172.20.8.115 -u root -p -D uradar'
-alias mycli_uradar_local='mycli -u root -D uradar'
-alias benchmark_local_gunicorn_uradar='ab -n 1000 -c 4 http://127.0.0.1:5008/'
-alias benchmark_local_uradar='ab -n 1000 -c 4 http://127.0.0.1:5005/'
