@@ -52,7 +52,11 @@ Plugin 'bling/vim-airline'
 Plugin 'scrooloose/syntastic'
 
 " 代码补齐
+" Plugin 'Shougo/neocomplete'
+" Plugin 'Shougo/neosnippet'
+" Plugin 'Shougo/neosnippet-snippets'
 Plugin 'davidhalter/jedi-vim'
+" Plugin 'Valloric/YouCompleteMe'
 
 " sort python imports using isort
 Plugin 'fisadev/vim-isort'
@@ -66,7 +70,10 @@ Plugin 'lilydjwg/colorizer'
 " 模糊匹配
 Plugin 'ctrlpvim/ctrlp.vim'
 " 匹配命令
-Bundle 'fisadev/vim-ctrlp-cmdpalette'
+Plugin 'fisadev/vim-ctrlp-cmdpalette'
+
+" Golang Vim插件
+Plugin 'fatih/vim-go'
 
 
 " ============================================================================
@@ -110,7 +117,8 @@ set hlsearch
 " syntax highlight on
 syntax on
 
-" show line numbers
+" show line relative and absolute line numbers
+set rnu
 set nu
 
 
@@ -179,6 +187,7 @@ let g:NERDTreeDirArrowCollapsible = '▾'
 
 
 " Airline ------------------------------
+" 不知道干啥的
 
 let g:airline_powerline_fonts = 0
 let g:airline_theme = 'bubblegum'
@@ -218,6 +227,8 @@ let g:syntastic_warning_symbol = '⚠'
 let g:syntastic_style_error_symbol = '✗'
 let g:syntastic_style_warning_symbol = '⚠'
 
+" Python Checker flake8, pyflakes, pylint and a native python
+" let g:syntastic_python_checkers=['pylint']
 
 
 " Python-mode ------------------------------
@@ -239,11 +250,37 @@ let g:pymode_rope = 0
 let g:pymode_virtualenv=1
 
 " open definitions on same window, and custom mappings for definitions and occurrences
+" 不知道干什么的，以后在说
 " let g:pymode_rope_goto_definition_bind = ',d'
 " let g:pymode_rope_goto_definition_cmd = 'e'
 " nmap ,D :tab split<CR>:PymodePython rope.goto()<CR>
 " nmap ,o :RopeFindOccurrences<CR>
 
+
+
+" Neocomplete ------------------------------
+
+" Disable AutoComplPop.
+" let g:acp_enableAtStartup = 0
+
+" Use neocomplete.
+" let g:neocomplete#enable_at_startup = 1
+
+" Use smartcase.
+" let g:neocomplete#enable_smart_case = 1
+
+" Set minimum syntax keyword length.
+" let g:neocomplete#sources#syntax#min_keyword_length = 3
+" let g:neocomplete#lock_buffer_name_pattern = '\*ku\*'
+
+
+
+" YouCompleteMe ------------------------------
+" let g:ycm_autoclose_preview_window_after_completion=1
+" nnoremap <leader>g :YcmCompleter GoToDefinitionElseDeclaration<CR>
+" let g:ycm_min_num_of_chars_for_completion = 1
+" let g:ycm_min_num_identifier_candidate_chars = 0
+" let g:ycm_auto_trigger = 1
 
 
 " vim-jedi ------------------------------
@@ -361,5 +398,7 @@ nmap ,c :CtrlPCmdPalette<CR>
 
 " 不改变当前工作目录
 let g:ctrlp_working_path_mode = 0
+
+
 
 

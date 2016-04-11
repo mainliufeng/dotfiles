@@ -1,2 +1,2 @@
-# vimrc
-我的vimrc
+# dotfiles
+我的dotfiles
