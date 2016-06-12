@@ -47,6 +47,7 @@ Plugin 'klen/python-mode'
 
 " Airline
 Plugin 'bling/vim-airline'
+Plugin 'vim-airline/vim-airline-themes'
 
 " Python and other languages code checker
 Plugin 'scrooloose/syntastic'
@@ -72,8 +73,18 @@ Plugin 'ctrlpvim/ctrlp.vim'
 " 匹配命令
 Plugin 'fisadev/vim-ctrlp-cmdpalette'
 
-" Golang Vim插件
+" vim-go
 Plugin 'fatih/vim-go'
+
+" Dash Search
+Plugin 'rizzatti/dash.vim'
+
+" ultisnips
+Plugin 'SirVer/ultisnips'
+
+" snippets
+Plugin 'honza/vim-snippets'
+
 
 
 " ============================================================================
@@ -103,8 +114,11 @@ set shiftwidth=4
 set backspace=start,eol,indent
 
 " tab length exceptions on some file types
-autocmd FileType html setlocal shiftwidth=2 tabstop=2 softtabstop=2
-autocmd FileType javascript setlocal shiftwidth=2 tabstop=2 softtabstop=2
+augroup tab_length
+    autocmd!
+    autocmd FileType html setlocal shiftwidth=2 tabstop=2 softtabstop=2
+    autocmd FileType javascript setlocal shiftwidth=2 tabstop=2 softtabstop=2
+augroup END
 
 " always show status bar
 set ls=2
@@ -120,6 +134,13 @@ syntax on
 " show line relative and absolute line numbers
 set rnu
 set nu
+
+
+
+" Local ------------------------------
+" 设置leader
+" let mapleader = ","
+" let maplocalleader = ","
 
 
 
@@ -140,16 +161,16 @@ autocmd VimEnter * nested :TagbarOpen
 let g:tagbar_map_closefold = ['<kMinus>', 'zc']
 
 " golang tagbar配置
-let g:tagbar_type_go = {
-    \ 'ctagstype': 'go',
-    \ 'kinds' : [
-        \'p:package',
-        \'f:function',
-        \'v:variables',
-        \'t:type',
-        \'c:const'
-    \]
-\}
+" let g:tagbar_type_go = {
+"     \ 'ctagstype': 'go',
+"     \ 'kinds' : [
+"         \'p:package',
+"         \'f:function',
+"         \'v:variables',
+"         \'t:type',
+"         \'c:const'
+"     \]
+" \}
 
 
 
@@ -380,9 +401,9 @@ let g:ctrlp_working_path_mode = 'ra'
 
 " 忽略文件和目录
 let g:ctrlp_custom_ignore = {
-  \ 'dir':  '\v[\/](\.git|\.hg|\.svn)$',
-  \ 'file': '\.pyc$\|\.pyo$',
-  \ }
+            \ 'dir':  '\v[\/](\.git|\.hg|\.svn)$',
+            \ 'file': '\.pyc$\|\.pyo$',
+            \ }
 
 " 忽略.gitignore中的文件
 let g:ctrlp_user_command = ['.git/', 'git --git-dir=%s/.git ls-files -oc --exclude-standard']
@@ -401,4 +422,49 @@ let g:ctrlp_working_path_mode = 0
 
 
 
+" ultisnips ----------------------------
 
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<tab>"
+let g:UltiSnipsJumpBackwardTrigger="<s-tab>"
+
+" If you want :UltiSnipsEdit to split your window.
+let g:UltiSnipsEditSplit="vertical"
+
+
+
+" Local --------------------------------
+
+inoremap jk <esc>
+onoremap p i(
+onoremap b /return<cr>
+
+" 打开vimrc，source vimrc快捷键
+nnoremap <leader>rc :vsplit $MYVIMRC<cr>
+nnoremap <leader>src :source $MYVIMRC<cr>
+
+" 在word外加符号
+nnoremap <leader>" viw<esc>a"<esc>hbi"<esc>lel
+nnoremap <leader>( viw<esc>a)<esc>hbi(<esc>lel
+nnoremap <leader>) viw<esc>a)<esc>hbi(<esc>lel
+nnoremap <leader>[ viw<esc>a]<esc>hbi[<esc>lel
+nnoremap <leader>] viw<esc>a]<esc>hbi[<esc>lel
+nnoremap <leader>{ viw<esc>a}<esc>hbi{<esc>lel
+nnoremap <leader>} viw<esc>a}<esc>hbi{<esc>lel
+
+" Abbreviations-错误拼写处理
+iabbrev adn and
+iabbrev waht what
+iabbrev tehn then
+
+" Abbreviations-缩写
+iabbrev @@ mainliufeng@gmail.com
+
+" Autocommand
+
+" html
+augroup html_file
+    autocmd!
+    autocmd BufWritePre,BufRead *.html :normal gg=G
+    autocmd BufNewFile,BufRead *.html setlocal nowrap
+augroup END

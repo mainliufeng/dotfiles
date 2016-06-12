@@ -108,14 +108,15 @@ alias ll="ls -G -l"
 export VISUAL="/usr/local/bin/vim"
 
 ## xxnet
-alias xxnetproxy="source ~/.xxnetproxy"
+alias proxy_on="export http_proxy=http://127.0.0.1:8087;export https_proxy=http://127.0.0.1:8087"
+alias proxy_off="unset http_proxy;unset https_proxy"
 
 ## homebrew
 export PATH="/usr/local/sbin:$PATH"
 
 ## go
 export GOPATH=$HOME/go
-export GOROOT="/usr/local/Cellar/go/1.5.1/libexec"
+export GOROOT="/usr/local/Cellar/go/1.6/libexec"
 export PATH=$PATH:/usr/local/opt/go/libexec/bin
 export PATH=$PATH:$GOPATH/bin
 
@@ -145,3 +146,14 @@ function virtualenv_prompt() {
   fi
 }
 RPROMPT='$(virtualenv_prompt)'
+
+
+# Added by termtile (https://github.com/apaszke/termtile)
+alias fl='osascript ~/tools/termtile/tile.scpt left'
+alias fr='osascript ~/tools/termtile/tile.scpt right'
+alias up='osascript ~/tools/termtile/tile.scpt up'
+alias down='osascript ~/tools/termtile/tile.scpt down'
+alias big='osascript ~/tools/termtile/resize.scpt '
+alias cen='osascript ~/tools/termtile/center.scpt '
+alias max='osascript ~/tools/termtile/maximize.scpt '
+alias fs='osascript ~/tools/termtile/fullscreen.scpt '
