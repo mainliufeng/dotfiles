@@ -463,8 +463,8 @@ iabbrev @@ mainliufeng@gmail.com
 " Autocommand
 
 " html
-augroup html_file
-    autocmd!
-    autocmd BufWritePre,BufRead *.html :normal gg=G
-    autocmd BufNewFile,BufRead *.html setlocal nowrap
-augroup END
+" augroup html_file
+"     autocmd!
+"     autocmd BufWritePre,BufRead *.html :normal gg=G
+"     autocmd BufNewFile,BufRead *.html setlocal nowrap
+" augroup END
