@@ -126,6 +126,7 @@ source /usr/local/bin/virtualenvwrapper.sh
 
 ## docker
 alias dockerenv='eval "$(docker-machine env default)"'
+eval "$(docker-machine env default)"
 alias dm='docker-machine'
 
 ## brew
@@ -156,5 +157,7 @@ alias down='osascript ~/tools/termtile/tile.scpt down'
 alias big='osascript ~/tools/termtile/resize.scpt '
 alias cen='osascript ~/tools/termtile/center.scpt '
 alias max='osascript ~/tools/termtile/maximize.scpt '
-alias m='osascript ~/tools/termtile/maximize.scpt '
 alias fs='osascript ~/tools/termtile/fullscreen.scpt '
+
+# max
+alias m='max;clear;'
