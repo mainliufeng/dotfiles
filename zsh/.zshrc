@@ -161,3 +161,6 @@ alias fs='osascript ~/tools/termtile/fullscreen.scpt '
 
 # max
 alias m='max;clear;'
+
+## xxnet
+alias xxnet='/usr/local/xxnet/current/start'
