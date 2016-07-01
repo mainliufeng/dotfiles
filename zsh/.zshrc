@@ -109,8 +109,11 @@ alias ll="ls -G -l"
 export VISUAL="/usr/local/bin/vim"
 
 ## xxnet
-alias proxy_on="export http_proxy=http://127.0.0.1:8087;export https_proxy=http://127.0.0.1:8087"
+alias proxy_xxnet="export http_proxy=http://127.0.0.1:8087;export https_proxy=http://127.0.0.1:8087"
 alias proxy_off="unset http_proxy;unset https_proxy"
+
+## shadowsocks with polipo
+alias proxy_shadowsocks="export http_proxy=http://127.0.0.1:8123;export https_proxy=http://127.0.0.1:8123"
 
 ## homebrew
 export PATH="/usr/local/sbin:$PATH"
@@ -168,4 +171,4 @@ alias spark_debug_on='export SPARK_JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,
 alias spark_debug_off='unset SPARK_JAVA_OPTS'
 
 ## sbt
-export SBT_OPTS=-Dsbt.override.build.repos=true $SBT_OPTS
+export SBT_OPTS="-Dsbt.override.build.repos=true $SBT_OPTS"
