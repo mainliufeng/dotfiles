@@ -85,6 +85,9 @@ Plugin 'SirVer/ultisnips'
 " snippets
 Plugin 'honza/vim-snippets'
 
+" scala
+Plugin 'derekwyatt/vim-scala'
+
 
 
 " ============================================================================

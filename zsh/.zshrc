@@ -99,6 +99,7 @@ export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 export M2_HOME=/usr/local/maven/default
 export M2_REPO=$HOME/.m2/repository
 export PATH=$PATH:$M2_HOME/bin
+export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512m"
 
 ## Color
 alias ls="ls -G"
@@ -123,11 +124,6 @@ export PATH=$PATH:$GOPATH/bin
 ## virtualenv
 export WORKON_HOME=~/.virtualenvs
 source /usr/local/bin/virtualenvwrapper.sh
-
-## docker
-alias dockerenv='eval "$(docker-machine env default)"'
-eval "$(docker-machine env default)"
-alias dm='docker-machine'
 
 ## brew
 export HOMEBREW_GITHUB_API_TOKEN=97bb71c4dc9166cbaa5eee8599a04d21879ba27c
@@ -164,3 +160,12 @@ alias m='max;clear;'
 
 ## xxnet
 alias xxnet='/usr/local/xxnet/current/start'
+
+## spark
+export SPARK_HOME=/usr/local/spark/current
+export PYTHONPATH=$SPARK_HOME/python/:$PYTHONPATH
+alias spark_debug_on='export SPARK_JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5555'
+alias spark_debug_off='unset SPARK_JAVA_OPTS'
+
+## sbt
+export SBT_OPTS=-Dsbt.override.build.repos=true $SBT_OPTS
