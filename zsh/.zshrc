@@ -117,6 +117,7 @@ alias proxy_shadowsocks="export http_proxy=http://127.0.0.1:8123;export https_pr
 
 ## homebrew
 export PATH="/usr/local/sbin:$PATH"
+alias service="brew services"
 
 ## go
 export GOPATH=$HOME/go
@@ -172,3 +173,7 @@ alias spark_debug_off='unset SPARK_JAVA_OPTS'
 
 ## sbt
 export SBT_OPTS="-Dsbt.override.build.repos=true $SBT_OPTS"
+
+## extract
+alias -s gz='tar -xzvf'
+alias -s bz2='tar -xjvf'
