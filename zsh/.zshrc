@@ -49,7 +49,7 @@ ZSH_THEME="cobalt2"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git python autojump virtualenv virtualenvwrapper extract sublime zsh-history-substring-search)
+plugins=(git python autojump virtualenv virtualenvwrapper extract sublime zsh-history-substring-search docker)
 
 # User configuration
 
@@ -91,7 +91,7 @@ autoload -U compinit && compinit
 fpath=(/usr/local/share/zsh-completions $fpath)
 
 ## Java
-export JAVA_HOME=`/usr/libexec/java_home -v 1.7`
+export JAVA_HOME=`/usr/libexec/java_home`
 export PATH=${JAVA_HOME}/bin:$PATH
 export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 
