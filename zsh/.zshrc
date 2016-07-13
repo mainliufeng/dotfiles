@@ -108,12 +108,43 @@ alias ll="ls -G -l"
 ## Vim
 export VISUAL="/usr/local/bin/vim"
 
-## xxnet
-alias proxy_xxnet="export http_proxy=http://127.0.0.1:8087;export https_proxy=http://127.0.0.1:8087"
-alias proxy_off="unset http_proxy;unset https_proxy"
+## proxy
+function proxyon() {
+    export PROXY_NAME="$1"
+    if [ "$1" = "xxnet" ]; then
+        local port=8087
+    fi
+    if [ "$1" = "shadowsocks" ]; then
+        local port=8123
+    fi
+    export http_proxy=http://127.0.0.1:$port
+    export https_proxy=http://127.0.0.1:$port
+}
+function proxyoff() {
+    unset PROXY_NAME
+    unset http_proxy
+    unset https_proxy
+}
+alias proxy='echo $PROXY_NAME'
 
-## shadowsocks with polipo
-alias proxy_shadowsocks="export http_proxy=http://127.0.0.1:8123;export https_proxy=http://127.0.0.1:8123"
+## sbt
+export SBT_OPTS="-Dsbt.override.build.repos=true $SBT_OPTS"
+function sbton() {
+    if [[ ! -n "$1" ]]; then
+        echo $SBT_REPOSITORIES
+    else
+        if [ "$1" = "work" ]; then
+            cp ~/.sbt/repositories.work ~/.sbt/repositories
+            export SBT_REPOSITORIES="work"
+        elif [ "$1" = "home" ]; then
+            cp ~/.sbt/repositories.home ~/.sbt/repositories
+            export SBT_REPOSITORIES="home"
+        elif [ "$1" = "null" ]; then
+            rm -f ~/.sbt/repositories
+            unset SBT_REPOSITORIES
+        fi
+    fi
+}
 
 ## homebrew
 export PATH="/usr/local/sbin:$PATH"
@@ -140,11 +171,38 @@ bindkey -v
 
 ## show virtualenv name at right
 function virtualenv_prompt() {
-  if [[ -n ${VIRTUAL_ENV} ]]; then
-    echo "%{${fg_bold[white]}%}(env: %{${fg[green]}%}${VIRTUAL_ENV:t}%{${fg_bold[white]}%})%{${reset_color}%}"
-  else
-    echo -n ""
-  fi
+    if [[ ! -n ${VIRTUAL_ENV} ]] && [[ ! -n ${PROXY_NAME} ]] && [[ ! -n ${SBT_REPOSITORIES} ]]; then
+        echo -n ""
+    else
+        echo -n "%{${fg_bold[white]}%}("
+        local has_first=false
+
+        if [[ -n ${VIRTUAL_ENV} ]]; then
+            if $has_first; then 
+                echo -n ", "
+            fi
+            has_first=true
+            echo -n "env: %{${fg[green]}%}${VIRTUAL_ENV:t}%{${fg_bold[white]}%}"
+        fi
+
+        if [[ -n ${PROXY_NAME} ]]; then
+            if $has_first; then 
+                echo -n ", "
+            fi
+            has_first=true
+            echo -n "proxy: %{${fg[green]}%}${PROXY_NAME}%{${fg_bold[white]}%}"
+        fi
+
+        if [[ -n ${SBT_REPOSITORIES} ]]; then
+            if $has_first; then 
+                echo -n ", "
+            fi
+            has_first=true
+            echo -n "sbt: %{${fg[green]}%}${SBT_REPOSITORIES}%{${fg_bold[white]}%}"
+        fi
+
+        echo ")%{${reset_color}%}"
+    fi
 }
 RPROMPT='$(virtualenv_prompt)'
 
@@ -170,9 +228,6 @@ export SPARK_HOME=/usr/local/spark/current
 export PYTHONPATH=$SPARK_HOME/python/:$PYTHONPATH
 alias spark_debug_on='export SPARK_JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5555'
 alias spark_debug_off='unset SPARK_JAVA_OPTS'
-
-## sbt
-export SBT_OPTS="-Dsbt.override.build.repos=true $SBT_OPTS"
 
 ## extract
 alias -s gz='tar -xzvf'
