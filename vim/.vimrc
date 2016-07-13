@@ -121,6 +121,8 @@ augroup tab_length
     autocmd!
     autocmd FileType html setlocal shiftwidth=2 tabstop=2 softtabstop=2
     autocmd FileType javascript setlocal shiftwidth=2 tabstop=2 softtabstop=2
+    autocmd FileType java setlocal shiftwidth=2 tabstop=2 softtabstop=2
+    autocmd FileType scala setlocal shiftwidth=2 tabstop=2 softtabstop=2
 augroup END
 
 " always show status bar
