@@ -110,22 +110,26 @@ export VISUAL="/usr/local/bin/vim"
 
 ## proxy
 function proxyon() {
-    export PROXY_NAME="$1"
-    if [ "$1" = "xxnet" ]; then
-        local port=8087
+    if [[ ! -n "$1" ]]; then
+        echo $PROXY_NAME
+    else
+        if [ "$1" = "xxnet" ]; then
+            local port=8087
+            export PROXY_NAME="xxnet"
+            export http_proxy=http://127.0.0.1:$port
+            export https_proxy=http://127.0.0.1:$port
+        elif [ "$1" = "shadowsocks" ]; then
+            local port=8123
+            export PROXY_NAME="shadowsocks"
+            export http_proxy=http://127.0.0.1:$port
+            export https_proxy=http://127.0.0.1:$port
+        elif [ "$1" = "null" ]; then
+            unset PROXY_NAME
+            unset http_proxy
+            unset https_proxy
+        fi
     fi
-    if [ "$1" = "shadowsocks" ]; then
-        local port=8123
-    fi
-    export http_proxy=http://127.0.0.1:$port
-    export https_proxy=http://127.0.0.1:$port
 }
-function proxyoff() {
-    unset PROXY_NAME
-    unset http_proxy
-    unset https_proxy
-}
-alias proxy='echo $PROXY_NAME'
 
 ## sbt
 export SBT_OPTS="-Dsbt.override.build.repos=true $SBT_OPTS"
