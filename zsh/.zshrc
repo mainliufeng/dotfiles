@@ -239,3 +239,6 @@ alias -s bz2='tar -xjvf'
 
 ## pget
 alias wget='echo "Try pget!";wget'
+
+## rm
+alias rm='echo "Use trash!!!"'
