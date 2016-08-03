@@ -1,3 +1,9 @@
+############################################################################################
+#
+# Oh my zsh
+#
+############################################################################################
+
 # Path to your oh-my-zsh installation.
 export ZSH=/Users/liufeng/.oh-my-zsh
 
@@ -49,14 +55,18 @@ ZSH_THEME="cobalt2"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git python autojump virtualenv virtualenvwrapper extract sublime zsh-history-substring-search docker)
+plugins=(git python autojump virtualenv virtualenvwrapper extract sublime docker)
 
+source $ZSH/oh-my-zsh.sh
+
+############################################################################################
+#
 # User configuration
+#
+############################################################################################
 
 export PATH="/usr/local/sbin:/Library/Java/JavaVirtualMachines/jdk1.7.0_55.jdk/Contents/Home/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/git/bin:/usr/local/maven/default/bin"
 # export MANPATH="/usr/local/man:$MANPATH"
-
-source $ZSH/oh-my-zsh.sh
 
 # You may need to manually set your language environment
 export LANG=en_US.UTF-8
@@ -82,13 +92,6 @@ export SSH_KEY_PATH="~/.ssh/dsa_id"
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-
-## zsh-completions
-plugins+=(zsh-completions)
-autoload -U compinit && compinit
-
-## zsh-completions
-fpath=(/usr/local/share/zsh-completions $fpath)
 
 ## Java
 export JAVA_HOME=`/usr/libexec/java_home`
@@ -241,4 +244,26 @@ alias -s bz2='tar -xjvf'
 alias wget='echo "Try pget!";wget'
 
 ## rm
-alias rm='echo "Use trash!!!"'
+alias rm='echo "Use trash!!!";rm'
+
+############################################################################################
+#
+# Brew installed zsh plugins 
+#
+############################################################################################
+
+## zsh-completions
+fpath=(/usr/local/share/zsh-completions $fpath)
+
+# bind UP and DOWN arrow keys
+zmodload zsh/terminfo
+bindkey "$terminfo[kcuu1]" history-substring-search-up
+bindkey "$terminfo[kcud1]" history-substring-search-down
+
+# bind k and j for VI mode
+bindkey -M vicmd 'k' history-substring-search-up
+bindkey -M vicmd 'j' history-substring-search-down
+
+## from zsh-users
+source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /usr/local/opt/zsh-history-substring-search/zsh-history-substring-search.zsh
