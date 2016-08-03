@@ -7,7 +7,7 @@ if ! zgen saved; then
 
     zgen oh-my-zsh
 
-    # oh-my-zsh
+    # plugins
     zgen oh-my-zsh plugins/git
     zgen oh-my-zsh plugins/python
     zgen oh-my-zsh plugins/autojump
@@ -15,24 +15,22 @@ if ! zgen saved; then
     zgen oh-my-zsh plugins/virtualenvwrapper
     zgen oh-my-zsh plugins/extract
     zgen oh-my-zsh plugins/sublime
+    zgen oh-my-zsh plugins/zsh-history-substring-search
     zgen oh-my-zsh plugins/docker
     zgen oh-my-zsh plugins/command-not-found
-    zgen oh-my-zsh themes/cobalt2
-
-    # zsh-users
-    zgen load zsh-users/zsh-completions src
-    zgen load zsh-users/zsh-history-substring-search
     zgen load zsh-users/zsh-syntax-highlighting
+
+    # completions
+    zgen load zsh-users/zsh-completions src
+
+    # theme
+    zgen oh-my-zsh themes/cobalt2
 
     # save all to init script
     zgen save
 fi
 
 # User configuration
-
-# zsh-history-substring-search
-bindkey -M vicmd 'k' history-substring-search-up
-bindkey -M vicmd 'j' history-substring-search-down
 
 export PATH="/usr/local/sbin:/Library/Java/JavaVirtualMachines/jdk1.7.0_55.jdk/Contents/Home/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/git/bin:/usr/local/maven/default/bin"
 # export MANPATH="/usr/local/man:$MANPATH"
@@ -220,4 +218,4 @@ alias -s bz2='tar -xjvf'
 alias wget='echo "Try pget!";wget'
 
 ## rm
-alias rm='echo "Use trash!!!";rm'
+alias rm='echo "Use trash!!!"'
