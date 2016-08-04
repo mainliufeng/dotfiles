@@ -88,6 +88,12 @@ Plugin 'honza/vim-snippets'
 " scala
 Plugin 'derekwyatt/vim-scala'
 
+" vim with tmux
+Plugin 'benmills/vimux'
+
+" solarized
+Plugin  'altercation/vim-colors-solarized'
+
 
 
 " ============================================================================
@@ -147,6 +153,14 @@ set nu
 " let mapleader = ","
 " let maplocalleader = ","
 
+
+" Solarized ------------------------------
+colorscheme solarized
+call togglebg#map("<F5>")
+
+if has('gui_running')
+    set background=light
+endif
 
 
 " Tagbar ----------------------------- 

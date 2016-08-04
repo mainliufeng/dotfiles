@@ -71,12 +71,21 @@ export PATH="/usr/local/sbin:/Library/Java/JavaVirtualMachines/jdk1.7.0_55.jdk/C
 # You may need to manually set your language environment
 export LANG=en_US.UTF-8
 
-# Preferred editor for local and remote sessions
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='mvim'
-# fi
+# vim
+export EDITOR="vim"
+export VISUAL="vim"
+
+alias vim='mvim -v'
+alias vi='mvim -v'
+
+bindkey -v
+
+
+# vi style incremental search
+bindkey '^R' history-incremental-search-backward
+bindkey '^S' history-incremental-search-forward
+bindkey '^P' history-search-backward
+bindkey '^N' history-search-forward  
 
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
@@ -108,9 +117,6 @@ export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512m"
 alias ls="ls -G"
 alias ll="ls -G -l"
 
-## Vim
-export VISUAL="/usr/local/bin/vim"
-
 ## proxy
 function proxyon() {
     if [[ ! -n "$1" ]]; then
@@ -121,7 +127,7 @@ function proxyon() {
             export PROXY_NAME="xxnet"
             export http_proxy=http://127.0.0.1:$port
             export https_proxy=http://127.0.0.1:$port
-        elif [ "$1" = "shadowsocks" ]; then
+        elif [ "$1" = "ss" ]; then
             local port=8123
             export PROXY_NAME="shadowsocks"
             export http_proxy=http://127.0.0.1:$port
@@ -172,9 +178,6 @@ export HOMEBREW_GITHUB_API_TOKEN=97bb71c4dc9166cbaa5eee8599a04d21879ba27c
 
 ## mycli
 alias mysql='echo "Try mycli!";mysql'
-
-## vim mode
-bindkey -v
 
 ## show virtualenv name at right
 function virtualenv_prompt() {
