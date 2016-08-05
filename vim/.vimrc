@@ -60,13 +60,13 @@ Plugin 'scrooloose/syntastic'
 Plugin 'Valloric/YouCompleteMe'
 
 " sort python imports using isort
-Plugin 'fisadev/vim-isort'
+" Plugin 'fisadev/vim-isort'
 
 " 窗口选择器
 Plugin 't9md/vim-choosewin'
 
 " colorize all text in the form #rrggbb or #rgb 
-Plugin 'lilydjwg/colorizer'
+" Plugin 'lilydjwg/colorizer'
 
 " 模糊匹配
 Plugin 'ctrlpvim/ctrlp.vim'
@@ -77,7 +77,7 @@ Plugin 'fisadev/vim-ctrlp-cmdpalette'
 Plugin 'fatih/vim-go'
 
 " Dash Search
-Plugin 'rizzatti/dash.vim'
+" Plugin 'rizzatti/dash.vim'
 
 " ultisnips
 Plugin 'SirVer/ultisnips'
@@ -89,7 +89,7 @@ Plugin 'honza/vim-snippets'
 Plugin 'derekwyatt/vim-scala'
 
 " vim with tmux
-Plugin 'benmills/vimux'
+" Plugin 'benmills/vimux'
 
 " solarized
 Plugin  'altercation/vim-colors-solarized'
@@ -153,6 +153,8 @@ set nu
 " let mapleader = ","
 " let maplocalleader = ","
 
+" Font
+set guifont=Menlo\ for\ Powerline:h14
 
 " Solarized ------------------------------
 colorscheme solarized
@@ -227,24 +229,10 @@ let g:NERDTreeDirArrowCollapsible = '▾'
 
 
 " Airline ------------------------------
-" 不知道干啥的
 
-let g:airline_powerline_fonts = 0
+let g:airline_powerline_fonts = 1
 let g:airline_theme = 'bubblegum'
 let g:airline#extensions#whitespace#enabled = 0
-
-" to use fancy symbols for airline, uncomment the following lines and use a patched font (more info on the README.rst)
-"if !exists('g:airline_symbols')
-"   let g:airline_symbols = {}
-"endif
-"let g:airline_left_sep = '⮀'
-"let g:airline_left_alt_sep = '⮁'
-"let g:airline_right_sep = '⮂'
-"let g:airline_right_alt_sep = '⮃'
-"let g:airline_symbols.branch = '⭠'
-"let g:airline_symbols.readonly = '⭤'
-"let g:airline_symbols.linenr = '⭡'
-
 
 
 " Syntastic ------------------------------
