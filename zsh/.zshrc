@@ -75,9 +75,6 @@ export LANG=en_US.UTF-8
 export EDITOR="vim"
 export VISUAL="vim"
 
-alias vim='mvim -v'
-alias vi='mvim -v'
-
 bindkey -v
 
 
@@ -91,7 +88,7 @@ bindkey '^N' history-search-forward
 # export ARCHFLAGS="-arch x86_64"
 
 # ssh
-export SSH_KEY_PATH="~/.ssh/dsa_id"
+# export SSH_KEY_PATH="~/.ssh/dsa_id"
 
 # Set personal aliases, overriding those provided by oh-my-zsh libs,
 # plugins, and themes. Aliases can be placed here, though oh-my-zsh
