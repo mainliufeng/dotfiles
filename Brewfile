@@ -1,0 +1,70 @@
+cask_args appdir: '/Applications'
+
+tap 'homebrew/bundle'
+tap 'caskroom/cask'
+
+brew 'zsh'
+brew 'zsh-completions'
+brew 'zsh-history-substring-search'
+brew 'zsh-syntax-highlighting'
+brew 'macvim', args: ['with-override-system-vim']
+brew 'ssh-copy-id'
+brew 'openssl'
+brew 'tmux'
+brew 'stow'
+brew 'autojump'
+brew 'stormssh'
+brew 'tree'
+brew 'wget'
+brew 'trash'
+brew 'gcc'
+brew 'git'
+brew 'httpie'
+brew 'diff-so-fancy'
+brew 'mycli'
+brew 'mas'
+brew 'fabric'
+brew 'python'
+brew 'python3'
+brew 'go'
+brew 'maven'
+brew 'scala'
+brew 'sbt'
+brew 'zinc'
+brew 'polipo'
+
+# servers
+brew 'mysql'
+brew 'nginx'
+brew 'elasticsearch'
+brew 'varnish'
+brew 'postgresql'
+brew 'redis'
+brew 'memcached'
+brew 'mongodb'
+
+cask 'iterm2'
+cask 'google-chrome'
+cask 'mou'
+cask 'docker'
+cask 'shadowsocksx'
+cask 'unetbootin'
+cask 'java'
+cask 'docker'
+
+cask 'alfred'
+cask 'vyprvpn'
+cask 'sublime-text'
+cask 'parallels-desktop'
+cask '1password'
+cask 'cleanmymac'
+
+mas 'Pomodoro Time', id: 973134470
+mas 'The Unarchiver', id: 425424353
+mas 'WeChat', id: 836500024
+mas 'Patterns', id: 429449079
+mas 'Quiver', id: 866773894
+mas 'Unibox', id: 702816521
+mas 'OmniFocus', id: 867299399
+mas 'Dash', id: 449589707
+mas 'Reeder', id: 880001334

@@ -460,6 +460,7 @@ nnoremap <leader>src :source $MYVIMRC<cr>
 
 " 在word外加符号
 nnoremap <leader>" viw<esc>a"<esc>hbi"<esc>lel
+nnoremap <leader>' viw<esc>a'<esc>hbi'<esc>lel
 nnoremap <leader>( viw<esc>a)<esc>hbi(<esc>lel
 nnoremap <leader>) viw<esc>a)<esc>hbi(<esc>lel
 nnoremap <leader>[ viw<esc>a]<esc>hbi[<esc>lel
