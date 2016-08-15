@@ -55,7 +55,8 @@ ZSH_THEME="cobalt2"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git python autojump virtualenv virtualenvwrapper extract sublime docker)
+plugins=(git python autojump virtualenv virtualenvwrapper extract sublime docker zsh-syntax-highlighting zsh-completions)
+autoload -U compinit && compinit
 
 source $ZSH/oh-my-zsh.sh
 
@@ -252,9 +253,6 @@ alias rm='echo "Use trash!!!";rm'
 #
 ############################################################################################
 
-## zsh-completions
-fpath=(/usr/local/share/zsh-completions $fpath)
-
 # bind UP and DOWN arrow keys
 zmodload zsh/terminfo
 bindkey "$terminfo[kcuu1]" history-substring-search-up
@@ -265,5 +263,4 @@ bindkey -M vicmd 'k' history-substring-search-up
 bindkey -M vicmd 'j' history-substring-search-down
 
 ## from zsh-users
-source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source /usr/local/opt/zsh-history-substring-search/zsh-history-substring-search.zsh
