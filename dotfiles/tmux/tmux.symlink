@@ -1,0 +1,3 @@
+ln -svf ~/dotfiles/dotfiles/tmux/.tmux.conf ~/.tmux.conf
+ln -svf ~/dotfiles/dotfiles/tmux/.tmux.conf.local ~/.tmux.conf.local
+

@@ -4,7 +4,6 @@ tap 'homebrew/bundle'
 tap 'caskroom/cask'
 
 brew 'zsh'
-brew 'zsh-history-substring-search'
 brew 'macvim', args: ['with-override-system-vim']
 brew 'ssh-copy-id'
 brew 'openssl'
