@@ -4,10 +4,10 @@
 tar xvzf ~/Sync/Dropbox/tools.tar.gz -C ~
 
 # ~/.oh-my-zsh
-tar xvzf ~/Sync/Dropbox/.oh-my-zsh.tar.gz -C ~
+tar xvzf ~/Sync/Dropbox/oh-my-zsh.tar.gz -C ~
 
 # ~/.vim
-tar xvzf ~/Sync/Dropbox/.vim.tar.gz -C ~
+tar xvzf ~/Sync/Dropbox/vim.tar.gz -C ~
 
 # ~/Code/home
 mkdir -p ~/Code
