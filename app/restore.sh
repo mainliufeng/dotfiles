@@ -1,17 +1,16 @@
 #!/bin/sh
 
 # ~/tools
-tar xvzf ~/Sync/Dropbox/tools.tar.gz -C ~
+tar -C ~ -xvzf ~/Sync/Dropbox/tools.tar.gz
 
 # ~/.oh-my-zsh
-tar xvzf ~/Sync/Dropbox/oh-my-zsh.tar.gz -C ~
+tar -C ~ -xvzf ~/Sync/Dropbox/oh-my-zsh.tar.gz
 
 # ~/.vim
-tar xvzf ~/Sync/Dropbox/vim.tar.gz -C ~
+tar -C ~ -xvzf ~/Sync/Dropbox/vim.tar.gz
 
 # ~/Code/home
-mkdir -p ~/Code
-tar xvzf ~/Sync/Dropbox/Code.home.tar.gz -C ~/Code
+tar -C ~ -xvzf ~/Sync/Dropbox/Code.home.tar.gz
 
 for restore_sh in ~/dotfiles/app/common/*/restore.sh; do
     source $restore_sh
