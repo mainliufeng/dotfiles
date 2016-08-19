@@ -29,6 +29,8 @@ brew 'scala'
 brew 'sbt'
 brew 'zinc'
 brew 'polipo'
+brew 'ack'
+brew 'the_silver_searcher'
 
 # servers
 brew 'mysql'
