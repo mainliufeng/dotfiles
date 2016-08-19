@@ -206,7 +206,7 @@ nmap ,t :NERDTreeFind<CR>
 
 " don;t show these file types
 " nerdtree 中不显示的文件类型
-let NERDTreeIgnore = ['\.pyc$', '\.pyo$']
+let NERDTreeIgnore = ['\.pyc$', '\.pyo$', '\.swp$']
 
 " open a NERDTree automatically when vim starts up
 " vim启动时自动打开 nerdtree
