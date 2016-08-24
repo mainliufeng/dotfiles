@@ -31,6 +31,7 @@ brew 'zinc'
 brew 'polipo'
 brew 'ack'
 brew 'the_silver_searcher'
+brew 'pandoc'
 
 # servers
 brew 'mysql'
