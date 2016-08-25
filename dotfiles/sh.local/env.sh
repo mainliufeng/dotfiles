@@ -18,7 +18,6 @@ export PATH=${JAVA_HOME}/bin:$PATH
 export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 
 ## maven
-export M2_HOME=/usr/local/Cellar/maven/current
 export M2_REPO=$HOME/.m2/repository
 export PATH=$PATH:$M2_HOME/bin
 export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512m"
