@@ -32,6 +32,8 @@ brew 'polipo'
 brew 'ack'
 brew 'the_silver_searcher'
 brew 'pandoc'
+brew 'ffmpeg'
+brew 'gifsicle'
 
 # servers
 brew 'mysql'
