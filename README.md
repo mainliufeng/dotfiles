@@ -1,17 +1,34 @@
-# dotfiles
-我的dotfiles
+# 刘峰的dotfiles
+*** 
 
-# Usage
 
-#### download
+## 安装
+***
+
+**Warning:** 如果想使用，先把代码修改成你需要的样子。
+
+下载
+
+```
 git clone git@github.com:Liu-Feng/dotfiles.git ~/dotfiles
+```
 
-#### install
+安装
+
+```
 sh ~/dotfiles/app/install.sh
 sh ~/dotfiles/dotfiles/install.sh
+```
 
-#### backup
+备份
+
+```
 sh ~/dotfiles/app/backup.sh
+```
 
-#### restore
+恢复
+
+```
 sh ~/dotfiles/app/restore.sh
+```
+
