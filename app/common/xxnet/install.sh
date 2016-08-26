@@ -1,9 +1,9 @@
-## download zip
-# git clone git@github.com:XX-net/XX-Net.git 3.1.19
-# 
-cp ~/Software/XX-Net-3.1.19.zip $XXNET_HOME
+mkdir -p $XXNET_HOME
 
 cd $XXNET_HOME
+
+## download zip
+git clone https://github.com/XX-net/XX-Net 3.1.19
 
 ## unzip
 echo "A" | unzip -q XX-Net-3.1.19.zip

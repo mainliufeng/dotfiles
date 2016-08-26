@@ -1,1 +1,1 @@
-git clone git@github.com:altercation/solarized.git $SOLARIZED_HOME
+git clone https://github.com/altercation/solarized $SOLARIZED_HOME
