@@ -1,5 +1,6 @@
 # 刘峰的dotfiles
 
+<img src="https://raw.githubusercontent.com/Liu-Feng/dotfiles/master/env.gif" width=800/>
 
 ## 安装
 
