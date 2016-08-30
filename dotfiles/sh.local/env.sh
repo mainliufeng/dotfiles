@@ -28,3 +28,7 @@ export PYTHONPATH=$SPARK_HOME/python/:$PYTHONPATH
 
 ## sbt
 export SBT_OPTS="-Dsbt.override.build.repos=true $SBT_OPTS"
+
+## Node Version Manager
+export NVM_DIR="$HOME/.nvm"
+. "$(brew --prefix nvm)/nvm.sh"
