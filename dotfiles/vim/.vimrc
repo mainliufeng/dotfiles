@@ -259,6 +259,8 @@ let g:syntastic_style_warning_symbol = '⚠'
 " Python Checker flake8, pyflakes, pylint and a native python
 " let g:syntastic_python_checkers=['pylint']
 
+let g:loaded_syntastic_java_javac_checker = 1
+
 
 " Python-mode ------------------------------
 
