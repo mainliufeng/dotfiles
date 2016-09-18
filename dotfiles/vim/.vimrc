@@ -312,6 +312,7 @@ let g:ycm_min_num_identifier_candidate_chars = 0
 let g:ycm_auto_trigger = 0
 let g:ycm_key_list_select_completion = []
 let g:ycm_key_list_previous_completion = []
+let g:ycm_use_ultisnips_completer = 1
 
 set completeopt=longest,menu "让Vim的补全菜单行为与一般IDE一致(参考VimTip1228)
 nnoremap <leader>g :YcmCompleter GoToDefinitionElseDeclaration<CR>
@@ -446,6 +447,11 @@ let g:UltiSnipsJumpBackwardTrigger="<s-tab>"
 
 " If you want :UltiSnipsEdit to split your window.
 let g:UltiSnipsEditSplit="vertical"
+
+
+
+" eclim -----------------------------
+let g:EclimCompletionMethod = 'omnifunc'
 
 
 
