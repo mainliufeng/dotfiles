@@ -27,13 +27,13 @@ function sbton() {
         echo $SBT_REPOSITORIES
     else
         if [ "$1" = "work" ]; then
-            cp ~/.sbt/repositories.work ~/.sbt/repositories
+            export SBT_OPTS="-Dsbt.override.build.repos=true -Dsbt.repository.config=~/.sbt/repositories.work"
             export SBT_REPOSITORIES="work"
         elif [ "$1" = "home" ]; then
-            cp ~/.sbt/repositories.home ~/.sbt/repositories
+            export SBT_OPTS="-Dsbt.override.build.repos=true -Dsbt.repository.config=~/.sbt/repositories.home"
             export SBT_REPOSITORIES="home"
         elif [ "$1" = "null" ]; then
-            rm -f ~/.sbt/repositories
+            export SBT_OPTS="-Dsbt.override.build.repos=true -Dsbt.repository.config=~/.sbt/repositories"
             unset SBT_REPOSITORIES
         fi
     fi
