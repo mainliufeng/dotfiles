@@ -3,38 +3,86 @@ cask_args appdir: '/Applications'
 tap 'homebrew/bundle'
 tap 'caskroom/cask'
 
-brew 'zsh'
-brew 'macvim', args: ['with-override-system-vim']
+# base
 brew 'ssh-copy-id'
 brew 'openssl'
-brew 'tmux'
-brew 'stow'
-brew 'autojump'
-brew 'stormssh'
-brew 'tree'
-brew 'wget'
-brew 'trash'
 brew 'gcc'
 brew 'git'
-brew 'httpie'
-brew 'diff-so-fancy'
-brew 'mycli'
+brew 'wget'
+brew 'trash'
 brew 'mas'
+cask 'google-chrome'
+
+cask '1password'
+cask 'cleanmymac'
+mas 'The Unarchiver', id: 425424353
+
+# productive
+cask 'iterm2'
+cask 'alfred'
+mas 'Dash', id: 449589707
+brew 'zsh'
+brew 'macvim', args: ['with-override-system-vim']
+brew 'tmux'
+brew 'autojump'
+brew 'tree'
+
+brew 'diff-so-fancy'
 brew 'fabric'
+# brew 'ack'
+brew 'the_silver_searcher'
+cask 'sublime-text'
+mas 'Patterns', id: 429449079
+
+# proxy
+cask 'shadowsocksx'
+brew 'polipo'
+cask 'vyprvpn'
+
+# vm
+cask 'docker'
+cask 'parallels-desktop'
+
+# programming
 brew 'python'
 brew 'python3'
 brew 'go'
 brew 'maven'
-brew 'scala'
+brew 'scala', args: ['with-docs']
 brew 'sbt'
 brew 'zinc'
-brew 'polipo'
-brew 'ack'
-brew 'the_silver_searcher'
+brew 'nvm'
+cask 'java'
+
+# client
+brew 'httpie'
+brew 'mycli'
+brew 'zookeeper'
+cask 'postgres'
+cask 'mongohub'
+
+# document
 brew 'pandoc'
 brew 'ffmpeg'
 brew 'gifsicle'
-brew 'nvm'
+cask 'mou'
+
+# note
+mas 'Quiver', id: 866773894
+
+# time and plan 
+mas 'OmniFocus', id: 867299399
+mas 'Pomodoro Time', id: 973134470
+
+# reading
+mas 'Reeder', id: 880001334
+
+# communication
+mas 'WeChat', id: 836500024
+# mas 'Unibox', id: 702816521
+
+# os tools
+cask 'unetbootin'
 
 # servers
 brew 'mysql'
@@ -45,29 +93,3 @@ brew 'postgresql'
 brew 'redis'
 brew 'memcached'
 brew 'mongodb'
-
-cask 'iterm2'
-cask 'google-chrome'
-cask 'mou'
-cask 'docker'
-cask 'shadowsocksx'
-cask 'unetbootin'
-cask 'java'
-cask 'docker'
-
-cask 'alfred'
-cask 'vyprvpn'
-cask 'sublime-text'
-cask 'parallels-desktop'
-cask '1password'
-cask 'cleanmymac'
-
-mas 'Pomodoro Time', id: 973134470
-mas 'The Unarchiver', id: 425424353
-mas 'WeChat', id: 836500024
-mas 'Patterns', id: 429449079
-mas 'Quiver', id: 866773894
-mas 'Unibox', id: 702816521
-mas 'OmniFocus', id: 867299399
-mas 'Dash', id: 449589707
-mas 'Reeder', id: 880001334
