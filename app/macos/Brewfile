@@ -35,6 +35,8 @@ cask 'sublime-text'
 mas 'Patterns', id: 429449079
 
 # proxy
+tap 'Liu-Feng/formulae'
+brew 'xx-net'
 cask 'shadowsocksx'
 brew 'polipo'
 cask 'vyprvpn'

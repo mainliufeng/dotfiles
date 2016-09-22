@@ -1,6 +1,3 @@
-## xxnet
-alias xxnet="$XXNET_HOME/current/start"
-
 ## termial position
 alias fl="osascript $TERMTILE_HOME/tile.scpt left"
 alias fr="osascript $TERMTILE_HOME/tile.scpt right"
