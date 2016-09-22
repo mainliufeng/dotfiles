@@ -2,6 +2,7 @@ cask_args appdir: '/Applications'
 
 tap 'homebrew/bundle'
 tap 'caskroom/cask'
+tap 'Liu-Feng/formulae'
 
 # base
 brew 'ssh-copy-id'
@@ -26,6 +27,7 @@ brew 'macvim', args: ['with-override-system-vim']
 brew 'tmux'
 brew 'autojump'
 brew 'tree'
+brew 'termtile'
 
 brew 'diff-so-fancy'
 brew 'fabric'
@@ -35,7 +37,6 @@ cask 'sublime-text'
 mas 'Patterns', id: 429449079
 
 # proxy
-tap 'Liu-Feng/formulae'
 brew 'xx-net'
 cask 'shadowsocksx'
 brew 'polipo'
