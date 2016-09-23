@@ -27,7 +27,7 @@ brew 'macvim', args: ['with-override-system-vim']
 brew 'tmux'
 brew 'autojump'
 brew 'tree'
-brew 'termtile'
+brew 'termtile', args: ['HEAD']
 
 brew 'diff-so-fancy'
 brew 'fabric'
