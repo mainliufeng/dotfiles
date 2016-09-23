@@ -1,5 +1,0 @@
-INSTALL_PATH=$HOME/tools
-
-# common
-MENLO_FOR_POWERLINE_HOME=$INSTALL_PATH/Menlo-for-Powerline
-SOLARIZED_HOME=$INSTALL_PATH/solarized

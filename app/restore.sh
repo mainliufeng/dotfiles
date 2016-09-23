@@ -1,23 +1,15 @@
 #!/bin/sh
 
-# ~/tools
-tar -C ~ -xvzf ~/Sync/Dropbox/tools.tar.gz
+SYNC_PATH=~/Sync/Dropbox
+
+# ~/dotfiles
+tar -C ~ -xvzf $SYNC_PATH/dotfiles.tar.gz
 
 # ~/.oh-my-zsh
-tar -C ~ -xvzf ~/Sync/Dropbox/oh-my-zsh.tar.gz
+tar -C ~ -xvzf $SYNC_PATH/oh-my-zsh.tar.gz
 
 # ~/.vim
-tar -C ~ -xvzf ~/Sync/Dropbox/vim.tar.gz
+tar -C ~ -xvzf $SYNC_PATH/vim.tar.gz
 
 # ~/Code/home
-tar -C ~ -xvzf ~/Sync/Dropbox/Code.home.tar.gz
-
-for restore_sh in ~/dotfiles/app/common/*/restore.sh; do
-    source $restore_sh
-done
-
-if [ "$(uname -s)" == "Darwin" ]; then
-    for restore_sh in ~/dotfiles/app/macos/*/restore.sh; do
-        source $restore_sh
-    done
-fi
+tar -C ~ -xvzf $SYNC_PATH/Code.home.tar.gz

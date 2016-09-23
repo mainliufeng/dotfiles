@@ -1,13 +1,18 @@
 #!/bin/sh
 
-# ~/tools
-tar -C ~ -cvzf ~/Sync/Dropbox/tools.tar.gz tools
+SYNC_PATH=~/Sync/Dropbox
+
+# ~/dotfiles
+tar -C ~ -cvzf $SYNC_PATH/dotfiles.tar.gz dotfiles
 
 # ~/.oh-my-zsh
-tar -C ~ -cvzf ~/Sync/Dropbox/oh-my-zsh.tar.gz .oh-my-zsh
+tar -C ~ -cvzf $SYNC_PATH/oh-my-zsh.tar.gz .oh-my-zsh
 
 # ~/.vim
-tar -C ~ -cvzf ~/Sync/Dropbox/vim.tar.gz .vim
+tar -C ~ -cvzf $SYNC_PATH/vim.tar.gz .vim
 
 # ~/Code/home
-tar -C ~ -cvzf ~/Sync/Dropbox/Code.home.tar.gz Code/home
+tar -C ~ -cvzf $SYNC_PATH/Code.home.tar.gz Code/home
+
+# restore.sh
+cp ~/dotfiles/app/restore.sh $SYNC_PATH
