@@ -1,5 +1,4 @@
-## show virtualenv name at right
-function virtualenv_prompt() {
+function status_prompt() {
     if [[ ! -n ${VIRTUAL_ENV} ]] && [[ ! -n ${PROXY_NAME} ]] && [[ ! -n ${SBT_REPOSITORIES} ]]; then
         echo -n ""
     else
@@ -33,4 +32,4 @@ function virtualenv_prompt() {
         echo ")%{${reset_color}%}"
     fi
 }
-RPROMPT='$(virtualenv_prompt)'
+RPROMPT='$(status_prompt)'

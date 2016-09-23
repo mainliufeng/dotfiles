@@ -23,6 +23,9 @@ cask 'iterm2'
 cask 'alfred'
 mas 'Dash', id: 449589707
 brew 'zsh'
+brew 'zsh-syntax-highlighting'
+brew 'zsh-history-substring-search'
+brew 'zsh-completions'
 brew 'macvim', args: ['with-override-system-vim']
 brew 'tmux'
 brew 'autojump'
