@@ -58,6 +58,7 @@ brew 'scala', args: ['with-docs']
 brew 'sbt'
 brew 'zinc'
 brew 'nvm'
+brew 'cocoapods'
 cask 'java'
 
 # client
