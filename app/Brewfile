@@ -91,6 +91,9 @@ mas 'WeChat', id: 836500024
 # os tools
 cask 'unetbootin'
 
+# design
+cask 'staruml'
+
 # servers
 brew 'mysql'
 brew 'nginx'
