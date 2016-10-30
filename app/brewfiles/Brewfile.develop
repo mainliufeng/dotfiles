@@ -4,20 +4,6 @@ tap 'homebrew/bundle'
 tap 'caskroom/cask'
 tap 'Liu-Feng/formulae'
 
-# base
-brew 'ssh-copy-id'
-brew 'openssl'
-brew 'gcc'
-brew 'git'
-brew 'wget'
-brew 'trash'
-brew 'mas'
-cask 'google-chrome'
-
-cask '1password'
-cask 'cleanmymac'
-mas 'The Unarchiver', id: 425424353
-
 # productive
 cask 'iterm2'
 cask 'alfred'
@@ -34,20 +20,23 @@ brew 'termtile', args: ['HEAD']
 
 brew 'diff-so-fancy'
 brew 'fabric'
-# brew 'ack'
 brew 'the_silver_searcher'
 cask 'sublime-text'
 mas 'Patterns', id: 429449079
 
 # proxy
 brew 'xx-net'
-cask 'shadowsocksx'
+cask 'shadowsocksx-ng'
 brew 'polipo'
 cask 'vyprvpn'
 
 # vm
 cask 'docker'
 cask 'parallels-desktop'
+
+# ide
+brew 'intellij-idea'
+cask 'eclipse-java'
 
 # programming
 brew 'python'
@@ -61,45 +50,13 @@ brew 'nvm'
 brew 'cocoapods'
 cask 'java'
 
+brew 'ant'
+brew 'apache-spark'
+
 # client
 brew 'httpie'
 brew 'mycli'
 brew 'zookeeper'
 cask 'postgres'
 cask 'mongohub'
-
-# document
-brew 'pandoc'
-brew 'ffmpeg'
-brew 'gifsicle'
-cask 'mou'
-
-# note
-mas 'Quiver', id: 866773894
-
-# time and plan 
-mas 'OmniFocus', id: 867299399
-mas 'Pomodoro Time', id: 973134470
-
-# reading
-mas 'Reeder', id: 880001334
-
-# communication
-mas 'WeChat', id: 836500024
-# mas 'Unibox', id: 702816521
-
-# os tools
-cask 'unetbootin'
-
-# design
-cask 'staruml'
-
-# servers
-brew 'mysql'
-brew 'nginx'
-brew 'elasticsearch'
-brew 'varnish'
-brew 'postgresql'
-brew 'redis'
-brew 'memcached'
-brew 'mongodb'
+cask 'dbvisualizer'

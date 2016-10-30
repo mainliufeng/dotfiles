@@ -1,0 +1,22 @@
+cask_args appdir: '/Applications'
+
+tap 'homebrew/bundle'
+tap 'caskroom/cask'
+
+# base
+brew 'ssh-copy-id'
+brew 'openssl'
+brew 'gcc'
+brew 'git'
+brew 'wget'
+brew 'trash'
+brew 'mas'
+cask 'google-chrome'
+
+cask '1password'
+cask 'cleanmymac'
+mas 'The Unarchiver', id: 425424353
+
+brew 'pkg-config'
+brew 'makedepend'
+brew 'ansible'

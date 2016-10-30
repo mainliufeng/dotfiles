@@ -1,0 +1,28 @@
+cask_args appdir: '/Applications'
+
+tap 'homebrew/bundle'
+tap 'caskroom/cask'
+
+# design
+cask 'staruml'
+
+# note
+mas 'Quiver', id: 866773894
+
+# markdown
+brew 'pandoc'
+cask 'mou'
+cask 'macdown'
+
+# gif
+brew 'ffmpeg'
+brew 'gifsicle'
+
+# plan 
+mas 'OmniFocus', id: 867299399
+
+# time
+mas 'Pomodoro Time', id: 973134470
+
+# read
+mas 'Reeder', id: 880001334
