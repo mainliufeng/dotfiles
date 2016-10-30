@@ -26,7 +26,7 @@ mas 'Patterns', id: 429449079
 
 # proxy
 brew 'xx-net'
-cask 'shadowsocksx-ng'
+cask 'surge'
 brew 'polipo'
 cask 'vyprvpn'
 

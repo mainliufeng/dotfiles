@@ -142,6 +142,7 @@ cask 'quicklook-json'
 cask 'shadowsocksx-ng'
 cask 'staruml'
 cask 'sublime-text'
+cask 'surge'
 cask 'unetbootin'
 cask 'vlc'
 mas 'The Unarchiver', id: 425424353
