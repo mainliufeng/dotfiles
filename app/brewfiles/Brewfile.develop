@@ -14,7 +14,7 @@ brew 'zsh-history-substring-search'
 brew 'zsh-completions'
 brew 'macvim', args: ['with-override-system-vim']
 brew 'tmux'
-brew 'autojump'
+brew 'fasd'
 brew 'tree'
 brew 'termtile', args: ['HEAD']
 
