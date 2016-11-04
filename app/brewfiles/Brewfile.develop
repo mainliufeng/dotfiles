@@ -33,6 +33,8 @@ cask 'vyprvpn'
 # vm
 cask 'docker'
 cask 'parallels-desktop'
+brew 'kubernetes-cli'
+cask 'minikube'
 
 # ide
 brew 'intellij-idea'
