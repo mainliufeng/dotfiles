@@ -29,6 +29,7 @@ brew 'xx-net'
 cask 'surge'
 brew 'polipo'
 cask 'vyprvpn'
+cask 'virtualbox'
 
 # vm
 cask 'docker'
