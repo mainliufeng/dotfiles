@@ -22,6 +22,7 @@ brew 'diff-so-fancy'
 brew 'fabric'
 brew 'the_silver_searcher'
 cask 'sublime-text'
+cask 'postman'
 mas 'Patterns', id: 429449079
 
 # proxy
@@ -63,3 +64,12 @@ brew 'zookeeper'
 cask 'postgres'
 cask 'mongohub'
 cask 'dbvisualizer'
+brew 'mysql'
+brew 'postgresql'
+brew 'redis'
+brew 'memcached'
+brew 'mongodb'
+
+# tools
+cask 'unetbootin'
+cask 'filezilla'

@@ -1,8 +1,0 @@
-cask_args appdir: '/Applications'
-
-tap 'homebrew/bundle'
-tap 'caskroom/cask'
-
-# tools
-cask 'unetbootin'
-cask 'filezilla'
