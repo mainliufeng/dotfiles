@@ -35,3 +35,4 @@ function status_prompt() {
 
     echo ")%{${reset_color}%}"
 }
+RPROMPT='$(status_prompt)'
