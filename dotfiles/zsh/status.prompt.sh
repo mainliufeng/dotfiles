@@ -1,7 +1,7 @@
 function status_prompt() {
 
     all_empty=true
-    for i in VIRTUAL_ENV PROXY_NAME SBT_REPOSITORIES MAVEN_REPOSITORIES
+    for i in VIRTUAL_ENV PROXY_NAME SBT_REPOSITORIES MAVEN_REPOSITORIES CONDA_DEFAULT_ENV
     do
         if [[ -n ${(P)i} ]]; then
             all_empty=false
@@ -16,7 +16,7 @@ function status_prompt() {
     echo -n "%{${fg_bold[white]}%}("
     is_first=true
 
-    for i in env,VIRTUAL_ENV proxy,PROXY_NAME sbt,SBT_REPOSITORIES mvn,MAVEN_REPOSITORIES ;
+    for i in env,VIRTUAL_ENV proxy,PROXY_NAME sbt,SBT_REPOSITORIES mvn,MAVEN_REPOSITORIES conda,CONDA_DEFAULT_ENV;
     do 
         array=("${(@s/,/)i}")
         key=$array[1]

@@ -1,0 +1,1 @@
+ln -svf ~/dotfiles/dotfiles/conda/.condarc ~/.condarc
