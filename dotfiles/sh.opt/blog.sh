@@ -1,4 +1,4 @@
-export BLOG_HOME=$HOME/Code/home/Blog
+export BLOG_HOME=$HOME/Code/github/mainliufeng.github.io
 export BLOG_LOG_FILE=$HOME/.blog.log
 export BLOG_PID_FILE=$HOME/.blog.pid
 
@@ -54,7 +54,7 @@ status)
     return 0
     ;;
 open)
-    open http://127.0.0.1:4000/Blog/
+    open http://127.0.0.1:4000/
     ;;
 *)
     echo "Usage: $0 {status|start|stop|open}" >&2
