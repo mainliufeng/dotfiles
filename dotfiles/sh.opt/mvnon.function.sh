@@ -5,14 +5,12 @@ function mvnon() {
         return 0
     fi
 
-    case $1 in
-    work)
-        alias mvn='mvn --settings=$HOME/.m2/settings.xml.work'
-        export MAVEN_REPOSITORIES="work"
-        ;;
-    *)
-        echo "invalid maven repository name"
+    SETTINGS_FILE="$HOME/.m2/settings.xml.$1"
+    if [ ! -f $SETTINGS_FILE ]; then
+        echo "File not found: $SETTINGS_FILE"
         return 1
-        ;;
-    esac
+    fi
+
+    alias mvn="mvn --settings=$SETTINGS_FILE"
+    export MAVEN_REPOSITORIES="$1"
 }
