@@ -36,18 +36,18 @@ sudo softwareupdate -i -a &> $LOG
 echo_set "macos defaults"
 sh ~/dotfiles/app/defaults.sh &> $LOG
 
-if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    echo_install "oh-my-zsh"
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" &> $LOG
+if [ ! -d "$HOME/.zgen" ]; then
+    echo_install "zgen"
+    sh -c "git clone https://github.com/tarjoilija/zgen.git \"${HOME}/.zgen\"" &> $LOG
 else
-    echo_skip "oh-my-zsh" "$HOME/.oh-my-zsh exist"
+    echo_skip "zgen" "$HOME/.zgen exist"
 fi
 
-if [ ! -f "$HOME/.oh-my-zsh/themes/cobalt2.zsh-theme" ]; then
+if [ ! -f "$HOME/.zgen/robbyrussell/oh-my-zsh-master/themes/cobalt2.zsh-theme" ]; then
     echo_install "cobalt2 theme"
-    curl -o $HOME/.oh-my-zsh/themes/cobalt2.zsh-theme https://raw.githubusercontent.com/wesbos/Cobalt2-iterm/master/cobalt2.zsh-theme &> $LOG
+    curl -o $HOME/.zgen/robbyrussell/oh-my-zsh-master/themes/cobalt2.zsh-theme https://raw.githubusercontent.com/wesbos/Cobalt2-iterm/master/cobalt2.zsh-theme &> $LOG
 else
-    echo_skip "cobalt2" "($HOME/.oh-my-zsh/themes/cobalt2.zsh-theme exist)"
+    echo_skip "cobalt2" "($HOME/.zgen/robbyrussell/oh-my-zsh-master/themes/cobalt2.zsh-theme exist)"
 fi
 
 # resources
