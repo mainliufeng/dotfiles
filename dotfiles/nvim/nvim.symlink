@@ -1,0 +1,2 @@
+ln -svf ~/.vim ~/.config/nvim
+ln -svf ~/.vimrc ~/.config/nvim/init.vim
