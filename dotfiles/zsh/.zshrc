@@ -44,7 +44,7 @@ if ! zplug check --verbose; then
     fi
 fi
 
-zplug load --verbose
+zplug load
 
 for sh in $HOME/dotfiles/dotfiles/sh*/*.*sh;
 do
