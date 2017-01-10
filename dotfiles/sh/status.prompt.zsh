@@ -1,38 +1,28 @@
-function status_prompt() {
+function envvar_prompt() {
+    display_name=$1
+    env_var=$2
+    env_var_value=${(P)env_var}
 
-    all_empty=true
-    for i in VIRTUAL_ENV PROXY_NAME SBT_REPOSITORIES MAVEN_REPOSITORIES CONDA_DEFAULT_ENV
-    do
-        if [[ -n ${(P)i} ]]; then
-            all_empty=false
-        fi
-    done
-
-    if $all_empty; then
-        echo -n ""
-        return 0
+    if [[ -n $env_var_value ]]; then
+        echo -n "$display_name: %{${fg[green]}%}$env_var_value%{${fg_bold[white]}%}, "
     fi
-
-    echo -n "%{${fg_bold[white]}%}("
-    is_first=true
-
-    for i in env,VIRTUAL_ENV proxy,PROXY_NAME sbt,SBT_REPOSITORIES mvn,MAVEN_REPOSITORIES conda,CONDA_DEFAULT_ENV;
-    do 
-        array=("${(@s/,/)i}")
-        key=$array[1]
-        var_name=$array[2]
-
-        if [[ -n ${(P)var_name} ]]; then
-            if $is_first; then
-                is_first=false
-            else
-                echo -n ", "
-            fi
-            
-            echo -n "$key: %{${fg[green]}%}${(P)var_name:t}%{${fg_bold[white]}%}"
-        fi
-    done
-
-    echo ")%{${reset_color}%}"
 }
+
+function prompt_content() {
+    envvar_prompt env VIRTUAL_ENV
+    envvar_prompt proxy PROXY_NAME
+    envvar_prompt sbt SBT_REPOSITORIES
+    envvar_prompt mvn MAVEN_REPOSITORIES
+    envvar_prompt conda CONDA_DEFAULT_ENV
+}
+
+function status_prompt() {
+    content="$(prompt_content)"
+    if [[ -n $content ]]; then
+        echo -n "%{${fg_bold[white]}%}("
+        echo -n ${content:0:-2}
+        echo ")%{${reset_color}%}"
+    fi
+}
+
 RPROMPT='$(status_prompt)'
