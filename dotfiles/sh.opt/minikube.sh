@@ -1,1 +1,1 @@
-alias minikube-env="eval $(minikube docker-env)"
+alias minikube-env='eval $(minikube docker-env)'
