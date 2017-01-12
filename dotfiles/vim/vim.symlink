@@ -1,3 +1,0 @@
-ln -svf ~/dotfiles/dotfiles/vim/.vimrc ~/.vimrc
-ln -svf ~/dotfiles/dotfiles/vim/.vim/UltiSnips ~/.vim/
-ln -svf ~/dotfiles/dotfiles/vim/.vim/custom ~/.vim/

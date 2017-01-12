@@ -1,0 +1,3 @@
+ln -svf ~/dotfiles/git/.gitconfig ~/.gitconfig
+ln -svf ~/dotfiles/git/.gitignore_global ~/.gitignore_global
+

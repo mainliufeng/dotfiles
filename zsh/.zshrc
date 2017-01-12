@@ -27,10 +27,14 @@ zplug "zsh-users/zsh-history-substring-search"
 zplug "djui/alias-tips"
 zplug "/usr/local/opt/pinyin-completion/libexec", from:local, use:"shell/pinyin-comp.zsh"
 
-zplug "~/dotfiles/dotfiles/zsh/plugins/rprompt", from:local
-zplug "~/dotfiles/dotfiles/sh/function", from:local, use:"*.sh"
+zplug "~/dotfiles/zsh/plugins/rprompt", from:local
+zplug "~/dotfiles/sh/function", from:local, use:"*.sh"
 
 zplug "wesbos/Cobalt2-iterm", use:"cobalt2.zsh-theme", as:theme
+
+# resource download only
+zplug "altercation/solarized", ignore:"*"
+zplug "abertsch/Menlo-for-Powerline", hook-build:"cp -f ~/.zplug/repos/abertsch/Menlo-for-Powerline/*.ttf ~/.fonts/ && fc-cache -vf ~/.fonts", ignore:"*"
 
 # bind k and j for VI mode
 bindkey -M vicmd 'k' history-substring-search-up
@@ -48,4 +52,4 @@ fi
 
 zplug load
 
-for sh in $HOME/dotfiles/dotfiles/sh/*.sh; do source $sh; done
+for sh in $HOME/dotfiles/sh/*.sh; do source $sh; done
