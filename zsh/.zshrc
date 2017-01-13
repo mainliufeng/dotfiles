@@ -29,6 +29,7 @@ zplug "zsh-users/zsh-history-substring-search"
 
 zplug "djui/alias-tips"
 zplug "/usr/local/opt/pinyin-completion/libexec", from:local, use:"shell/pinyin-comp.zsh"
+zplug "lukechilds/gifgen", as:command, use:"gifgen"
 
 # local plugins
 zplug "$DOTFILES_HOME/sh/function", from:local, use:"*.sh"
