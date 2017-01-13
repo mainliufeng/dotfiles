@@ -22,7 +22,7 @@ function load() {
         eval $(minikube docker-env)
         ;;
     *)
-        echo "Usage: load conda|nvm"
+        echo "Usage: load conda|venv|nvm|minikube"
         return 0
     esac
 }
