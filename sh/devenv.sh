@@ -14,7 +14,8 @@ export PATH=$PATH:/usr/local/opt/go/libexec/bin
 export PATH=$PATH:$GOPATH/bin
 
 ## java
-export JAVA_HOME=`/usr/libexec/java_home`
+JAVA_HOME=$(/usr/libexec/java_home)
+export JAVA_HOME
 export PATH=${JAVA_HOME}/bin:$PATH
 export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 
@@ -34,4 +35,4 @@ alias spark_debug_on='export SPARK_JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,
 alias spark_debug_off='unset SPARK_JAVA_OPTS'
 
 ## rust
-source $HOME/.cargo/env
+source "$HOME"/.cargo/env

@@ -8,16 +8,16 @@ case $1 in
 start)
     if [ -f "$BLOG_PID_FILE" ]
     then
-        if kill -0 `cat "$BLOG_PID_FILE"` > /dev/null 2>&1; then
+        if kill -0 "$(cat "$BLOG_PID_FILE")" > /dev/null 2>&1; then
             echo 'blog already running'
             return 0
         fi
     fi
 
-    nohup jekyll server -s $BLOG_HOME -d $BLOG_HOME/_site > $BLOG_LOG_FILE &
+    nohup jekyll server -s "$BLOG_HOME" -d "$BLOG_HOME"/_site > "$BLOG_LOG_FILE" &
     if [ $? -eq 0 ]
     then
-        echo -n $! > "$BLOG_PID_FILE"
+        echo $! > "$BLOG_PID_FILE"
         if [ $? -eq 0 ];
         then
             sleep 1
@@ -36,7 +36,7 @@ stop)
     then
         echo "no blog to stop (could not find file $BLOG_PID_FILE)"
     else
-        kill -9 $(cat "$BLOG_PID_FILE")
+        kill -9 "$(cat "$BLOG_PID_FILE")"
         rm "$BLOG_PID_FILE"
         echo STOPPED
     fi
@@ -45,7 +45,7 @@ stop)
 status)
     if [ -f "$BLOG_PID_FILE" ]
     then
-        if kill -0 `cat "$BLOG_PID_FILE"` > /dev/null 2>&1; then
+        if kill -0 "$(cat "$BLOG_PID_FILE")" > /dev/null 2>&1; then
             echo 'status: running'
             return 0
         fi

@@ -54,12 +54,14 @@ brew 'nvm'
 brew 'cocoapods'
 cask 'java'
 
+brew 'shellcheck'
 brew 'ant'
 brew 'apache-spark'
 
 # client
 brew 'httpie'
 brew 'mycli'
+brew 'pgcli'
 brew 'zookeeper'
 cask 'postgres'
 cask 'mongohub'

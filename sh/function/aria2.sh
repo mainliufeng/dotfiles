@@ -1,5 +1,5 @@
-function aria2() {
-    if [[ ! -n "$1" ]]; then
+aria2() {
+    if [ ! -n "$1" ]; then
         echo "Usage aria2 start|stop|status"
         return 1
     fi
@@ -12,7 +12,11 @@ function aria2() {
         pkill aria2
         ;;
     status)
-        ps -ef | grep aria2
+        if [ "$(pgrep aria2)" ]; then
+            echo "aria2: running"
+        else
+            echo "aria2: not running"
+        fi
         ;;
     *)
         echo "invalid subcommand"

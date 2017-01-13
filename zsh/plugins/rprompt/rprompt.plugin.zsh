@@ -1,4 +1,4 @@
-function envvar_prompt() {
+envvar_prompt() {
     display_name=$1
     env_var=$2
     env_var_value=${(P)env_var}
@@ -8,7 +8,7 @@ function envvar_prompt() {
     fi
 }
 
-function prompt_content() {
+prompt_content() {
     envvar_prompt env VIRTUAL_ENV
     envvar_prompt proxy PROXY_NAME
     envvar_prompt sbt SBT_REPOSITORIES
@@ -16,7 +16,7 @@ function prompt_content() {
     envvar_prompt conda CONDA_DEFAULT_ENV
 }
 
-function status_prompt() {
+status_prompt() {
     content="$(prompt_content)"
     if [[ -n $content ]]; then
         echo -n "%{${fg_bold[white]}%}("

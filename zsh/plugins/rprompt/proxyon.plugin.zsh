@@ -1,5 +1,5 @@
-function proxyon() {
-    if [[ ! -n "$1" ]]; then
+proxyon() {
+    if [ ! -n "$1" ]; then
         unset PROXY_NAME
         unset http_proxy
         unset https_proxy
