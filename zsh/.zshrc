@@ -1,12 +1,15 @@
 # Check if zplug is installed
-if [[ ! -d ~/.zplug ]]; then
-  git clone https://github.com/zplug/zplug ~/.zplug
-  source ~/.zplug/init.zsh && zplug update --self
+DOTFILES_HOME="$HOME/dotfiles"
+ZPLUG_HOME="$HOME/.zplug"
+if [[ ! -d $ZPLUG_HOME ]]; then
+  git clone https://github.com/zplug/zplug $ZPLUG_HOME
+  source $ZPLUG_HOME/init.zsh && zplug update --self
 fi
 
 # Essential
-source ~/.zplug/init.zsh
+source $ZPLUG_HOME/init.zsh
 
+# oh-my-zsh
 zplug "robbyrussell/oh-my-zsh", use:"lib/history.zsh"
 zplug "robbyrussell/oh-my-zsh", use:"lib/theme-and-appearance.zsh"
 zplug "plugins/git",     from:oh-my-zsh
@@ -27,18 +30,16 @@ zplug "zsh-users/zsh-history-substring-search"
 zplug "djui/alias-tips"
 zplug "/usr/local/opt/pinyin-completion/libexec", from:local, use:"shell/pinyin-comp.zsh"
 
-zplug "~/dotfiles/zsh/plugins/rprompt", from:local
-zplug "~/dotfiles/sh/function", from:local, use:"*.sh"
+# local plugins
+zplug "$DOTFILES_HOME/sh/function", from:local, use:"*.sh"
 
+# theme
 zplug "wesbos/Cobalt2-iterm", use:"cobalt2.zsh-theme", as:theme
+zplug "$DOTFILES_HOME/zsh/plugins/rprompt", from:local
 
-# resource download only
+# resource (download only)
 zplug "altercation/solarized", ignore:"*"
-zplug "abertsch/Menlo-for-Powerline", hook-build:"cp -f ~/.zplug/repos/abertsch/Menlo-for-Powerline/*.ttf ~/.fonts/ && fc-cache -vf ~/.fonts", ignore:"*"
-
-# bind k and j for VI mode
-bindkey -M vicmd 'k' history-substring-search-up
-bindkey -M vicmd 'j' history-substring-search-down
+zplug "abertsch/Menlo-for-Powerline", hook-build:"cp -f $ZPLUG_HOME/repos/abertsch/Menlo-for-Powerline/*.ttf ~/.fonts/ && fc-cache -vf ~/.fonts", ignore:"*"
 
 # Install packages that have not been installed yet
 if ! zplug check --verbose; then
@@ -52,4 +53,4 @@ fi
 
 zplug load
 
-for sh in $HOME/dotfiles/sh/*.sh; do source $sh; done
+for sh in $DOTFILES_HOME/sh/*.sh; do source $sh; done
