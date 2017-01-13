@@ -15,3 +15,8 @@ sh ~/dotfiles/install_dotfile.sh;
 sh ~/dotfiles/install_app.sh
 ```
 
+## Screenshots
+
+<img src="https://github.com/mainliufeng/dotfiles/blob/master/shell.png" width=800/>
+
+<img src="https://github.com/mainliufeng/dotfiles/blob/master/vim.png" width=800/>
