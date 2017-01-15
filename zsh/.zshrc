@@ -12,14 +12,15 @@ source $ZPLUG_HOME/init.zsh
 # oh-my-zsh
 zplug "robbyrussell/oh-my-zsh", use:"lib/history.zsh"
 zplug "robbyrussell/oh-my-zsh", use:"lib/theme-and-appearance.zsh"
-zplug "plugins/git",     from:oh-my-zsh
-zplug "plugins/python",  from:oh-my-zsh
-zplug "plugins/fasd",    from:oh-my-zsh
-zplug "plugins/extract", from:oh-my-zsh
-#zplug "plugins/sublime", from:oh-my-zsh
-zplug "plugins/docker",  from:oh-my-zsh
-#zplug "plugins/kubectl", from:oh-my-zsh
-zplug "plugins/mvn",     from:oh-my-zsh
+zplug "plugins/git",          from:oh-my-zsh
+zplug "plugins/python",       from:oh-my-zsh
+zplug "plugins/fasd",         from:oh-my-zsh
+zplug "plugins/extract",      from:oh-my-zsh
+#zplug "plugins/sublime",      from:oh-my-zsh
+zplug "plugins/docker",       from:oh-my-zsh
+#zplug "plugins/kubectl",      from:oh-my-zsh
+zplug "plugins/mvn",          from:oh-my-zsh
+zplug "plugins/taskwarrior",  from:oh-my-zsh
 
 # zsh-users
 #zplug "zsh-users/zsh-syntax-highlighting", defer:2
