@@ -54,6 +54,7 @@ set guifont=Menlo\ for\ Powerline:h14
 set background=dark
 colorscheme solarized
 call togglebg#map("<F5>")
+let g:solarized_termcolors=256
 
 
 " Local --------------------------------
