@@ -32,6 +32,7 @@ values."
    dotspacemacs-configuration-layers
    '(
      python
+     java
      vimscript
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
@@ -310,6 +311,25 @@ you should place your code here."
   ;; zsh
   (setq-default dotspacemacs-configuration-layers
                 '((shell :variables shell-default-term-shell "/bin/zsh")))
+  ;; eclim
+  (setq eclim-eclipse-dirs "/Applications/Eclipse.app/Contents/Eclipse"
+        eclim-executable "/Applications/Eclipse.app/Contents/Eclipse/eclim"
+        eclimd-default-workspace "~/Code/.workspace")
+  ;; meghanada
+  ;;(require 'meghanada)
+  ;;(add-hook 'java-mode-hook
+  ;;          (lambda ()
+  ;;            ;; meghanada-mode on
+  ;;            (meghanada-mode t)
+  ;;            (add-hook 'before-save-hook 'meghanada-code-beautify-before-save)))
+  ;;(add-hook 'java-mode-hook
+  ;;          (lambda ()
+  ;;            (meghanada-mode t)
+  ;;            (gradle-mode t)
+  ;;            (add-hook 'before-save-hook 'delete-trailing-whitespace)))
+  ;;(add-hook 'groovy-mode-hook
+  ;;          (lambda ()
+  ;;            (gradle-mode t)))
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
@@ -321,7 +341,7 @@ you should place your code here."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (org-projectile org-present org-pomodoro alert log4e gntp org-download htmlize gnuplot git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter flycheck-pos-tip pos-tip flycheck diff-hl smartparens helm helm-core xterm-color shell-pop multi-term eshell-z eshell-prompt-extras esh-help smeargle orgit org mmm-mode markdown-toc markdown-mode magit-gitflow helm-gitignore helm-company helm-c-yasnippet gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md evil-magit magit magit-popup git-commit with-editor company-statistics company-anaconda company auto-yasnippet yasnippet ac-ispell auto-complete yapfify pyvenv pytest pyenv-mode py-isort pip-requirements live-py-mode hy-mode helm-pydoc cython-mode anaconda-mode pythonic vimrc-mode dactyl-mode ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spacemacs-theme spaceline restart-emacs request rainbow-delimiters quelpa popwin persp-mode pcre2el paradox org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump define-word column-enforce-mode clean-aindent-mode auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line))))
+    (powerline spinner hydra parent-mode projectile pkg-info epl flx iedit anzu evil goto-chg undo-tree highlight diminish bind-map bind-key packed f dash s avy async popup package-build meghanada groovy-mode gradle-mode company-emacs-eclim eclim org-projectile org-present org-pomodoro alert log4e gntp org-download htmlize gnuplot git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter flycheck-pos-tip pos-tip flycheck diff-hl smartparens helm helm-core xterm-color shell-pop multi-term eshell-z eshell-prompt-extras esh-help smeargle orgit org mmm-mode markdown-toc markdown-mode magit-gitflow helm-gitignore helm-company helm-c-yasnippet gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md evil-magit magit magit-popup git-commit with-editor company-statistics company-anaconda company auto-yasnippet yasnippet ac-ispell auto-complete yapfify pyvenv pytest pyenv-mode py-isort pip-requirements live-py-mode hy-mode helm-pydoc cython-mode anaconda-mode pythonic vimrc-mode dactyl-mode ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spacemacs-theme spaceline restart-emacs request rainbow-delimiters quelpa popwin persp-mode pcre2el paradox org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump define-word column-enforce-mode clean-aindent-mode auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
