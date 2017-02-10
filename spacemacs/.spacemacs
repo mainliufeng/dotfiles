@@ -47,10 +47,18 @@ values."
      markdown
      org
      (shell :variables
-            shell-default-position 'full)
+            shell-default-shell 'ansi-term
+            ;; shell-default-shell 'eshell
+            ;; shell-enable-smart-eshell t
+            shell-default-term-shell "/bin/zsh"
+            shell-default-position 'bottom
+            shell-enable-smart-eshell nil
+            shell-default-height 30)
      spell-checking
      syntax-checking
-     version-control
+     (version-control :variables
+                      version-control-diff-tool 'diff-hl
+                      version-control-global-margin t)
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -251,7 +259,6 @@ values."
    ;; If non nil line numbers are turned on in all `prog-mode' and `text-mode'
    ;; derivatives. If set to `relative', also turns on relative line numbers.
    ;; (default nil)
-   ;; dotspacemacs-line-numbers nil
    dotspacemacs-line-numbers 'relative
    ;; Code folding method. Possible values are `evil' and `origami'.
    ;; (default 'evil)
@@ -312,13 +319,12 @@ you should place your code here."
   (define-coding-system-alias 'UTF-8 'utf-8)
   ;; hide files in neotree by default
   (setq neo-show-hidden-files nil)
-  ;; zsh
-  (setq-default dotspacemacs-configuration-layers
-                '((shell :variables shell-default-term-shell "/bin/zsh")))
   ;; eclim
   (setq eclim-eclipse-dirs "/Applications/Eclipse.app/Contents/Eclipse"
         eclim-executable "/Applications/Eclipse.app/Contents/Eclipse/eclim"
         eclimd-default-workspace "~/Code/.workspace")
+  ;; diff-hl on left side
+  (setq diff-hl-side 'left)
   ;; meghanada
   ;;(require 'meghanada)
   ;;(add-hook 'java-mode-hook
@@ -351,4 +357,4 @@ you should place your code here."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
-)
+ '(term ((t (:inherit default)))))
