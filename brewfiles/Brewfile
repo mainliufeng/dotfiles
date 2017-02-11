@@ -1,4 +1,5 @@
 tap 'caskroom/cask'
+tap 'caskroom/fonts'
 tap 'homebrew/bundle'
 tap 'homebrew/core'
 tap 'homebrew/python'
@@ -67,7 +68,7 @@ brew 'opam'
 brew 'docker-machine-driver-xhyve'
 brew 'dos2unix'
 brew 'elasticsearch'
-brew 'emacs'
+brew 'emacs', restart_service: true
 brew 'jpeg'
 brew 'libtiff'
 brew 'little-cms2'
@@ -233,6 +234,9 @@ cask 'eclipse-java'
 cask 'emacs'
 cask 'evernote'
 cask 'filezilla'
+cask 'font-menlo-for-powerline'
+cask 'font-source-code-pro'
+cask 'font-source-code-pro-for-powerline'
 cask 'hyper'
 cask 'kitematic'
 cask 'macdown'
@@ -264,4 +268,3 @@ mas 'Reeder', id: 880001334
 mas 'OmniFocus', id: 867299399
 mas 'MindNode', id: 992076693
 mas 'Numbers', id: 409203825
-mas 'Dash', id: 449589707
