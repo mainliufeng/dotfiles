@@ -7,19 +7,23 @@ fi
 
 if ! type brew > /dev/null; then
     echo "install homebrew"
+    echo "-------------------------------------"
     /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 else
     echo "skip homebrew brew command exist"
 fi
 
 echo "install brew apps"
-brew bundle --file ~/dotfiles/brewfiles/Brewfile.min
+echo "-------------------------------------"
+brew bundle --file=~/dotfiles/brewfiles/Brewfile.min
 sudo softwareupdate -i -a
 
 echo "set macos defaults"
+echo "-------------------------------------"
 sh ~/dotfiles/macos/defaults.sh
 
 echo "install spacemacs"
+echo "-------------------------------------"
 if [ -d "$HOME/.emacs.d" ]; then
     mv ~/.emacs.d ~/.emacs.d.bak
     mv ~/.emacs ~/.emacs.bak
