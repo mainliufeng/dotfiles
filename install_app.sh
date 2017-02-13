@@ -5,26 +5,30 @@ if [ "$(uname -s)" != "Darwin" ]; then
     exit 1
 fi
 
-LOG=./install.log
+show() {
+    echo "\n---"
+    echo $1
+    echo "-------------------------------------"
+}
 
 if ! type brew > /dev/null; then
-    echo "install homebrew"
-    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" &> $LOG
+    show "install homebrew"
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 else
     echo "skip homebrew brew command exist"
 fi
 
-echo "install brew apps"
-brew bundle --file ~/dotfiles/brewfiles/Brewfile.base &> $LOG
-brew bundle --file ~/dotfiles/brewfiles/Brewfile.home &> $LOG
-brew bundle --file ~/dotfiles/brewfiles/Brewfile.develop &> $LOG
-brew bundle --file ~/dotfiles/brewfiles/Brewfile.design &> $LOG
-sudo softwareupdate -i -a &> $LOG
+show "install brew apps"
+brew bundle --file ~/dotfiles/brewfiles/Brewfile.base
+brew bundle --file ~/dotfiles/brewfiles/Brewfile.home
+brew bundle --file ~/dotfiles/brewfiles/Brewfile.develop
+brew bundle --file ~/dotfiles/brewfiles/Brewfile.design
+# sudo softwareupdate -i -a
 
-echo "set macos defaults"
-sh ~/dotfiles/macos/defaults.sh &> $LOG
+show "set macos defaults"
+sh ~/dotfiles/macos/defaults.sh
 
-echo "install spacemacs"
+show "install spacemacs"
 if [ -d "$HOME/.emacs.d" ]; then
     mv ~/.emacs.d ~/.emacs.d.bak
     mv ~/.emacs ~/.emacs.bak

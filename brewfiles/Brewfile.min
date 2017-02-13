@@ -1,5 +1,0 @@
-tap 'homebrew/bundle'
-
-# base
-brew 'openssl'
-brew 'git'
