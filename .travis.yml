@@ -2,6 +2,5 @@ os: osx
 osx_image: xcode8.2
 script:
   - cp -r $TRAVIS_BUILD_DIR $HOME/
-  - sh ~/dotfiles/install_app.sh
+  - sh ~/dotfiles/travis_install_app.sh
   - sh ~/dotfiles/install_dotfile.sh
-
