@@ -1,7 +1,5 @@
 os: osx
 osx_image: xcode8.2
-install:
-  - git clone git@github.com:Liu-Feng/dotfiles.git ~/dotfiles
 script:
   - sh ~/dotfiles/install_app.sh
   - sh ~/dotfiles/install_dotfile.sh
