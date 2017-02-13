@@ -1,0 +1,8 @@
+tap 'homebrew/bundle'
+
+# base
+brew 'ssh-copy-id'
+brew 'openssl'
+brew 'gcc'
+brew 'git'
+brew 'wget'

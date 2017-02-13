@@ -15,7 +15,7 @@ else
 fi
 
 echo "install brew apps"
-brew bundle --file ~/dotfiles/brewfiles/Brewfile.base &> $LOG
+brew bundle --file ~/dotfiles/brewfiles/Brewfile.min &> $LOG
 sudo softwareupdate -i -a &> $LOG
 
 echo "set macos defaults"
