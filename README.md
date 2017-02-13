@@ -1,5 +1,7 @@
 # mainliufeng's dotfiles
 
+[![Build Status](https://travis-ci.org/mainliufeng/dotfiles.svg?branch=master)](https://travis-ci.org/mainliufeng/dotfiles)
+
 <img src="https://raw.githubusercontent.com/Liu-Feng/dotfiles/master/env.gif" width=800/>
 
 ## Install
