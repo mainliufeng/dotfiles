@@ -19,7 +19,7 @@ else
 fi
 
 show "install brew apps"
-brew bundle --file=~/dotfiles/brewfiles/Brewfile.base
+brew bundle --file=~/dotfiles/brewfiles/Brewfile.min
 # sudo softwareupdate -i -a
 
 show "set macos defaults"
