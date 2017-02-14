@@ -10,6 +10,6 @@ notifications:
     on_failure: always
   slack:
     rooms:
-      - mainliufeng:l4gnbJ5TxgrehTWhmI907mFo#github
+      secure: b9qZF7+0kQfEO6t0Ptj7lQQM4Jd2s096QbWexWjnyRPzuAV+M0oVssc2g7Xna4fi69crgz8GRWGQlGKYX85h2nSMIS6j+vMJzzk+XCzhdLefXQP65sLOdNUCIXaBaflSvHGg5wh5yoKK5XTzyT0smTZvYD/X3bWEkXlde3te4xRYkNYqwW1IzKUYpA0QJao084g0W3LG1GvEuqYg/o5wRxLIdnHxtSNk1rChYzzMC3JK0QGiPi/X+nOGEvCMStUsrTXySXD0BAD3Z0AFHBI1TcSHqoGlrs4q8Ikzgs550lv6J4RftfdThh/ofs1k4ic9+USjd+1ciI94UnRFWBSojfhvOjjXTUCWHm9S8HY5oNcjIMIUqwmeAIn+TI2n2E6a2MzVqFIsShZolfGm8wwmxUvQJcZeI2IWLX7uvdbHbKES9jn2E4el797HgH/mvqmslcqWgTYcKb6EVtX9+QXkqxv3KE0uMTYK74XTI4B57x6bGhV9gNR6jq9OsAGakj/fQGCeN7K0eO32pjOtQo0fsA+KB/q1HG9KCaiSb/X3oCl7ZQ+xy4ZDuiJpEkpyPHkCZ4kiyGsjPZv50GGkONt4ZafMA7spDfvVbeQ5vDEUkBSAXQ8X22jz29C20vZKNIUYSq7ZhOfOTnX0pO5tT1wila9GSgJPsDh3m5MfuWRLOlc=
     on_success: change
     on_failure: always
