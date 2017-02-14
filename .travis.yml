@@ -4,3 +4,10 @@ script:
   - cp -r $TRAVIS_BUILD_DIR $HOME/
   - sh ~/dotfiles/travis_install_app.sh
   - sh ~/dotfiles/install_dotfile.sh
+notifications:
+  email: false
+  slack:
+    rooms:
+      - mainliufeng:l4gnbJ5TxgrehTWhmI907mFo#github
+    on_success: change
+    on_failure: always
