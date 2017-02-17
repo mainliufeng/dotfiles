@@ -328,6 +328,9 @@ you should place your code here."
         eclimd-default-workspace "~/Code/.workspace")
   ;; diff-hl on left side
   (setq diff-hl-side 'left)
+  ;; markdown
+  (custom-set-variables
+   '(markdown-command "/usr/local/bin/pandoc"))
   ;; meghanada
   ;;(require 'meghanada)
   ;;(add-hook 'java-mode-hook
