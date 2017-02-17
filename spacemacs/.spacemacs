@@ -316,21 +316,24 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
+
+  ;; neotree
   ;; [f8] to open neotree
   (global-set-key [f8] 'neotree-toggle)
-  ;; upper case "UTF-8" encoding
-  (define-coding-system-alias 'UTF-8 'utf-8)
+  ;; locate current file when neotree open
+  (setq neo-smart-open t)
   ;; hide files in neotree by default
   (setq neo-show-hidden-files nil)
+
+  ;; python
+  ;; upper case "UTF-8" encoding
+  (define-coding-system-alias 'UTF-8 'utf-8)
+
+  ;; java
   ;; eclim
   (setq eclim-eclipse-dirs "/Applications/Eclipse.app/Contents/Eclipse"
         eclim-executable "/Applications/Eclipse.app/Contents/Eclipse/eclim"
         eclimd-default-workspace "~/Code/.workspace")
-  ;; diff-hl on left side
-  (setq diff-hl-side 'left)
-  ;; markdown
-  (custom-set-variables
-   '(markdown-command "/usr/local/bin/pandoc"))
   ;; meghanada
   ;;(require 'meghanada)
   ;;(add-hook 'java-mode-hook
@@ -346,6 +349,16 @@ you should place your code here."
   ;;(add-hook 'groovy-mode-hook
   ;;          (lambda ()
   ;;            (gradle-mode t)))
+
+  ;; verison control
+  ;; diff-hl on left side
+  (setq diff-hl-side 'left)
+
+  ;; format
+  ;; markdown
+  (custom-set-variables
+   '(markdown-command "/usr/local/bin/pandoc"))
+
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
