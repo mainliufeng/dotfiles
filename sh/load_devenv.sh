@@ -3,7 +3,7 @@ load() {
     conda)
         if ! hash conda 2>/dev/null; then
             export PATH=~/anaconda3/bin:"$PATH"
-            eval "$(register-python-argcomplete conda)"
+            # eval "$(register-python-argcomplete conda)"
         fi
         ;;
     venv)
@@ -26,3 +26,5 @@ load() {
         return 0
     esac
 }
+
+load conda
