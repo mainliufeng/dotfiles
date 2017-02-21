@@ -26,5 +26,3 @@ load() {
         return 0
     esac
 }
-
-load conda
