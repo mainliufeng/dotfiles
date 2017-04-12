@@ -11,6 +11,9 @@ alias ec="emacsclient"
 alias enw="emacsclient -nw"
 alias et="emacsclient -t"
 
+## vim
+alias vim="nvim"
+
 es() {
     case $1 in
     start)
