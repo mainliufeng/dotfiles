@@ -51,7 +51,11 @@ set nu
 set guifont=Menlo\ for\ Powerline:h14
 
 " Solarized ------------------------------
-set background=dark
+if has('gui_running')
+    set background=light
+else
+    set background=dark
+endif
 colorscheme solarized
 call togglebg#map("<F5>")
 let g:solarized_termcolors=256
