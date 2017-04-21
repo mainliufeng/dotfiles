@@ -97,6 +97,9 @@ Plugin  'altercation/vim-colors-solarized'
 " multiple cursors
 Plugin 'terryma/vim-multiple-cursors'
 
+" large file
+Plugin 'LargeFile'
+
 
 
 " ============================================================================
