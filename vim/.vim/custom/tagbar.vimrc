@@ -25,3 +25,5 @@ let g:tagbar_map_closefold = ['<kMinus>', 'zc']
 "         \'c:const'
 "     \]
 " \}
+
+let g:tagbar_ctags_bin='/usr/local/bin/ctags'
