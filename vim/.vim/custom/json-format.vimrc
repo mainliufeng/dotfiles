@@ -1,0 +1,1 @@
+command Jsonformat execute "%!jsonformat"

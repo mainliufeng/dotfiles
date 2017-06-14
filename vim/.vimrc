@@ -128,3 +128,4 @@ endif
 :source ~/.vim/custom/vim_isort.vimrc
 :source ~/.vim/custom/window-chooser.vimrc
 :source ~/.vim/custom/youcompleteme.vimrc
+:source ~/.vim/custom/json-format.vimrc
