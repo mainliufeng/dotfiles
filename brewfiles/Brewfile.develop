@@ -17,6 +17,7 @@ brew 'tmux'
 brew 'fasd'
 brew 'tree'
 brew 'termtile', args: ['HEAD']
+brew 'jsonformat', args: ['HEAD']
 
 brew 'diff-so-fancy'
 brew 'fabric'
