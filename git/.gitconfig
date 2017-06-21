@@ -12,3 +12,6 @@
 	required = true
 [push]
 	default = simple
+[alias]
+    lg = !"git lg-specific --all"
+    lg-specific = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) %C(auto)%d%C(reset)%n%C(dim white)%s - %an (%ar) %C(reset)%n'

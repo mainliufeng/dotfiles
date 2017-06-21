@@ -2,7 +2,8 @@
 alias ls="ls -G"
 alias ll="ls -G -l"
 
-## Git diff
+## Git
+alias gglg="git lg"
 alias gd="git diff --color | diff-so-fancy"
 
 ## emacs
