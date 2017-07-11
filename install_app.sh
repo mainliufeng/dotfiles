@@ -28,6 +28,11 @@ brew bundle --file ~/dotfiles/brewfiles/Brewfile.design
 show "set macos defaults"
 sh ~/dotfiles/macos/defaults.sh
 
+show "set macos file limits"
+sudo cp -f ~/dotfiles/macos/limit.maxfiles.plist /Library/LaunchDaemons/
+sudo chown root:wheel /Library/LaunchDaemons/limit.maxfiles.plist
+sudo launchctl load -w /Library/LaunchDaemons/limit.maxfiles.plist
+
 show "install spacemacs"
 if [ -d "$HOME/.emacs.d" ]; then
     mv ~/.emacs.d ~/.emacs.d.bak
