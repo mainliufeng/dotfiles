@@ -22,6 +22,7 @@ zplug "plugins/docker",       from:oh-my-zsh
 zplug "plugins/mvn",          from:oh-my-zsh
 zplug "plugins/taskwarrior",  from:oh-my-zsh
 zplug "plugins/supervisor",  from:oh-my-zsh
+zplug "plugins/tmux",  from:oh-my-zsh
 
 # zsh-users
 #zplug "zsh-users/zsh-syntax-highlighting", defer:2
