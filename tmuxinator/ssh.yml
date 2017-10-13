@@ -1,6 +1,6 @@
 # ~/.tmuxinator/work.yml
 
-name: work
+name: ssh
 root: ~/
 
 # Optional tmux socket
@@ -43,28 +43,11 @@ root: ~/
 # post: tmux -CC attach -t work
 
 windows:
-  - kefu-robot:
-      layout: even-horizontal
-      panes:
-        - cd /Users/liufeng/Code/work/kefu-robot && clear
-        - cd /Users/liufeng/Code/work/kefu-robot && clear
-  - wuxiang:
-      layout: even-horizontal
-      panes:
-        - cd /Users/liufeng/Code/work/ai && clear
-        - cd /Users/liufeng/Code/work/ai && clear
-  - kefu-conf:
-      layout: even-horizontal
-      panes:
-        - cd /Users/liufeng/Code/work/kefu-conf && clear
-        - cd /Users/liufeng/Code/work/kefu-conf && clear
   - sandbox:
       layout: main-vertical
       panes:
-        - clear && /usr/bin/ssh esemob-sandbox
+        - clear && /usr/bin/ssh easemob-sandbox
         - clear && cat ~/Documents/Work/sandbox
-  - coreservice:
-      layout: even-horizontal
-      panes:
-        - cd /Users/liufeng/Code/work/robot-api-coreservice && clear
-        - cd /Users/liufeng/Code/work/robot-api-coreservice && clear
+  - dev1: clear && /usr/bin/ssh easemob-dev-1
+  - dev2: clear && /usr/bin/ssh easemob-dev-2
+  - dev3: clear && /usr/bin/ssh easemob-dev-3
