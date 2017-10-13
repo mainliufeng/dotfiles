@@ -1,0 +1,3 @@
+mkdir -p ~/.config/tmuxinator/
+ln -svf ~/dotfiles/tmuxinator/home.yml ~/.config/tmuxinator/home.yml
+ln -svf ~/dotfiles/tmuxinator/work.yml ~/.config/tmuxinator/work.yml
