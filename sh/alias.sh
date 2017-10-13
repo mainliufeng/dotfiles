@@ -15,6 +15,9 @@ alias et="emacsclient -t"
 ## vim
 alias vim="nvim"
 
+## fd
+alias find="echo 'use fd' && find"
+
 es() {
     case $1 in
     start)

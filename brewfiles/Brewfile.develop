@@ -19,6 +19,7 @@ brew 'tree'
 brew 'termtile', args: ['HEAD']
 brew 'jsonformat', args: ['HEAD']
 brew 'simulate-input-macos', args: ['HEAD']
+brew 'fd'  # replace find command
 
 brew 'diff-so-fancy'
 brew 'fabric'
