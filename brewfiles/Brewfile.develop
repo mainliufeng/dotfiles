@@ -14,12 +14,14 @@ brew 'zsh-history-substring-search'
 brew 'zsh-completions'
 brew 'macvim', args: ['with-override-system-vim']
 brew 'tmux'
+brew 'reattach-to-user-namespace'
 brew 'fasd'
 brew 'tree'
 brew 'termtile', args: ['HEAD']
 brew 'jsonformat', args: ['HEAD']
 brew 'simulate-input-macos', args: ['HEAD']
 brew 'fd'  # replace find command
+brew 'jq'
 
 brew 'diff-so-fancy'
 brew 'fabric'
