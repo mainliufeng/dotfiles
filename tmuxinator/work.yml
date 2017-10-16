@@ -58,11 +58,6 @@ windows:
       panes:
         - cd /Users/liufeng/Code/work/kefu-conf && clear
         - cd /Users/liufeng/Code/work/kefu-conf && clear
-  - sandbox:
-      layout: main-vertical
-      panes:
-        - clear && /usr/bin/ssh esemob-sandbox
-        - clear && cat ~/Documents/Work/sandbox
   - coreservice:
       layout: even-horizontal
       panes:
