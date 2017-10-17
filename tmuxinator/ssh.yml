@@ -43,11 +43,12 @@ root: ~/
 # post: tmux -CC attach -t work
 
 windows:
+  - dev1: clear && dev1
+  - dev2: clear && dev2
+  - dev3: clear && dev3
   - sandbox:
       layout: main-vertical
       panes:
-        - clear && /usr/bin/ssh easemob-sandbox
+        - clear && sandbox
         - clear && cat ~/Documents/Work/sandbox
-  - dev1: clear && /usr/bin/ssh easemob-dev-1
-  - dev2: clear && /usr/bin/ssh easemob-dev-2
-  - dev3: clear && /usr/bin/ssh easemob-dev-3
+  - ssy1: clear && ssy1

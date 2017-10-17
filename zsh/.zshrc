@@ -59,3 +59,6 @@ fi
 zplug load
 
 for sh in $DOTFILES_HOME/sh/*.sh; do source $sh; done
+
+# private scripts
+for sh in $DOTFILES_HOME/sh/private/*.sh; do source $sh; done
