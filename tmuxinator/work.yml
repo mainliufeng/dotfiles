@@ -63,3 +63,8 @@ windows:
       panes:
         - cd /Users/liufeng/Code/work/robot-api-coreservice && clear
         - cd /Users/liufeng/Code/work/robot-api-coreservice && clear
+  - robot-webim:
+      layout: even-horizontal
+      panes:
+        - cd /Users/liufeng/Code/work/robot-gateway-webim-routeway && clear
+        - cd /Users/liufeng/Code/work/robot-gateway-webim-routeway && clear
