@@ -36,3 +36,8 @@ alias spark_debug_off='unset SPARK_JAVA_OPTS'
 
 ## rust
 source "$HOME"/.cargo/env
+
+## rabbitmq
+autoload bashcompinit
+bashcompinit
+source /usr/local/etc/bash_completion.d/rabbitmqadmin.bash
