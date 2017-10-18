@@ -62,3 +62,8 @@ for sh in $DOTFILES_HOME/sh/*.sh; do source $sh; done
 
 # private scripts
 for sh in $DOTFILES_HOME/sh/private/*.sh; do source $sh; done
+
+# always have a tmux session on
+if ! { [ "$TERM" = "screen-256color" ] && [ -n "$TMUX" ]; } then
+    tmux attach -t base || tmux new -s base; tmux detach
+fi
