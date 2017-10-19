@@ -2,3 +2,4 @@ mkdir -p ~/.config/tmuxinator/
 ln -svf ~/dotfiles/tmuxinator/home.yml ~/.config/tmuxinator/home.yml
 ln -svf ~/dotfiles/tmuxinator/work.yml ~/.config/tmuxinator/work.yml
 ln -svf ~/dotfiles/tmuxinator/ssh.yml ~/.config/tmuxinator/ssh.yml
+ln -svf ~/dotfiles/tmuxinator/service.yml ~/.config/tmuxinator/service.yml
