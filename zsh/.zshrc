@@ -9,6 +9,11 @@ fi
 # Essential
 source $ZPLUG_HOME/init.zsh
 
+# History size
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=10000000
+SAVEHIST=10000000
+
 # oh-my-zsh
 zplug "robbyrussell/oh-my-zsh", use:"lib/history.zsh"
 zplug "robbyrussell/oh-my-zsh", use:"lib/theme-and-appearance.zsh"
