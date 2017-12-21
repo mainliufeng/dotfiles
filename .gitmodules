@@ -1,0 +1,3 @@
+[submodule "tmux/plugins/smux"]
+	path = tmux/plugins/smux
+	url = git@github.com:mainliufeng/smux.git
