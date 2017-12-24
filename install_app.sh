@@ -18,6 +18,10 @@ else
     echo "skip homebrew brew command exist"
 fi
 
+show "install vim-plug"
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
 show "install brew apps"
 brew bundle --file ~/dotfiles/brewfiles/Brewfile.base
 brew bundle --file ~/dotfiles/brewfiles/Brewfile.home

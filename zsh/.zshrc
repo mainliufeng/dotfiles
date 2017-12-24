@@ -76,3 +76,5 @@ for sh in $DOTFILES_HOME/tmux/plugins/*/*.tmux; do source $sh; done
 if ! { [ "$TERM" = "screen-256color" ] && [ -n "$TMUX" ]; } then
     tmux attach -t base || tmux new -s base; tmux detach
 fi
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

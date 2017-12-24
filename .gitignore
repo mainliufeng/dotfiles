@@ -1,4 +1,4 @@
 *.swp
 .resources
 sh/private
-tmuxinator/*.yml
+tmuxinator/*
