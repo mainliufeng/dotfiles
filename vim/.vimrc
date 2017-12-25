@@ -43,6 +43,7 @@ else
   Plug 'roxma/vim-hug-neovim-rpc'
 endif
 Plug 'zchee/deoplete-jedi'
+Plug 'artur-shaik/vim-javacomplete2'
 
 " sort python imports using isort
 " Plug 'fisadev/vim-isort'
@@ -107,3 +108,4 @@ call plug#end()
 :source ~/.vim/custom/youcompleteme.vimrc
 :source ~/.vim/custom/json-format.vimrc
 :source ~/.vim/custom/deoplete.vimrc
+:source ~/.vim/custom/vim-javacomplete2.vimrc
