@@ -27,7 +27,7 @@ Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
 " Python and other languages code checker
-Plug 'scrooloose/syntastic'
+" Plug 'scrooloose/syntastic'
 
 " 代码补齐
 " Plug 'Shougo/neocomplete'
@@ -47,6 +47,9 @@ Plug 'artur-shaik/vim-javacomplete2'
 
 " sort python imports using isort
 " Plug 'fisadev/vim-isort'
+
+" Asynchronous Lint Engine
+Plug 'w0rp/ale'
 
 " 窗口选择器
 Plug 't9md/vim-choosewin'
@@ -109,3 +112,4 @@ call plug#end()
 :source ~/.vim/custom/json-format.vimrc
 :source ~/.vim/custom/deoplete.vimrc
 :source ~/.vim/custom/vim-javacomplete2.vimrc
+:source ~/.vim/custom/ale.vimrc
