@@ -89,6 +89,9 @@ Plug 'terryma/vim-multiple-cursors'
 " large file
 " Plug 'LargeFile'
 
+" Undo Tree
+Plug 'mbbill/undotree'
+
 " Initialize plugin system
 call plug#end()
 
