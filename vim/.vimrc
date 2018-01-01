@@ -92,24 +92,6 @@ Plug 'terryma/vim-multiple-cursors'
 " Initialize plugin system
 call plug#end()
 
-
-:source ~/.vim/custom/all.vimrc
-:source ~/.vim/custom/abbreviations.vimrc
-:source ~/.vim/custom/airline.vimrc
-:source ~/.vim/custom/all.vimrc
-:source ~/.vim/custom/ctrlp.vimrc
-:source ~/.vim/custom/git-gutter.vimrc
-:source ~/.vim/custom/jedi-vim.vimrc
-:source ~/.vim/custom/neocomplete.vimrc
-:source ~/.vim/custom/nerdtree.vimrc
-:source ~/.vim/custom/python-mode.vimrc
-:source ~/.vim/custom/syntastic.vimrc
-:source ~/.vim/custom/tagbar.vimrc
-:source ~/.vim/custom/ultisnips.vimrc
-:source ~/.vim/custom/vim_isort.vimrc
-:source ~/.vim/custom/window-chooser.vimrc
-:source ~/.vim/custom/youcompleteme.vimrc
-:source ~/.vim/custom/json-format.vimrc
-:source ~/.vim/custom/deoplete.vimrc
-:source ~/.vim/custom/vim-javacomplete2.vimrc
-:source ~/.vim/custom/ale.vimrc
+for f in split(glob('~/.vim/custom/*.vimrc'), '\n')
+    exe 'source' f
+endfor
