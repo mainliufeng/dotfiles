@@ -57,7 +57,7 @@ else
     set background=dark
 endif
 colorscheme solarized
-call togglebg#map("<F5>")
+" call togglebg#map("<F5>")
 let g:solarized_termcolors=256
 
 
