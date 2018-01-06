@@ -86,9 +86,6 @@ Plug 'mbbill/undotree'
 " vim easy motion
 Plug 'easymotion/vim-easymotion'
 
-" neomake
-Plug 'neomake/neomake'
-
 " Initialize plugin system
 call plug#end()
 
