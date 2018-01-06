@@ -2,7 +2,6 @@ os: osx
 osx_image: xcode8.2
 script:
   - cp -r $TRAVIS_BUILD_DIR $HOME/
-  - sh ~/dotfiles/travis_install_app.sh
   - sh ~/dotfiles/install_dotfile.sh
 notifications:
   email:
@@ -12,4 +11,4 @@ notifications:
     rooms:
       secure: dlE3ng+9wkxhvbeYT8IpWi4WIa5erB624nn8R9z/JIxSJfwF+M6iweAr1BwFuvAq1q/fou7crLyUoJZVE8FqUk8E24B/D8yKdsmpDtqV4PsWoUUOZ4IrSaHkG3qEIzzGdyU5ojeJ6jjmBv0YmxKWM2pvjD+p3QvhCfECRKWDPnb14eGq3T0GlffuBchudQT6YMoTXrKamrM6v99IzdXRvF8m35LtBGk2ACDEzIRvMvQkiTZKZ9yOLvHvSpnOa6AiKgw25oh9iG0cZ8ZaUqSsVfRZSlgjxT1O5Wr/eNL1HyLzBc2tj5t/j4rsu6BLAvcoIelsN2LGWqUeyPKkJZF8+1vN0meHsCnBgLbjPYaFJx1QC9niAfPzj0y+QeV8eiYx/ul+Zgi20xtVgjeBf0pLh+G+5gjOjhD0zwlFCo73C2vqBgtDZxtzk1Q2oJBSElmR6JhGJisUuhpkEpZWbJ6tBJCU+u1euVmJTD6+3+OVAmCybftbhp9yz1r9jqhuxY5yyZ7gqHSQl6XgCLDLsV1jnh8Tk7E0J8SyQCRFqE0/LaOjzAqvWHmhidgt6NlV+8Mh/UyvThegBmvR2yaY6X++JjF6dnFLG2haS67LeL58OfkQ3tTqPVPjZCFrZqaAtF/+KU9U3lylVzBNYHNvMmiVsdtrpF9UnrpSUkzWNWwE+w8=
     on_success: change
-    on_failure: always
+   on_failure: always
