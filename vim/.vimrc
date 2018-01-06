@@ -26,15 +26,6 @@ Plug 'majutsushi/tagbar'
 Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
-" Python and other languages code checker
-" Plug 'scrooloose/syntastic'
-
-" 代码补齐
-" Plug 'Shougo/neocomplete'
-" Plug 'Shougo/neosnippet'
-" Plug 'Shougo/neosnippet-snippets'
-" Plug 'davidhalter/jedi-vim'
-" Plug 'Valloric/YouCompleteMe'
 if has('nvim')
   Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 else

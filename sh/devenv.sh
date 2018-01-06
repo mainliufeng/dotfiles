@@ -34,9 +34,6 @@ export SPARK_HOME=/usr/local/opt/apache-spark/libexec
 alias spark_debug_on='export SPARK_JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5555'
 alias spark_debug_off='unset SPARK_JAVA_OPTS'
 
-## rust
-source "$HOME"/.cargo/env
-
 ## rabbitmq
 autoload bashcompinit
 bashcompinit
