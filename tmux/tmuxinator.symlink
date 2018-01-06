@@ -1,0 +1,5 @@
+#!/bin/sh
+mkdir -p ~/.config/tmuxinator/
+for yml_file in ~/dotfiles/tmux/tmuxinator/*.yml; do
+    ln -svf ~/dotfiles/tmux/tmuxinator/"$(basename $yml_file)" ~/.config/tmuxinator/"$(basename $yml_file)"
+done

@@ -1,9 +1,0 @@
-mkdir -p ~/.config/tmuxinator/
-ln -svf ~/dotfiles/tmuxinator/ai-paas.yml ~/.config/tmuxinator/ai-paas.yml 
-ln -svf ~/dotfiles/tmuxinator/ai-saas.yml ~/.config/tmuxinator/ai-saas.yml 
-ln -svf ~/dotfiles/tmuxinator/conf.yml ~/.config/tmuxinator/conf.yml 
-ln -svf ~/dotfiles/tmuxinator/local.yml ~/.config/tmuxinator/local.yml 
-ln -svf ~/dotfiles/tmuxinator/mainliufeng.yml ~/.config/tmuxinator/mainliufeng.yml 
-ln -svf ~/dotfiles/tmuxinator/service-ai-paas.yml ~/.config/tmuxinator/service-ai-paas.yml 
-ln -svf ~/dotfiles/tmuxinator/ssh-easemob.yml ~/.config/tmuxinator/ssh-easemob.yml 
-ln -svf ~/dotfiles/tmuxinator/ml.yml ~/.config/tmuxinator/ml.yml 
