@@ -48,10 +48,8 @@ Plug 't9md/vim-choosewin'
 " colorize all text in the form #rrggbb or #rgb 
 " Plugin 'lilydjwg/colorizer'
 
-" 模糊匹配
-Plug 'ctrlpvim/ctrlp.vim'
-" 匹配命令
-Plug 'fisadev/vim-ctrlp-cmdpalette'
+" Dark powered asynchronous unite all interfaces for Neovim/Vim8
+Plug 'Shougo/denite.nvim'
 
 " vim-go
 Plug 'fatih/vim-go'
