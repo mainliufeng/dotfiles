@@ -89,6 +89,6 @@ Plug 'easymotion/vim-easymotion'
 " Initialize plugin system
 call plug#end()
 
-for f in split(glob('~/.vim/custom/*.vimrc'), '\n')
+for f in split(glob('~/.config/nvim/custom/*.vimrc'), '\n')
     exe 'source' f
 endfor

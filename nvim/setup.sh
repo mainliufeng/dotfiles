@@ -43,7 +43,12 @@ Darwin)
     exit 1
 esac
 
+printf "install vim-plug\n"
+curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
 printf "install config files\n"
 sh ~/dotfiles/nvim/nvim.symlink
 
+manual "now run vim command 'PlugInstall' manually"
 manual "now check neovim manually"
