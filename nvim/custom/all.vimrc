@@ -63,6 +63,10 @@ let g:solarized_termcolors=256
 
 " Local --------------------------------
 
+" map jk kj esc
+imap jk <Esc>
+imap kj <Esc>
+
 onoremap p i(
 onoremap b /return<cr>
 

@@ -1,6 +1,6 @@
 # vim
-export EDITOR="vim"
-export VISUAL="vim"
+export EDITOR="nvim"
+export VISUAL="nvim"
 
 bindkey -v
 
