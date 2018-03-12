@@ -61,8 +61,8 @@ if ! type gem > /dev/null; then
     manual "now install gem manually"
 fi
 
-printf "install tmuxinator\n"
-gem install tmuxinator
+printf "install tpm\n"
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
 printf "install config files\n"
 sh ~/dotfiles/tmux/tmux.symlink
