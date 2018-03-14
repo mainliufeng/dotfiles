@@ -66,7 +66,6 @@ git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
 printf "install config files\n"
 sh ~/dotfiles/tmux/tmux.symlink
-sh ~/dotfiles/tmux/tmuxinator.symlink
 
 manual "now check tmux and tmuxinator manually"
 
