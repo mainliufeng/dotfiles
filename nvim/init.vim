@@ -85,6 +85,9 @@ Plug 'easymotion/vim-easymotion'
 " show marks
 Plug 'kshenoy/vim-signature'
 
+" auto pair
+Plug 'jiangmiao/auto-pairs'
+
 " Initialize plugin system
 call plug#end()
 
