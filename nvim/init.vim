@@ -82,6 +82,9 @@ Plug 'mbbill/undotree'
 " vim easy motion
 Plug 'easymotion/vim-easymotion'
 
+" show marks
+Plug 'kshenoy/vim-signature'
+
 " Initialize plugin system
 call plug#end()
 
