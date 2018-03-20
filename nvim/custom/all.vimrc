@@ -92,3 +92,7 @@ nnoremap <leader>} viw<esc>a}<esc>hbi{<esc>lel
 "     autocmd BufWritePre,BufRead *.html :normal gg=G
 "     autocmd BufNewFile,BufRead *.html setlocal nowrap
 " augroup END
+
+" highlight current line in normal mode
+autocmd InsertLeave,WinEnter * set cursorline
+autocmd InsertEnter,WinLeave * set nocursorline
