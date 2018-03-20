@@ -25,6 +25,8 @@ Plug 'python-mode/python-mode'
 " Airline
 Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
+" Lightline
+" Plug 'itchyny/lightline.vim'
 
 if has('nvim')
   Plug 'roxma/nvim-completion-manager'
