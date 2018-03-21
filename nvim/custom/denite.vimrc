@@ -1,3 +1,7 @@
+nnoremap <leader>db :Denite buffer<CR>
+nnoremap <leader>df :Denite file_rec<CR>
+nnoremap <leader>dl :Denite line<CR>
+
 " denite option
 let s:denite_options = {
       \ 'default' : {

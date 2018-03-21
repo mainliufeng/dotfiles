@@ -5,7 +5,7 @@
 map <F3> :NERDTreeToggle<CR>
 
 " open nerdtree with the current file selected
-nmap ,t :NERDTreeFind<CR>
+nmap <leader>t :NERDTreeFind<CR>
 
 " don;t show these file types
 " nerdtree 中不显示的文件类型

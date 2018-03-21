@@ -44,8 +44,8 @@ set nu
 
 " Local ------------------------------
 " 设置leader
-" let mapleader = ","
-" let maplocalleader = ","
+let mapleader = ","
+let maplocalleader = ","
 
 " Font
 set guifont=Menlo\ for\ Powerline:h14
