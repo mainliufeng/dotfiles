@@ -92,6 +92,10 @@ Plug 'jiangmiao/auto-pairs'
 
 " markdown preview
 Plug 'JamshedVesuna/vim-markdown-preview'
+
+" supertab
+Plug 'ervandew/supertab'
+
 " Initialize plugin system
 call plug#end()
 
