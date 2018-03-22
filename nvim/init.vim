@@ -90,6 +90,8 @@ Plug 'kshenoy/vim-signature'
 " auto pair
 Plug 'jiangmiao/auto-pairs'
 
+" markdown preview
+Plug 'JamshedVesuna/vim-markdown-preview'
 " Initialize plugin system
 call plug#end()
 
