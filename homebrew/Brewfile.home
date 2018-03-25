@@ -1,7 +1,0 @@
-cask_args appdir: '/Applications'
-
-tap 'homebrew/bundle'
-tap 'caskroom/cask'
-
-# communication
-mas 'WeChat', id: 836500024
