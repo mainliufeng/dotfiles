@@ -99,6 +99,9 @@ Plug 'ervandew/supertab'
 " Guide key
 Plug 'hecal3/vim-leader-guide'
 
+" Nerdcommenter
+Plug 'scrooloose/nerdcommenter'
+
 " Initialize plugin system
 call plug#end()
 
