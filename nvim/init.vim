@@ -96,6 +96,9 @@ Plug 'JamshedVesuna/vim-markdown-preview'
 " supertab
 Plug 'ervandew/supertab'
 
+" Guide key
+Plug 'hecal3/vim-leader-guide'
+
 " Initialize plugin system
 call plug#end()
 

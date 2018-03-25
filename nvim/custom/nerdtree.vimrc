@@ -3,9 +3,10 @@
 " toggle nerdtree display
 " 打开 nerdtree 快捷键
 map <F3> :NERDTreeToggle<CR>
+nmap <leader>nt :NERDTreeToggle<CR>
 
 " open nerdtree with the current file selected
-nmap <leader>t :NERDTreeFind<CR>
+nmap <leader>nf :NERDTreeFind<CR>
 
 " don;t show these file types
 " nerdtree 中不显示的文件类型
