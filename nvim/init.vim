@@ -102,6 +102,9 @@ Plug 'hecal3/vim-leader-guide'
 " Nerdcommenter
 Plug 'scrooloose/nerdcommenter'
 
+" remenberall
+" Plug 'urbainvaes/vim-remembrall'
+
 " Initialize plugin system
 call plug#end()
 
