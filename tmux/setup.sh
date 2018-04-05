@@ -27,49 +27,26 @@ manual() {
     read -r
 }
 
-if ! confirm "install tmux [Y|n]" "Y"; then
-    exit 0
+if confirm "install tmux [Y|n]" "Y"; then
+    case $(uname) in
+    Linux)
+        sudo apt-get install tmux
+        ;;
+    Darwin)
+        brew install tmux
+        ;;
+    *)
+        echo "os not supported"
+        exit 1
+    esac
 fi
 
-case $(uname) in
-Linux)
-    sudo apt-get install tmux
-    ;;
-Darwin)
-    brew install tmux
-    ;;
-*)
-    echo "os not supported"
-    exit 1
-esac
 
-if ! confirm "install tmuxinator [Y|n]" "Y"; then
-    exit 0
+if confirm "install tmuxp [Y|n]" "Y"; then
+    pip install -e ~/dotfiles/tmuxp
 fi
-
-case $(uname) in
-Linux)
-    ;;
-Darwin)
-    ;;
-*)
-    echo "os not supported"
-    exit 1
-esac
-
-if ! type gem > /dev/null; then
-    manual "now install gem manually"
-fi
-
-printf "install tmuxinator\n"
-gem install tmuxinator
-brew install tmuxinator-completion
-
-printf "install tpm\n"
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
 printf "install config files\n"
 sh ~/dotfiles/tmux/tmux.symlink
 
-manual "now check tmux and tmuxinator manually"
-
+manual "now check tmux and tmuxp manually"
