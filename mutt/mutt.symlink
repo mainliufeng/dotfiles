@@ -1,0 +1,5 @@
+ln -svf ~/dotfiles/mutt/.muttrc ~/.muttrc
+ln -svf ~/dotfiles/mutt/.fetchmailrc ~/.fetchmailrc
+chmod 700 ~/.fetchmailrc
+ln -svf ~/dotfiles/mutt/.procmailrc ~/.procmailrc
+ln -svf ~/dotfiles/mutt/.mailcap ~/.mailcap
