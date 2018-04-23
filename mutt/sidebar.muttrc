@@ -1,3 +1,5 @@
+# vim: filetype=muttrc
+
 set sidebar_visible
 set sidebar_width = 30
 set sidebar_short_path = no
@@ -16,18 +18,7 @@ set mail_check_stats
 set sidebar_format = '%B%?F? [%F]?%* %?N?%N/?%S'
 set sidebar_sort_method = 'unsorted'
 
-bind index,pager \Cp sidebar-prev
-bind index,pager \Cn sidebar-next
-bind index,pager \Co sidebar-open
-bind index,pager <F3> sidebar-page-up
-bind index,pager <F4> sidebar-page-down
-bind index,pager <F5> sidebar-prev-new
-bind index,pager <F6> sidebar-next-new
+bind index,pager \Ck sidebar-prev
+bind index,pager \Cj sidebar-next
+bind index,pager \Ci sidebar-open
 bind index,pager B sidebar-toggle-visible
-
-#color indicator cyan black
-#color sidebar_highlight black color8
-#color sidebar_divider color8 black
-#color sidebar_flagged red black
-#color sidebar_new green black
-#color sidebar_ordinary color245 default
