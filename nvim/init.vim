@@ -20,7 +20,7 @@ Plug 'airblade/vim-gitgutter'
 Plug 'majutsushi/tagbar'
 
 " Python-mode
-Plug 'python-mode/python-mode'
+" Plug 'klen/python-mode'
 
 " Airline
 Plug 'bling/vim-airline'
@@ -29,12 +29,14 @@ Plug 'vim-airline/vim-airline-themes'
 " Plug 'itchyny/lightline.vim'
 
 if has('nvim')
-  Plug 'roxma/nvim-completion-manager'
+  Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 else
-  Plug 'roxma/nvim-completion-manager'
+  Plug 'Shougo/deoplete.nvim'
+  Plug 'roxma/nvim-yarp'
   Plug 'roxma/vim-hug-neovim-rpc'
 endif
-Plug 'roxma/python-support.nvim'
+Plug 'zchee/deoplete-jedi'
+Plug 'artur-shaik/vim-javacomplete2'
 
 " sort python imports using isort
 " Plug 'fisadev/vim-isort'
