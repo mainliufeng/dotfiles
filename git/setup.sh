@@ -37,8 +37,9 @@ Linux)
     sudo apt-get install git
     ;;
 Darwin)
-    printf "install git"
+    printf "install git and hub"
     brew install git
+    brew install hub
     ;;
 *)
     echo "os not supported"
