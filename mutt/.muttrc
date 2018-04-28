@@ -39,3 +39,5 @@ source ~/dotfiles/mutt/keybind.muttrc
 source ~/dotfiles/mutt/sidebar.muttrc
 
 mailboxes `echo ~/Mail/*`
+
+set new_mail_command="bash ~/dotfiles/mutt/scripts/mail_notification.sh '%n new messages, %u unread.'"
