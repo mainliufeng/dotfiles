@@ -26,4 +26,7 @@ let g:tagbar_map_closefold = ['<kMinus>', 'zc']
 "     \]
 " \}
 
-let g:tagbar_ctags_bin='/usr/local/bin/ctags'
+" let g:tagbar_ctags_bin='/usr/local/bin/ctags'
+let g:tagbar_ctags_bin='/usr/local/Cellar/ctags/5.8_1/bin/ctags'
+
+let g:Tlist_Ctags_Cmd='/usr/local/Cellar/ctags/5.8_1/bin/ctags'
