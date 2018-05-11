@@ -20,7 +20,7 @@ Plug 'airblade/vim-gitgutter'
 Plug 'majutsushi/tagbar'
 
 " Python-mode
-" Plug 'klen/python-mode'
+Plug 'klen/python-mode'
 
 " Airline
 Plug 'bling/vim-airline'
@@ -106,6 +106,12 @@ Plug 'scrooloose/nerdcommenter'
 
 " remenberall
 " Plug 'urbainvaes/vim-remembrall'
+
+" jedi-vim
+Plug 'davidhalter/jedi-vim'
+
+" vim-tmux-navigator
+Plug 'christoomey/vim-tmux-navigator'
 
 " Initialize plugin system
 call plug#end()
