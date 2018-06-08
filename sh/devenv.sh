@@ -41,3 +41,8 @@ export PATH="/usr/local/opt/python/libexec/bin:$PATH"
 autoload bashcompinit
 bashcompinit
 source /usr/local/etc/bash_completion.d/rabbitmqadmin.bash
+
+## pipenv
+autoload bashcompinit
+bashcompinit
+source /usr/local/etc/bash_completion.d/pipenv
