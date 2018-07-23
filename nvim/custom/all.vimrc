@@ -96,3 +96,5 @@ nnoremap <leader>a} viw<esc>a}<esc>hbi{<esc>lel
 " highlight current line in normal mode
 autocmd InsertLeave,WinEnter * set cursorline
 autocmd InsertEnter,WinLeave * set nocursorline
+
+let g:python3_host_prog = '/usr/local/bin/python3'

@@ -27,7 +27,7 @@ manual() {
     read -r
 }
 
-if ! confirm "install homebrew [Y|n]" "Y"; then
+if ! confirm "install git and hub [Y|n]" "Y"; then
     exit 0
 fi
 
@@ -45,22 +45,3 @@ Darwin)
     echo "os not supported"
     exit 1
 esac
-
-if ! confirm "install brew apps [Y|n]" "Y"; then
-    exit 0
-fi
-
-case $(uname) in
-Darwin)
-    printf "install brew apps\n"
-    brew bundle --file ~/dotfiles/brewfiles/Brewfile.base
-    brew bundle --file ~/dotfiles/brewfiles/Brewfile.home
-    brew bundle --file ~/dotfiles/brewfiles/Brewfile.develop
-    brew bundle --file ~/dotfiles/brewfiles/Brewfile.design
-    # sudo softwareupdate -i -a
-    ;;
-*)
-    echo "os not supported"
-    exit 1
-esac
-

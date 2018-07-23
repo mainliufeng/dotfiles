@@ -39,18 +39,12 @@ zplug "/usr/local/opt/pinyin-completion/libexec", from:local, use:"shell/pinyin-
 zplug "lukechilds/gifgen", as:command, use:"gifgen"
 zplug "tmuxinator/tmuxinator", use:"completion/tmuxinator.zsh"
 
-# local plugins
-zplug "$DOTFILES_HOME/sh/function", from:local, use:"*.sh"
-# smux
-zplug "$DOTFILES_HOME/tmux/plugins/smux", from:local, as:command, use:"smux"
-
 # theme
 zplug "wesbos/Cobalt2-iterm", use:"cobalt2.zsh-theme", as:theme
-zplug "$DOTFILES_HOME/zsh/plugins/rprompt", from:local
 
 # resource (download only)
 zplug "altercation/solarized", ignore:"*"
-zplug "abertsch/Menlo-for-Powerline", hook-build:"cp -f $ZPLUG_HOME/repos/abertsch/Menlo-for-Powerline/*.ttf ~/.fonts/ && fc-cache -vf ~/.fonts", ignore:"*"
+zplug "abertsch/Menlo-for-Powerline", hook-build:"mkdir -p ~/.fonts && cp -f $ZPLUG_HOME/repos/abertsch/Menlo-for-Powerline/*.ttf ~/.fonts/ && fc-cache -vf ~/.fonts", ignore:"*"
 
 # Install packages that have not been installed yet
 if ! zplug check --verbose; then
@@ -69,9 +63,6 @@ for sh in $DOTFILES_HOME/zsh/*.zsh; do source $sh; done
 
 # private scripts
 for sh in $DOTFILES_HOME/sh/private/*.sh; do source $sh; done
-
-# tmux plugins
-for sh in $DOTFILES_HOME/tmux/plugins/*/*.tmux; do source $sh; done
 
 # always have a tmux session on
 if ! { [ "$TERM" = "screen-256color" ] && [ -n "$TMUX" ]; } then

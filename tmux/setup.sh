@@ -1,5 +1,4 @@
-#!/bin/sh
-
+#!/bin/sh 
 confirm() {
     while true
     do

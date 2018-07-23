@@ -52,11 +52,20 @@ fi
 case $(uname) in
 Darwin)
     printf "install brew apps\n"
-    brew bundle --file ~/dotfiles/brewfiles/Brewfile.base
-    brew bundle --file ~/dotfiles/brewfiles/Brewfile.home
-    brew bundle --file ~/dotfiles/brewfiles/Brewfile.develop
-    brew bundle --file ~/dotfiles/brewfiles/Brewfile.design
-    # sudo softwareupdate -i -a
+    brew bundle install --file=~/dotfiles/homebrew/Brewfile-short
+    ;;
+*)
+    echo "os not supported"
+    exit 1
+esac
+
+if ! confirm "update macos softwares [Y|n]" "Y"; then
+    exit 0
+fi
+
+case $(uname) in
+Darwin)
+    sudo softwareupdate -i -a
     ;;
 *)
     echo "os not supported"

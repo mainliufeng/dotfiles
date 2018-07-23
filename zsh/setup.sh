@@ -54,6 +54,9 @@ else
     curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh| zsh
 fi
 
+printf "use zsh\n"
+chsh -s /bin/zsh
+
 printf "install config files\n"
 sh ~/dotfiles/zsh/zsh.symlink
 

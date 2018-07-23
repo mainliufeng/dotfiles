@@ -35,7 +35,7 @@ alias spark_debug_on='export SPARK_JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,
 alias spark_debug_off='unset SPARK_JAVA_OPTS'
 
 ## python
-export PATH="/usr/local/opt/python/libexec/bin:$PATH"
+export PATH="/usr/local/opt/python/libexec/bin:/usr/local/bin:$PATH"
 
 ## rabbitmq
 autoload bashcompinit

@@ -2,17 +2,19 @@ cask_args appdir: '/Applications'
 
 tap 'homebrew/bundle'
 tap 'caskroom/cask'
-tap 'Liu-Feng/formulae'
+tap 'mainliufeng/formulae'
 
 # dev env
 brew 'ssh-copy-id'
 brew 'openssl'
 brew 'gcc'
 brew 'git'
+brew 'fontconfig'
 brew 'wget'
 brew 'pkg-config'
 brew 'makedepend'
 brew 'zsh'
+brew 'fzf'
 brew 'zsh-syntax-highlighting'
 brew 'zsh-history-substring-search'
 brew 'zsh-completions'
@@ -22,46 +24,40 @@ brew 'tmux'
 brew 'reattach-to-user-namespace'
 brew 'fasd'
 brew 'tree'
-brew 'termtile', args: ['HEAD']
-brew 'simulate-input-macos', args: ['HEAD']
+brew 'mainliufeng/formulae/termtile', args: ['HEAD']
+brew "mainliufeng/formulae/pinyin-completion", args: ["HEAD"]
+# brew 'simulate-input-macos', args: ['HEAD']
 brew 'fd'  # replace find command
 brew 'jq'
 brew 'diff-so-fancy'
 brew 'fabric'
 brew 'the_silver_searcher'
-brew 'python@2'
 brew 'python'
 brew 'go'
+cask 'java'
 brew 'maven'
 brew 'nvm'
-cask 'java'
 cask 'iterm2'
 cask 'alfred'
-mas 'Dash', id: 449589707
+cask 'dash'
 cask 'postman'
 cask 'surge'
 cask 'docker'
-cask 'eclipse-java'
+# cask 'homebrew/cask-versions/docker-edge'
+# cask 'eclipse-java'
+cask 'google-chrome'
 
 # client
 brew 'httpie'
 brew 'mycli'
 brew 'pgcli'
 brew 'zookeeper'
-cask 'postgres'
-cask 'mongohub'
-cask 'dbvisualizer'
+brew 'rabbitmq'
 brew 'mysql'
-brew 'postgresql'
 brew 'redis'
-brew 'memcached'
-brew 'mongodb'
 
 # plan
 mas 'OmniFocus', id: 867299399
-
-# read
-mas 'Reeder', id: 880001334
 
 # doc
 mas 'Quiver', id: 866773894
@@ -71,19 +67,9 @@ brew 'ffmpeg'
 brew 'gifsicle'
 mas 'MindNode', id: 992076693
 
-# old
+# other
 brew 'shellcheck'
-brew 'ant'
-brew 'apache-spark'
-brew 'scala', args: ['with-docs']
-brew 'sbt'
-brew 'zinc'
 brew 'trash'
 brew 'mas'
-brew 'ansible'
-cask 'google-chrome'
 cask '1password'
 cask 'cleanmymac'
-mas 'The Unarchiver', id: 425424353
-cask 'sublime-text'
-mas 'Patterns', id: 429449079
