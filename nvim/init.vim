@@ -113,6 +113,9 @@ Plug 'davidhalter/jedi-vim'
 " vim-tmux-navigator
 Plug 'christoomey/vim-tmux-navigator'
 
+" plist
+Plug 'darfink/vim-plist'
+
 " Initialize plugin system
 call plug#end()
 
