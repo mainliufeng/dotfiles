@@ -46,6 +46,9 @@ zplug "wesbos/Cobalt2-iterm", use:"cobalt2.zsh-theme", as:theme
 zplug "altercation/solarized", ignore:"*"
 zplug "abertsch/Menlo-for-Powerline", hook-build:"mkdir -p ~/.fonts && cp -f $ZPLUG_HOME/repos/abertsch/Menlo-for-Powerline/*.ttf ~/.fonts/ && fc-cache -vf ~/.fonts", ignore:"*"
 
+# smux
+zplug "$DOTFILES_HOME/tmux/plugins/smux", from:local, as:command, use:"smux" 
+
 # Install packages that have not been installed yet
 if ! zplug check --verbose; then
     printf "Install? [y/N]: "
@@ -58,6 +61,9 @@ fi
 
 zplug load
 
+# tmux plugins
+for sh in $DOTFILES_HOME/tmux/plugins/*/*.tmux; do source $sh; done
+
 for sh in $DOTFILES_HOME/sh/*.sh; do source $sh; done
 for sh in $DOTFILES_HOME/zsh/*.zsh; do source $sh; done
 
@@ -68,5 +74,3 @@ for sh in $DOTFILES_HOME/sh/private/*.sh; do source $sh; done
 if ! { [ "$TERM" = "screen-256color" ] && [ -n "$TMUX" ]; } then
     tmux attach -t base || tmux new -s base; tmux detach
 fi
-
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

@@ -53,7 +53,7 @@ brew 'mycli'
 brew 'pgcli'
 brew 'zookeeper'
 brew 'rabbitmq'
-brew 'mysql'
+brew 'mysql@5.7'
 brew 'redis'
 
 # plan

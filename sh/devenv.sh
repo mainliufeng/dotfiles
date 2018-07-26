@@ -2,6 +2,9 @@
 export PATH="/usr/local/sbin:$PATH"
 export HOMEBREW_GITHUB_API_TOKEN=97bb71c4dc9166cbaa5eee8599a04d21879ba27c
 
+## mysql
+export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"
+
 ## ssl
 export LDFLAGS="-L/usr/local/opt/openssl/lib"
 export CPPFLAGS="-I/usr/local/opt/openssl/include"
@@ -36,6 +39,13 @@ alias spark_debug_off='unset SPARK_JAVA_OPTS'
 
 ## python
 export PATH="/usr/local/opt/python/libexec/bin:/usr/local/bin:$PATH"
+
+## pyenv
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+if which pyenv > /dev/null;
+    then eval "$(pyenv init -)";
+fi
 
 ## rabbitmq
 autoload bashcompinit
