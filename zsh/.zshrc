@@ -68,7 +68,7 @@ for sh in $DOTFILES_HOME/sh/*.sh; do source $sh; done
 for sh in $DOTFILES_HOME/zsh/*.zsh; do source $sh; done
 
 # private scripts
-for sh in $DOTFILES_HOME/sh/private/*.sh; do source $sh; done
+for sh in $DOTFILES_HOME/private/*/*.sh; do source $sh; done
 
 # always have a tmux session on
 if ! { [ "$TERM" = "screen-256color" ] && [ -n "$TMUX" ]; } then
