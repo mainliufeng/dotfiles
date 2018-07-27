@@ -46,11 +46,11 @@ zplug "wesbos/Cobalt2-iterm", use:"cobalt2.zsh-theme", as:theme
 zplug "altercation/solarized", ignore:"*"
 zplug "abertsch/Menlo-for-Powerline", hook-build:"mkdir -p ~/.fonts && cp -f $ZPLUG_HOME/repos/abertsch/Menlo-for-Powerline/*.ttf ~/.fonts/ && fc-cache -vf ~/.fonts", ignore:"*"
 
-# smux
-zplug "$DOTFILES_HOME/smux", from:local, as:command, use:"smux" 
-
-# tmux multiple command
-zplug "$DOTFILES_HOME/tmux-tools/tmux-multiple-command", from:local, as:command, use:"(tmux-multiple-command).py", rename-to:'$1', if:'(( $+commands[python] ))'
+for bin in $DOTFILES_HOME/*/bin; 
+do 
+    zplug "$bin", from:local, as:command, use:"(*).sh", rename-to:'$1'
+    zplug "$bin", from:local, as:command, use:"(*).py", rename-to:'$1', if:'(( $+commands[python] ))'
+done
 
 # Install packages that have not been installed yet
 if ! zplug check --verbose; then
@@ -64,14 +64,9 @@ fi
 
 zplug load
 
-# tmux plugins
-for sh in $DOTFILES_HOME/*/*.tmux; do source $sh; done
-
-for sh in $DOTFILES_HOME/sh/*.sh; do source $sh; done
-for sh in $DOTFILES_HOME/zsh/*.zsh; do source $sh; done
-
-# private scripts
-for sh in $DOTFILES_HOME/private/*/*.sh; do source $sh; done
+for sh in $DOTFILES_HOME/*/rc/*.tmux; do source $sh; done
+for sh in $DOTFILES_HOME/*/rc/*.sh; do source $sh; done
+for sh in $DOTFILES_HOME/*/rc/*.zsh; do source $sh; done
 
 # always have a tmux session on
 if ! { [ "$TERM" = "screen-256color" ] && [ -n "$TMUX" ]; } then

@@ -2,16 +2,26 @@
 
 [![Build Status](https://travis-ci.org/mainliufeng/dotfiles.svg?branch=master)](https://travis-ci.org/mainliufeng/dotfiles)
 
-<img src="https://raw.githubusercontent.com/Liu-Feng/dotfiles/master/env.gif" width=800/>
+<img src="https://github.com/mainliufeng/dotfiles/blob/master/images/env.gif" width=800/>
 
 ## Install
 
-1. get dotfiles: `git clone git@github.com:Liu-Feng/dotfiles.git ~/dotfiles;`
+1. get dotfiles: `git clone git@github.com:mainliufeng/dotfiles.git ~/dotfiles;`
 2. install xxx: `sh ~/dotfiles/xxx/setup.sh`
 3. install all config files: `sh ~/dotfiles/install_dotfile.sh;`
 
-## Screenshots
+## Tools
 
-<img src="https://github.com/mainliufeng/dotfiles/blob/master/shell.png" width=800/>
+### shell
 
-<img src="https://github.com/mainliufeng/dotfiles/blob/master/vim.png" width=800/>
+<img src="https://github.com/mainliufeng/dotfiles/blob/master/images/shell.png" width=800/>
+
+
+### vim
+
+<img src="https://github.com/mainliufeng/dotfiles/blob/master/images/vim.png" width=800/>
+
+
+### smux (switch between tmux sessions and windows with keywords)
+
+<img src="https://github.com/mainliufeng/dotfiles/blob/master/images/smux.gif" width=800/>

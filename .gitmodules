@@ -1,6 +1,3 @@
-[submodule "smux"]
-	path = smux
-	url = git@github.com:mainliufeng/smux.git
 [submodule "tmuxp"]
 	path = tmuxp
 	url = git@github.com:mainliufeng/tmuxp.git
