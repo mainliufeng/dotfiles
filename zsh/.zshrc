@@ -49,6 +49,9 @@ zplug "abertsch/Menlo-for-Powerline", hook-build:"mkdir -p ~/.fonts && cp -f $ZP
 # smux
 zplug "$DOTFILES_HOME/smux", from:local, as:command, use:"smux" 
 
+# tmux multiple command
+zplug "$DOTFILES_HOME/tmux-tools/tmux-multiple-command", from:local, as:command, use:"(tmux-multiple-command).py", rename-to:'$1', if:'(( $+commands[python] ))'
+
 # Install packages that have not been installed yet
 if ! zplug check --verbose; then
     printf "Install? [y/N]: "
