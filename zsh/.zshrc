@@ -47,7 +47,7 @@ zplug "altercation/solarized", ignore:"*"
 zplug "abertsch/Menlo-for-Powerline", hook-build:"mkdir -p ~/.fonts && cp -f $ZPLUG_HOME/repos/abertsch/Menlo-for-Powerline/*.ttf ~/.fonts/ && fc-cache -vf ~/.fonts", ignore:"*"
 
 # smux
-zplug "$DOTFILES_HOME/tmux/plugins/smux", from:local, as:command, use:"smux" 
+zplug "$DOTFILES_HOME/smux", from:local, as:command, use:"smux" 
 
 # Install packages that have not been installed yet
 if ! zplug check --verbose; then
@@ -62,7 +62,7 @@ fi
 zplug load
 
 # tmux plugins
-for sh in $DOTFILES_HOME/tmux/plugins/*/*.tmux; do source $sh; done
+for sh in $DOTFILES_HOME/*/*.tmux; do source $sh; done
 
 for sh in $DOTFILES_HOME/sh/*.sh; do source $sh; done
 for sh in $DOTFILES_HOME/zsh/*.zsh; do source $sh; done
