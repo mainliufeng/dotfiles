@@ -1,65 +1,48 @@
 import sys
 import os
-from shutil import which
-from collections import namedtuple
+import yaml
+import shutil
 
 
-App = namedtuple('App', ['command', 'platform_install_commands'])
-Apps = namedtuple('Apps', ['note', 'apps'])
+def install_by_config(config_path, need_confirm=True):
+    with open(config_path, 'r') as config_file:
+        apps = yaml.load(config_file)
+        if not apps:
+            return
+        for app in apps:
+            confirm = app.get('confirm')
+            name = app.get('name')
+            which = app.get('which')
+            brew = app.get('brew')
+            pip = app.get('pip')
+            cmd = app.get('cmd')
+
+            if not cmd:
+                if brew: cmd = 'brew install ' + brew
+                elif pip: cmd = 'pip install ' + pip
+            if not which:
+                if brew: which = brew
+                elif pip: which = pip
+            if not name:
+                if brew: name = brew
+                elif pip: name = pip
+                elif which: name = which
+            if not confirm:
+                if name: confirm = 'install ' + name
+
+            if need_confirm and not get_confirm(confirm):
+                continue
+            else:
+                print(confirm)
+
+            if which and shutil.which(which):
+                print('skip, ' + which + ' exists')
+                continue
+
+            os.system(cmd)
 
 
-def sh_install(note, install_commands, need_confirm, command=None):
-    install(Apps(note=note, apps=[
-        App(command=command, platform_install_commands={
-            'darwin': install_commands
-        }),
-    ]), need_confirm)
-
-
-def pip_install_path(name, path, need_confirm, command=None):
-    install(Apps(note='install {}'.format(name), apps=[
-        App(command=command if command else name, platform_install_commands={
-            'darwin': ['pip install -e {}'.format(path)]
-        }),
-    ]), need_confirm)
-
-
-def pip_install(name, need_confirm, command=None):
-    install(Apps(note='install {}'.format(name), apps=[
-        App(command=command if command else name, platform_install_commands={
-            'darwin': ['pip install {}'.format(name)]
-        }),
-    ]), need_confirm)
-
-
-def brew_install(name, need_confirm, command=None):
-    install(Apps(note='install {}'.format(name), apps=[
-        App(command=command if command else name, platform_install_commands={
-            'darwin': ['brew install {}'.format(name)]
-        }),
-    ]), need_confirm)
-
-
-def install(apps, need_confirm):
-    if need_confirm and not confirm(apps.note):
-        return
-    for app in apps.apps:
-        if app.command and exists(app.command):
-            print('skip, {} exists'.format(app.command))
-            continue
-        install_commands = app.platform_install_commands[sys.platform]
-        if not install_commands:
-            print('skip, os is {}'.format(sys.platform))
-        for install_command in install_commands:
-            print(install_command)
-            os.system(install_command)
-
-
-def exists(command):
-    return which(command) is not None
-
-
-def confirm(question, default="yes"):
+def get_confirm(question, default="yes"):
     valid = {"yes": True, "y": True, "ye": True,
              "no": False, "n": False}
     if default is None:

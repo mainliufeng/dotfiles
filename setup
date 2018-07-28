@@ -8,16 +8,18 @@ from importlib.machinery import SourceFileLoader
 
 
 dotfiles_path = os.path.join(os.environ['HOME'], 'dotfiles')
+common_setup_path = os.path.join(dotfiles_path, 'common', 'setup.py')
+setup = SourceFileLoader('setup', common_setup_path).load_module()
 
 
-def setup_path(app):
-    return os.path.join(dotfiles_path, app, 'setup')
+def setup_config_path(app):
+    return os.path.join(dotfiles_path, app, 'setup.yaml')
 
 
 def find_apps():
     apps = []
     for app in os.listdir(dotfiles_path):
-        if os.path.isfile(setup_path(app)):
+        if os.path.isfile(setup_config_path(app)):
             apps.append(app)
     return apps
 
@@ -30,19 +32,21 @@ def check_apps(apps):
             choices=apps
         ),
     ]
-    return inquirer.prompt(questions)
+    return inquirer.prompt(questions)['apps']
 
 
-def main():
-    apps = find_apps()
-    apps = check_apps(apps)['apps']
+def main(app=None):
+    if app:
+        apps = [app]
+        need_confirm = True
+    else:
+        apps = find_apps()
+        apps = check_apps(apps)
+        need_confirm = False
+
     for app in apps:
-        setup = SourceFileLoader(
-            'setup',
-            setup_path(app)
-        ).load_module()
-        setup.main(need_confirm=False)
-
+        config_path = setup_config_path(app)
+        setup.install_by_config(config_path, need_confirm)
 
 if __name__ == '__main__':
     fire.Fire(main)

@@ -116,6 +116,9 @@ Plug 'christoomey/vim-tmux-navigator'
 " plist
 Plug 'darfink/vim-plist'
 
+" yaml
+Plug 'chase/vim-ansible-yaml'
+
 " Initialize plugin system
 call plug#end()
 
