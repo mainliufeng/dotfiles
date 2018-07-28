@@ -16,6 +16,3 @@ docker_rmi_like_force() {
     fi
     docker rmi -f "$(docker images | grep "$1" | awk '{print $3}')"
 }
-
-## tmuxp
-alias tmuxp-load-all="ls ~/.tmuxp | xargs -n 1 -I {} tmuxp load ~/.tmuxp/{} -y"
