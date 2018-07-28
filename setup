@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+
+import os
+import fire
+
+import inquirer
+from importlib.machinery import SourceFileLoader
+
+
+dotfiles_path = os.path.join(os.environ['HOME'], 'dotfiles')
+
+
+def setup_path(app):
+    return os.path.join(dotfiles_path, app, 'setup')
+
+
+def find_apps():
+    apps = []
+    for app in os.listdir(dotfiles_path):
+        if os.path.isfile(setup_path(app)):
+            apps.append(app)
+    return apps
+
+
+def check_apps(apps):
+    questions = [
+        inquirer.Checkbox(
+            'apps',
+            message="Select which to install",
+            choices=apps
+        ),
+    ]
+    return inquirer.prompt(questions)
+
+
+def main():
+    apps = find_apps()
+    apps = check_apps(apps)['apps']
+    for app in apps:
+        setup = SourceFileLoader(
+            'setup',
+            setup_path(app)
+        ).load_module()
+        setup.main(need_confirm=False)
+
+
+if __name__ == '__main__':
+    fire.Fire(main)

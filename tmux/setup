@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import fire
+
+from importlib.machinery import SourceFileLoader
+setup = SourceFileLoader(
+    'setup',
+    os.environ['HOME'] + '/dotfiles/common/setup.py').load_module()
+
+
+def main(need_confirm=True):
+    setup.brew_install('tmux', need_confirm)
+    setup.pip_install_path('tmuxp', '~/dotfiles/tmuxp', need_confirm)
+    setup.sh_install('install config files', [
+        'sh ~/dotfiles/tmux/tmux.symlink'
+    ], need_confirm)
+
+
+if __name__ == '__main__':
+    fire.Fire(main)
