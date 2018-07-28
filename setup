@@ -1,15 +1,19 @@
 #!/usr/bin/env python
 
 import os
-import fire
+import sys
 
-import inquirer
 from importlib.machinery import SourceFileLoader
+
+import importlib.util
 
 
 dotfiles_path = os.path.join(os.environ['HOME'], 'dotfiles')
 common_setup_path = os.path.join(dotfiles_path, 'common', 'setup.py')
+inquirer_path = os.path.join(dotfiles_path, 'external', 'inquirer',
+                             'inquirer', '__init__.py')
 setup = SourceFileLoader('setup', common_setup_path).load_module()
+inquirer = SourceFileLoader('inquirer', inquirer_path).load_module()
 
 
 def setup_config_path(app):
@@ -35,7 +39,12 @@ def check_apps(apps):
     return inquirer.prompt(questions)['apps']
 
 
-def main(app=None):
+def main():
+    if len(sys.argv) > 1:
+        app = sys.argv[1]
+    else:
+        app = None
+
     if app:
         apps = [app]
         need_confirm = True
@@ -49,4 +58,4 @@ def main(app=None):
         setup.install_by_config(config_path, need_confirm)
 
 if __name__ == '__main__':
-    fire.Fire(main)
+    main()

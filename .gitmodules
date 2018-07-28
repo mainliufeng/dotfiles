@@ -1,3 +1,6 @@
-[submodule "tmuxp"]
-	path = tmuxp
+[submodule "external/tmuxp"]
+	path = external/tmuxp
 	url = git@github.com:mainliufeng/tmuxp.git
+[submodule "external/inquirer"]
+	path = external/inquirer
+	url = git@github.com:magmax/python-inquirer.git

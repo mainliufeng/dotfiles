@@ -1,6 +1,6 @@
 - brew: tmux
 - name: tmuxp
   which: tmuxp
-  pip: ~/dotfiles/tmuxp
+  pip: ~/dotfiles/external/tmuxp
 - name: tmux config files
   cmd: sh ~/dotfiles/tmux/tmux.symlink
