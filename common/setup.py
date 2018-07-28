@@ -15,10 +15,12 @@ def install_by_config(config_path, need_confirm=True):
             which = app.get('which')
             brew = app.get('brew')
             pip = app.get('pip')
+            cask = app.get('cask')
             cmd = app.get('cmd')
 
             if not cmd:
                 if brew: cmd = 'brew install ' + brew
+                elif cask: cmd = 'brew cask install ' + cask
                 elif pip: cmd = 'pip install ' + pip
             if not which:
                 if brew: which = brew
