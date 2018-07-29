@@ -3,5 +3,3 @@
   cmd: sudo -s 'echo /usr/local/bin/zsh >> /etc/shells' && chsh -s /usr/local/bin/zsh
 - name: zplug
   cmd: curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh| zsh
-- name: zsh config files
-  cmd: sh ~/dotfiles/zsh/zsh.symlink

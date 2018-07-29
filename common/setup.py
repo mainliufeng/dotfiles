@@ -19,6 +19,10 @@ def install_app(app, need_confirm=True):
     install_by_config(app, need_confirm)
 
 
+def app_symlink_path(app):
+    return os.path.join(dotfiles_path, app, '*.symlink')
+
+
 def setup_config_path(app):
     return os.path.join(dotfiles_path, app, 'setup.yaml')
 
@@ -26,17 +30,17 @@ def setup_config_path(app):
 def install_by_config(app, need_confirm=True):
     config_path = setup_config_path(app)
     with open(config_path, 'r') as config_file:
-        apps = yaml.load(config_file)
-        if not apps:
+        app_configs = yaml.load(config_file)
+        if not app_configs:
             return
-        for app in apps:
-            confirm = app.get('confirm')
-            name = app.get('name')
-            which = app.get('which')
-            brew = app.get('brew')
-            pip = app.get('pip')
-            cask = app.get('cask')
-            cmd = app.get('cmd')
+        for app_config in app_configs:
+            confirm = app_config.get('confirm')
+            name = app_config.get('name')
+            which = app_config.get('which')
+            brew = app_config.get('brew')
+            pip = app_config.get('pip')
+            cask = app_config.get('cask')
+            cmd = app_config.get('cmd')
 
             if not cmd:
                 if brew: cmd = 'brew install ' + brew
@@ -53,16 +57,16 @@ def install_by_config(app, need_confirm=True):
             if not confirm:
                 if name: confirm = 'install ' + name
 
-            if need_confirm and not get_confirm(confirm):
-                continue
-            else:
+            if not need_confirm or get_confirm(confirm):
                 print(confirm)
+                if which and not shutil.which(which):
+                    os.system(cmd)
+                else:
+                    print('skip, ' + which + ' exists')
 
-            if which and shutil.which(which):
-                print('skip, ' + which + ' exists')
-                continue
-
-            os.system(cmd)
+            if not need_confirm or get_confirm(
+                'install ' + name + ' config files'):
+                os.system('source ' + app_symlink_path(app))
 
 
 def get_confirm(question, default="yes"):

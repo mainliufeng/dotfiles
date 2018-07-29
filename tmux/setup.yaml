@@ -2,5 +2,3 @@
 - name: tmuxp
   which: tmuxp
   pip: ~/dotfiles/external/tmuxp
-- name: tmux config files
-  cmd: sh ~/dotfiles/tmux/tmux.symlink
