@@ -4,7 +4,27 @@ import yaml
 import shutil
 
 
-def install_by_config(config_path, need_confirm=True):
+dotfiles_path = os.path.join(os.environ['HOME'], 'dotfiles')
+
+
+def list_apps():
+    apps = []
+    for app in os.listdir(dotfiles_path):
+        if os.path.isfile(setup_config_path(app)):
+            apps.append(app)
+    return apps
+
+
+def install_app(app, need_confirm=True):
+    install_by_config(app, need_confirm)
+
+
+def setup_config_path(app):
+    return os.path.join(dotfiles_path, app, 'setup.yaml')
+
+
+def install_by_config(app, need_confirm=True):
+    config_path = setup_config_path(app)
     with open(config_path, 'r') as config_file:
         apps = yaml.load(config_file)
         if not apps:
@@ -29,6 +49,7 @@ def install_by_config(config_path, need_confirm=True):
                 if brew: name = brew
                 elif pip: name = pip
                 elif which: name = which
+                elif app: name = app
             if not confirm:
                 if name: confirm = 'install ' + name
 

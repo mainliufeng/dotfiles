@@ -16,19 +16,7 @@ setup = SourceFileLoader('setup', common_setup_path).load_module()
 inquirer = SourceFileLoader('inquirer', inquirer_path).load_module()
 
 
-def setup_config_path(app):
-    return os.path.join(dotfiles_path, app, 'setup.yaml')
-
-
-def find_apps():
-    apps = []
-    for app in os.listdir(dotfiles_path):
-        if os.path.isfile(setup_config_path(app)):
-            apps.append(app)
-    return apps
-
-
-def check_apps(apps):
+def select_apps(apps):
     questions = [
         inquirer.Checkbox(
             'apps',
@@ -49,13 +37,12 @@ def main():
         apps = [app]
         need_confirm = True
     else:
-        apps = find_apps()
-        apps = check_apps(apps)
+        apps = setup.list_apps()
+        apps = select_apps(apps)
         need_confirm = False
 
     for app in apps:
-        config_path = setup_config_path(app)
-        setup.install_by_config(config_path, need_confirm)
+        setup.install_app(app, need_confirm=need_confirm)
 
 if __name__ == '__main__':
     main()

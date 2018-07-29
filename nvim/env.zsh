@@ -1,3 +1,6 @@
+## vim
+alias vim="nvim"
+
 # vim
 export EDITOR="nvim"
 export VISUAL="nvim"

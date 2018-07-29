@@ -63,9 +63,8 @@ fi
 
 zplug load
 
-for sh in $DOTFILES_HOME/*/rc/*.tmux; do source $sh; done
-for sh in $DOTFILES_HOME/*/rc/*.sh; do source $sh; done
-for sh in $DOTFILES_HOME/*/rc/*.zsh; do source $sh; done
+for sh in $DOTFILES_HOME/*/env/*; do source $sh; done
+for sh in $DOTFILES_HOME/*/env.*sh; do source $sh; done
 
 # always have a tmux session on
 if ! { [ "$TERM" = "screen-256color" ] && [ -n "$TMUX" ]; } then

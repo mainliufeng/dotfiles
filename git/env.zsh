@@ -1,3 +1,5 @@
+alias git="hub"
+
 ## git
 function glgd() {
 	git cherry -v --abbrev $1 | grep + | grep -v maven-release-plugin

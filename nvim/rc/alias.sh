@@ -1,2 +1,0 @@
-## vim
-alias vim="nvim"
