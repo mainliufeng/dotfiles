@@ -2,4 +2,5 @@
 .resources
 private
 tmux/tmuxinator/*
+*/private
 vim-markdown-preview.html
