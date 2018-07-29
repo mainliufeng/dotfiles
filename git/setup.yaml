@@ -1,2 +1,3 @@
 - brew: git
+  symlink: git/git.symlink
 - brew: hub

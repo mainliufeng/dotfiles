@@ -7,8 +7,8 @@
 ## Install
 
 1. get dotfiles: `git clone git@github.com:mainliufeng/dotfiles.git ~/dotfiles;`
-2. install xxx: `sh ~/dotfiles/xxx/setup.sh`
-3. install all config files: `sh ~/dotfiles/install_dotfile.sh;`
+2. install xxx: `~/dotfiles/setup xxx`
+3. install select: `~/dotfiles/setup`
 
 ## Tools
 

@@ -19,10 +19,6 @@ def install_app(app, need_confirm=True):
     install_by_config(app, need_confirm)
 
 
-def app_symlink_path(app):
-    return os.path.join(dotfiles_path, app, '*.symlink')
-
-
 def setup_config_path(app):
     return os.path.join(dotfiles_path, app, 'setup.yaml')
 
@@ -41,6 +37,7 @@ def install_by_config(app, need_confirm=True):
             pip = app_config.get('pip')
             cask = app_config.get('cask')
             cmd = app_config.get('cmd')
+            symlink = app_config.get('symlink')
 
             if not cmd:
                 if brew: cmd = 'brew install ' + brew
@@ -64,9 +61,10 @@ def install_by_config(app, need_confirm=True):
                 else:
                     print('skip, ' + which + ' exists')
 
-            if not need_confirm or get_confirm(
-                'install ' + name + ' config files'):
-                os.system('source ' + app_symlink_path(app))
+            if symlink and (not need_confirm or get_confirm(
+                'install ' + name + ' symlink'
+            )):
+                os.system('source ' + os.path.join(dotfiles_path, symlink))
 
 
 def get_confirm(question, default="yes"):
