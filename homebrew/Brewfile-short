@@ -46,6 +46,7 @@ cask 'docker'
 # cask 'homebrew/cask-versions/docker-edge'
 # cask 'eclipse-java'
 cask 'google-chrome'
+cask 'beyond-compare'
 
 # client
 brew 'httpie'
@@ -55,6 +56,7 @@ brew 'zookeeper'
 brew 'rabbitmq'
 brew 'mysql@5.7'
 brew 'redis'
+brew "elasticsearch@2.4"
 
 # plan
 mas 'OmniFocus', id: 867299399

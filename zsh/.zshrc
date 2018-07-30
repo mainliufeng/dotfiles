@@ -46,9 +46,11 @@ zplug "wesbos/Cobalt2-iterm", use:"cobalt2.zsh-theme", as:theme
 zplug "altercation/solarized", ignore:"*"
 zplug "abertsch/Menlo-for-Powerline", hook-build:"mkdir -p ~/.fonts && cp -f $ZPLUG_HOME/repos/abertsch/Menlo-for-Powerline/*.ttf ~/.fonts/ && fc-cache -vf ~/.fonts", ignore:"*"
 
+# prompt
+# zplug "$DOTFILES_HOME/prompt", from:local, use:"prompt.zsh", as:theme
+
 for bin in $DOTFILES_HOME/*/bin; 
-do 
-    echo $bin
+do
     zplug "$bin", from:local, as:command, use:"(*).(py|sh|zsh)", rename-to:'$1'
 done
 

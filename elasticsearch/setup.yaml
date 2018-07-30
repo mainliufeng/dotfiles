@@ -1,0 +1,3 @@
+- brew: elasticsearch@2.4
+  which: elasticsearch
+- show: change cluster.name in /usr/local/etc/elasticsearch/elasticsearch.yml

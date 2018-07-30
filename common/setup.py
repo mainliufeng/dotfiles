@@ -38,6 +38,7 @@ def install_by_config(app, need_confirm=True):
             cask = app_config.get('cask')
             cmd = app_config.get('cmd')
             symlink = app_config.get('symlink')
+            show = app_config.get('show')
 
             if not cmd:
                 if brew: cmd = 'brew install ' + brew
@@ -65,6 +66,9 @@ def install_by_config(app, need_confirm=True):
                 'install ' + name + ' symlink'
             )):
                 os.system('source ' + os.path.join(dotfiles_path, symlink))
+
+            if show:
+                print(show)
 
 
 def get_confirm(question, default="yes"):
