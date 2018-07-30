@@ -48,7 +48,8 @@ zplug "abertsch/Menlo-for-Powerline", hook-build:"mkdir -p ~/.fonts && cp -f $ZP
 
 for bin in $DOTFILES_HOME/*/bin; 
 do 
-    zplug "$bin", from:local, as:command, use:"(*).*", rename-to:'$1'
+    echo $bin
+    zplug "$bin", from:local, as:command, use:"(*).(py|sh|zsh)", rename-to:'$1'
 done
 
 # Install packages that have not been installed yet
