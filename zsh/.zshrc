@@ -40,7 +40,7 @@ zplug "lukechilds/gifgen", as:command, use:"gifgen"
 zplug "tmuxinator/tmuxinator", use:"completion/tmuxinator.zsh"
 
 # theme
-zplug "wesbos/Cobalt2-iterm", use:"cobalt2.zsh-theme", as:theme
+zplug "$DOTFILES_HOME/theme", from:local, use:"cobalt2.zsh-theme", as:theme
 
 # resource (download only)
 zplug "altercation/solarized", ignore:"*"
