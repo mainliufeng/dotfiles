@@ -29,6 +29,7 @@ brew "mainliufeng/formulae/pinyin-completion", args: ["HEAD"]
 # brew 'simulate-input-macos', args: ['HEAD']
 brew 'fd'  # replace find command
 brew 'jq'
+brew 'tldr'
 brew 'diff-so-fancy'
 brew 'fabric'
 brew 'the_silver_searcher'

@@ -74,4 +74,4 @@ build_rprompt() {
 }
 
 PROMPT='%{%f%b%k%}$(build_prompt) '
-RPROMPT='%{%f%b%k%}$(build_rprompt)'
+#RPROMPT='%{%f%b%k%}$(build_rprompt)'
