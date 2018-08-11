@@ -4,3 +4,6 @@
 [submodule "external/inquirer"]
 	path = external/inquirer
 	url = git@github.com:magmax/python-inquirer.git
+[submodule "hanlp/pyhanlp"]
+	path = hanlp/pyhanlp
+	url = git@github.com:mainliufeng/pyhanlp.git
