@@ -53,6 +53,11 @@ for bin in $DOTFILES_HOME/*/bin;
 do
     zplug "$bin", from:local, as:command, use:"(*).(py|sh|zsh)", rename-to:'$1'
 done
+for bin in $DOTFILES_HOME/private/*/bin; 
+do
+    zplug "$bin", from:local, as:command, use:"(*).(py|sh|zsh)", rename-to:'$1'
+done
+
 
 # Install packages that have not been installed yet
 if ! zplug check --verbose; then
@@ -68,6 +73,9 @@ zplug load
 
 for sh in $DOTFILES_HOME/*/env/*; do source $sh; done
 for sh in $DOTFILES_HOME/*/env.*sh; do source $sh; done
+for sh in $DOTFILES_HOME/private/*/env/*; do source $sh; done
+for sh in $DOTFILES_HOME/private/*/env.*sh; do source $sh; done
+
 
 # always have a tmux session on
 if ! { [ "$TERM" = "screen-256color" ] && [ -n "$TMUX" ]; } then
