@@ -1,1 +1,1 @@
-ln -svf ~/dotfiles/ssh/private/config ~/.ssh/config
+ln -svfn ~/dotfiles/ssh/private/config ~/.ssh/config

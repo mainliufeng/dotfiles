@@ -1,1 +1,1 @@
-ln -svf ~/dotfiles/nvim ~/.config/nvim
+ln -svfn ~/dotfiles/nvim ~/.config/nvim

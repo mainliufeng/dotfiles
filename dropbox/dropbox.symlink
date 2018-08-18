@@ -1,1 +1,1 @@
-ln -svf ~/dotfiles ~/Dropbox/dotfiles
+ln -svfn ~/dotfiles ~/Dropbox/dotfiles

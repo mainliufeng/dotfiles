@@ -12,11 +12,15 @@ def current_session():
     return session
 
 
-def run_multiple_commands(commands):
+def current_pane():
     session = current_session()
     window = session.attached_window
     pane = window.attached_pane
+    return pane
 
+
+def run_commands(commands):
+    pane = current_pane()
     for command in commands:
         pane.send_keys(command)
 
@@ -26,4 +30,4 @@ def get_pane_output(pane):
 
 
 if __name__ == '__main__':
-    run_multiple_commands(sys.argv[1:])
+    run_commands(sys.argv[1:])

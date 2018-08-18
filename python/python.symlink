@@ -1,3 +1,3 @@
 #!/bin/sh
-ln -svf ~/dotfiles/python/.condarc ~/.condarc
-ln -svf ~/dotfiles/python/.pylintrc ~/.pylintrc
+ln -svfn ~/dotfiles/python/.condarc ~/.condarc
+ln -svfn ~/dotfiles/python/.pylintrc ~/.pylintrc

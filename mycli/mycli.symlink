@@ -1,2 +1,2 @@
 #!/bin/sh
-ln -svf ~/dotfiles/mycli/.myclirc ~/.myclirc
+ln -svfn ~/dotfiles/mycli/.myclirc ~/.myclirc

@@ -1,2 +1,2 @@
 #!/bin/sh
-ln -svf ~/dotfiles/mackup/.mackup.cfg ~/.mackup.cfg
+ln -svfn ~/dotfiles/mackup/.mackup.cfg ~/.mackup.cfg
