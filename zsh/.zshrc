@@ -57,7 +57,6 @@ for bin in $DOTFILES_HOME/private/*/bin;
 do
     zplug "$bin", from:local, as:command, use:"(*).(py|sh|zsh)", rename-to:'$1'
 done
-zplug "/Applications/Eclipse.app/Contents/Eclipse", from:local, as:command, use:"eclimd"
 
 
 # Install packages that have not been installed yet

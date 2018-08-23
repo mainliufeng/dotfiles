@@ -1,3 +1,0 @@
-- cask: eclipse-java
-- name: lombok
-  cmd: java -jar $HOME/dotfiles/eclipse/lombok.jar
