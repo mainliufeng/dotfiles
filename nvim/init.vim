@@ -119,6 +119,9 @@ Plug 'darfink/vim-plist'
 " yaml
 Plug 'chase/vim-ansible-yaml'
 
+" targets.vim
+Plug 'wellle/targets.vim'
+
 " Initialize plugin system
 call plug#end()
 
