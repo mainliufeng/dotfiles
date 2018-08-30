@@ -7,3 +7,6 @@
 [submodule "hanlp/pyhanlp"]
 	path = hanlp/pyhanlp
 	url = git@github.com:mainliufeng/pyhanlp.git
+[submodule "external/elasticsearch-head"]
+	path = external/elasticsearch-head
+	url = git://github.com/mobz/elasticsearch-head.git

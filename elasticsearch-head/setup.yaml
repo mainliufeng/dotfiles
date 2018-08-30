@@ -1,0 +1,2 @@
+- cmd: npm install --prefix ~/dotfiles/external/elasticsearch-head
+  show: install elasticsearch-head
