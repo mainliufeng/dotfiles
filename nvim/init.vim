@@ -28,6 +28,12 @@ Plug 'vim-airline/vim-airline-themes'
 " Lightline
 " Plug 'itchyny/lightline.vim'
 
+" LanguageClient-neovim
+Plug 'autozimu/LanguageClient-neovim', {
+    \ 'branch': 'next',
+    \ 'do': 'bash install.sh',
+    \ }
+
 if has('nvim')
   Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 else
@@ -36,7 +42,6 @@ else
   Plug 'roxma/vim-hug-neovim-rpc'
 endif
 Plug 'zchee/deoplete-jedi'
-Plug 'artur-shaik/vim-javacomplete2'
 
 " sort python imports using isort
 " Plug 'fisadev/vim-isort'
