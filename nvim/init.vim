@@ -104,7 +104,7 @@ Plug 'JamshedVesuna/vim-markdown-preview'
 Plug 'ervandew/supertab'
 
 " Guide key
-Plug 'hecal3/vim-leader-guide'
+Plug 'liuchengxu/vim-which-key'
 
 " Nerdcommenter
 Plug 'scrooloose/nerdcommenter'
