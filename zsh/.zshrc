@@ -73,7 +73,7 @@ zplug load
 
 for sh in $DOTFILES_HOME/*/env/*; do source $sh; done
 for sh in $DOTFILES_HOME/*/env.*sh; do source $sh; done
-for sh in $DOTFILES_HOME/private/*/env/*; do source $sh; done
+# for sh in $DOTFILES_HOME/private/*/env/*; do source $sh; done
 for sh in $DOTFILES_HOME/private/*/env.*sh; do source $sh; done
 
 

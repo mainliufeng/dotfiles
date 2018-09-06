@@ -8,6 +8,8 @@ let g:LanguageClient_serverCommands = {
     \ 'python': ['/usr/local/bin/pyls'],
     \ 'java': [
     \   "/Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/bin/java",
+    \   "-javaagent:/Users/liufeng/dotfiles/.resources/lombok/lombok.jar", 
+    \   "-Xbootclasspath/a:/Users/liufeng/dotfiles/.resources/lombok/lombok.jar",
     \   "-Declipse.application=org.eclipse.jdt.ls.core.id1",
     \   "-Dosgi.bundles.defaultStartLevel=4",
     \   "-Declipse.product=org.eclipse.jdt.ls.core.product",

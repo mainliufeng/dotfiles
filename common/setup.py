@@ -57,7 +57,7 @@ def install_by_config(app, need_confirm=True):
 
             if cmd and (not need_confirm or get_confirm(confirm)):
                 print(confirm)
-                if which and not shutil.which(which):
+                if not which or not shutil.which(which):
                     os.system(cmd)
                 else:
                     print('skip, ' + which + ' exists')
