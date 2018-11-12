@@ -5,7 +5,7 @@
 map <F4> :TagbarToggle<CR>
 
 " vim启动时自动打开tagbar
-autocmd VimEnter * nested :TagbarOpen
+" autocmd VimEnter * nested :TagbarOpen
 
 " autofocus on tagbar open
 " 打开时，自动切换焦点到tagbar
