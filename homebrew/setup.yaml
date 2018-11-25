@@ -1,3 +1,2 @@
-- name: homebrew
-  which: brew
-  cmd: /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+- name: brew apps
+  cmd: brew bundle --file=~/dotfiles/homebrew/Brewfile-short

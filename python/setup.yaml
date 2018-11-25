@@ -1,3 +1,2 @@
-- brew: python
 - brew: pyenv
 - brew: pipenv

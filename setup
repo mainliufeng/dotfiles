@@ -7,13 +7,13 @@ from importlib.machinery import SourceFileLoader
 
 dotfiles_path = os.path.join(os.environ['HOME'], 'dotfiles')
 common_setup_path = os.path.join(dotfiles_path, 'common', 'setup.py')
-inquirer_path = os.path.join(dotfiles_path, 'external', 'inquirer',
-                             'inquirer', '__init__.py')
 setup = SourceFileLoader('setup', common_setup_path).load_module()
-inquirer = SourceFileLoader('inquirer', inquirer_path).load_module()
 
 
 def select_apps(apps):
+    inquirer_path = os.path.join(dotfiles_path, 'external', 'inquirer', 'inquirer', '__init__.py')
+    inquirer = SourceFileLoader('inquirer', inquirer_path).load_module()
+
     questions = [
         inquirer.Checkbox(
             'apps',
