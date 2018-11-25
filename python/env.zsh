@@ -9,7 +9,10 @@ if which pyenv > /dev/null;
 fi
 export PYTHON_BUILD_MIRROR_URL="https://pypi.tuna.tsinghua.edu.cn/simple"
 
-## pipenv
-autoload bashcompinit
-bashcompinit
-source /usr/local/etc/bash_completion.d/pipenv
+## pyenv-virtualenv
+# if which pyenv-virtualenv-init > /dev/null; then eval "$(pyenv virtualenv-init -)"; fi
+
+## virtualenvwrapper
+export WORKON_HOME=$HOME/.virtualenvs
+export PROJECT_HOME=$HOME/Devel
+source /usr/local/bin/virtualenvwrapper.sh
