@@ -5,3 +5,4 @@ tmux/tmuxinator/*
 */private
 external/jdt/config_mac/
 vim-markdown-preview.html
+git_backup/*.bundle
