@@ -1,5 +1,0 @@
-- brew: neomutt
-- brew: fetchmail
-- brew: procmail
-- name: mutt config files
-  cmd: sh ~/dotfiles/mutt/mutt.symlink

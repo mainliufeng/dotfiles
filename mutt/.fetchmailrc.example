@@ -1,8 +1,0 @@
-set logfile /usr/local/var/log/fetchmail.log
-
-poll imap.gmail.com protocol imap
-    port 993
-    user "xxx" password "xxx"
-    mda "/usr/local/bin/procmail -d %T" options no keep ssl sslcertck
-
-set daemon 60

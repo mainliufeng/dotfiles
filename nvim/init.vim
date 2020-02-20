@@ -15,9 +15,8 @@ Plug 'Xuyuanp/nerdtree-git-plugin'
 " 打开的文件中显示git状态
 Plug 'airblade/vim-gitgutter'
 
-" Class/module browser
-" 类/模块浏览器
-Plug 'majutsushi/tagbar'
+" An efficient fuzzy finder that helps to locate files, buffers, mrus, gtags, etc. on the fly.
+Plug 'Yggdroot/LeaderF', { 'do': './install.sh' }
 
 " Python-mode
 Plug 'klen/python-mode'
@@ -25,44 +24,15 @@ Plug 'klen/python-mode'
 " Airline
 Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-" Lightline
-" Plug 'itchyny/lightline.vim'
 
-" LanguageClient-neovim
-Plug 'autozimu/LanguageClient-neovim', {
-    \ 'branch': 'next',
-    \ 'do': 'bash install.sh',
-    \ }
+" code completion
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
-if has('nvim')
-  Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-else
-  Plug 'Shougo/deoplete.nvim'
-  Plug 'roxma/nvim-yarp'
-  Plug 'roxma/vim-hug-neovim-rpc'
-endif
-Plug 'zchee/deoplete-jedi'
-
-" sort python imports using isort
-" Plug 'fisadev/vim-isort'
-
-" Asynchronous Lint Engine
-Plug 'w0rp/ale'
+" neomake
+Plug 'neomake/neomake'
 
 " 窗口选择器
 Plug 't9md/vim-choosewin'
-
-" colorize all text in the form #rrggbb or #rgb 
-" Plugin 'lilydjwg/colorizer'
-
-" Dark powered asynchronous unite all interfaces for Neovim/Vim8
-Plug 'Shougo/denite.nvim'
-
-" vim-go
-Plug 'fatih/vim-go'
-
-" Dash Search
-" Plug 'rizzatti/dash.vim'
 
 " ultisnips
 Plug 'SirVer/ultisnips'
@@ -70,20 +40,11 @@ Plug 'SirVer/ultisnips'
 " snippets
 Plug 'honza/vim-snippets'
 
-" scala
-" Plug 'derekwyatt/vim-scala'
-
-" vim with tmux
-" Plug 'benmills/vimux'
-
 " solarized
 Plug  'altercation/vim-colors-solarized'
 
 " multiple cursors
 Plug 'terryma/vim-multiple-cursors'
-
-" large file
-" Plug 'LargeFile'
 
 " Undo Tree
 Plug 'mbbill/undotree'
@@ -97,23 +58,11 @@ Plug 'kshenoy/vim-signature'
 " auto pair
 Plug 'jiangmiao/auto-pairs'
 
-" markdown preview
-Plug 'JamshedVesuna/vim-markdown-preview'
-
-" supertab
-Plug 'ervandew/supertab'
-
 " Guide key
 Plug 'liuchengxu/vim-which-key'
 
 " Nerdcommenter
 Plug 'scrooloose/nerdcommenter'
-
-" remenberall
-" Plug 'urbainvaes/vim-remembrall'
-
-" jedi-vim
-Plug 'davidhalter/jedi-vim'
 
 " vim-tmux-navigator
 Plug 'christoomey/vim-tmux-navigator'
@@ -127,9 +76,25 @@ Plug 'chase/vim-ansible-yaml'
 " targets.vim
 Plug 'wellle/targets.vim'
 
+" markdown
+Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app & yarn install'  }
+
+" vim-go
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+
+" tagbar
+Plug 'liuchengxu/vista.vim'
+
+" lf
+Plug 'ptzz/lf.vim'
+Plug 'rbgrouleff/bclose.vim'
+
 " Initialize plugin system
 call plug#end()
 
-for f in split(glob('~/.config/nvim/custom/*.vimrc'), '\n')
+for f in split(glob('~/.config/nvim/common/*.vimrc'), '\n')
+    exe 'source' f
+endfor
+for f in split(glob('~/.config/nvim/nvim/*.vimrc'), '\n')
     exe 'source' f
 endfor

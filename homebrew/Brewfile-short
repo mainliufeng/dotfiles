@@ -1,13 +1,10 @@
 cask_args appdir: '/Applications'
 
-tap 'homebrew/bundle'
-tap 'caskroom/cask'
 tap 'mainliufeng/formulae'
 
 # dev env
 brew 'gcc'
 brew 'git'
-brew 'fontconfig'
 brew 'wget'
 brew 'pkg-config'
 brew 'makedepend'
@@ -31,46 +28,19 @@ brew 'tldr'
 brew 'diff-so-fancy'
 brew 'fabric'
 brew 'the_silver_searcher'
-brew 'python'
-brew 'go'
-cask 'java8'
-brew 'maven'
-brew 'nvm'
 cask 'iterm2'
 cask 'alfred'
 cask 'dash'
 cask 'postman'
-cask 'surge'
-cask 'docker'
-# cask 'homebrew/cask-versions/docker-edge'
-# cask 'eclipse-java'
 cask 'google-chrome'
 cask 'beyond-compare'
 
-# client
-brew 'httpie'
-brew 'mycli'
-brew 'pgcli'
-brew 'zookeeper'
-brew 'rabbitmq'
-brew 'mysql@5.7'
-brew 'redis'
-brew "elasticsearch@2.4"
-
-# plan
-mas 'OmniFocus', id: 867299399
-
 # doc
-mas 'Quiver', id: 866773894
 brew 'pandoc'
 cask 'macdown'
 brew 'ffmpeg'
 brew 'gifsicle'
-mas 'MindNode', id: 992076693
 
 # other
 brew 'shellcheck'
 brew 'trash'
-brew 'mas'
-cask '1password'
-cask 'cleanmymac'

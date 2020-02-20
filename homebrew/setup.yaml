@@ -1,2 +1,0 @@
-- name: brew apps
-  cmd: brew bundle --file=~/dotfiles/homebrew/Brewfile-short

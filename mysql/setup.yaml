@@ -1,5 +1,0 @@
-- brew: mysql@5.7
-  which: mysql
-  symlink: mysql/mysql.symlink
-- confirm: init mysql
-  cmd: brew services start mysql@5.7 && mysql_secure_installation  # do not install password check plugin, and set password

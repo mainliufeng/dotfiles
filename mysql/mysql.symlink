@@ -1,3 +1,0 @@
-#!/bin/sh
-ln -svfn ~/dotfiles/mysql/.mylogin.cnf ~/.mylogin.cnf
-chmod 600 ~/.mylogin.cnf

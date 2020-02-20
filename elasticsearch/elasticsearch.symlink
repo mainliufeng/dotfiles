@@ -1,1 +1,0 @@
-cp -f ~/dotfiles/elasticsearch/elasticsearch.yml /usr/local/etc/elasticsearch/

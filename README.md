@@ -7,8 +7,7 @@
 ## Install
 
 1. get dotfiles: `git clone git@github.com:mainliufeng/dotfiles.git ~/dotfiles;`
-2. install xxx: `~/dotfiles/setup xxx`
-3. install select: `~/dotfiles/setup`
+2. preinstall: `sh ~/dotfiles/preinstall.sh`
 
 ## Tools
 
@@ -20,8 +19,3 @@
 ### vim
 
 <img src="https://github.com/mainliufeng/dotfiles/blob/master/images/vim.png" width=800/>
-
-
-### smux (switch between tmux sessions and windows with keywords)
-
-<img src="https://github.com/mainliufeng/dotfiles/blob/master/images/smux.gif" width=800/>

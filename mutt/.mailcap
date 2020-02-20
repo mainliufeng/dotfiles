@@ -1,8 +1,0 @@
-document/pdf; ~/dotfiles/mutt/view_attachment %s -
-application/octet-stream; ~/dotfiles/mutt/view_attachment %s -
-mime_lookup application/octet-stream
-video/*; ~/dotfiles/mutt/view_attachment %s -
-image/*; ~/dotfiles/mutt/view_attachment %s -
-application/*; ~/dotfiles/mutt/view_attachment %s -
-text/html; ~/dotfiles/mutt/view_attachment %s html
-multipa/alternativ; ~/dotfiles/mutt/view_attachment %s -

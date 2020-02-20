@@ -1,2 +1,0 @@
-- cmd: mkdir -p $HOME/dotfiles/.resources/lombok && curl -o $HOME/dotfiles/.resources/lombok/lombok.jar https://projectlombok.org/downloads/lombok.jar
-  name: lombok

@@ -1,3 +1,0 @@
-- name: hanlp
-  which: hanlp
-  cmd: pip install -e $HOME/dotfiles/hanlp/pyhanlp

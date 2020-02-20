@@ -1,5 +1,0 @@
-- brew: tmux
-  symlink: tmux/tmux.symlink
-- name: tmuxp
-  which: tmuxp
-  pip: ~/dotfiles/external/tmuxp

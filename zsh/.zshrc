@@ -21,13 +21,6 @@ zplug "plugins/git",          from:oh-my-zsh
 zplug "plugins/python",       from:oh-my-zsh
 zplug "plugins/fasd",         from:oh-my-zsh
 zplug "plugins/extract",      from:oh-my-zsh
-#zplug "plugins/sublime",      from:oh-my-zsh
-zplug "plugins/docker",       from:oh-my-zsh
-#zplug "plugins/kubectl",      from:oh-my-zsh
-zplug "plugins/mvn",          from:oh-my-zsh
-zplug "plugins/taskwarrior",  from:oh-my-zsh
-zplug "plugins/supervisor",  from:oh-my-zsh
-zplug "plugins/tmux",  from:oh-my-zsh
 
 # zsh-users
 #zplug "zsh-users/zsh-syntax-highlighting", defer:2
@@ -35,9 +28,7 @@ zplug "plugins/tmux",  from:oh-my-zsh
 zplug "zsh-users/zsh-syntax-highlighting"
 zplug "zsh-users/zsh-history-substring-search" 
 zplug "djui/alias-tips"
-zplug "/usr/local/opt/pinyin-completion/libexec", from:local, use:"shell/pinyin-comp.zsh"
 zplug "lukechilds/gifgen", as:command, use:"gifgen"
-zplug "tmuxinator/tmuxinator", use:"completion/tmuxinator.zsh"
 
 # theme
 zplug "$DOTFILES_HOME/theme", from:local, use:"cobalt2.zsh-theme", as:theme
@@ -46,8 +37,8 @@ zplug "$DOTFILES_HOME/theme", from:local, use:"cobalt2.zsh-theme", as:theme
 zplug "altercation/solarized", ignore:"*"
 zplug "abertsch/Menlo-for-Powerline", hook-build:"mkdir -p ~/.fonts && cp -f $ZPLUG_HOME/repos/abertsch/Menlo-for-Powerline/*.ttf ~/.fonts/ && fc-cache -vf ~/.fonts", ignore:"*"
 
-# prompt
-# zplug "$DOTFILES_HOME/prompt", from:local, use:"prompt.zsh", as:theme
+# allow no match
+setopt no_nomatch
 
 for bin in $DOTFILES_HOME/*/bin; 
 do
@@ -75,9 +66,3 @@ for sh in $DOTFILES_HOME/*/env/*; do source $sh; done
 for sh in $DOTFILES_HOME/*/env.*sh; do source $sh; done
 # for sh in $DOTFILES_HOME/private/*/env/*; do source $sh; done
 for sh in $DOTFILES_HOME/private/*/env.*sh; do source $sh; done
-
-
-# always have a tmux session on
-if ! { [ "$TERM" = "screen-256color" ] && [ -n "$TMUX" ]; } then
-    tmux attach -t base || tmux new -s base; tmux detach
-fi
