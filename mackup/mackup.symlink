@@ -1,0 +1,3 @@
+#!/bin/sh
+mkdir -p ~/dotfiles/mackup/storage
+ln -svfn ~/dotfiles/mackup/.mackup.cfg ~/.mackup.cfg
