@@ -51,3 +51,7 @@ docker_rmi_like_force() {
 
 ## golang
 export PATH=$PATH:$HOME/go/bin
+
+## vim
+bindkey 'jk' vi-cmd-mode
+bindkey 'kj' vi-cmd-mode
