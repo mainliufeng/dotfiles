@@ -85,10 +85,6 @@ Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 " tagbar
 Plug 'liuchengxu/vista.vim'
 
-" lf
-Plug 'ptzz/lf.vim'
-Plug 'rbgrouleff/bclose.vim'
-
 " Initialize plugin system
 call plug#end()
 
