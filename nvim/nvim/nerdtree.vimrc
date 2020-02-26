@@ -4,6 +4,7 @@
 " 打开 nerdtree 快捷键
 map <F3> :NERDTreeToggle<CR>
 nmap <leader>nt :NERDTreeToggle<CR>
+nmap <silent> <tab> :NERDTreeToggle<CR>
 
 " open nerdtree with the current file selected
 nmap <leader>nf :NERDTreeFind<CR>
