@@ -4,3 +4,6 @@ pip3 install --user pynvim
 
 # install nodejs (required by coc.vim)
 brew install node
+
+# install ctags (required by leaderf.vim)
+brew install ctags
