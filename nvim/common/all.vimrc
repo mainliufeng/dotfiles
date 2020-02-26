@@ -114,7 +114,7 @@ nnoremap <leader>a} viw<esc>a}<esc>hbi{<esc>lel
 autocmd InsertLeave,WinEnter * set cursorline
 autocmd InsertEnter,WinLeave * set nocursorline
 
-let g:python3_host_prog = '/usr/bin/python3'
+let g:python3_host_prog = '/usr/local/bin/python3'
 
 " popup menu color
 highlight Pmenu ctermbg=black guibg=black
