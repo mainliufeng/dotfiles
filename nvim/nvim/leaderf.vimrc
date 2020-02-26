@@ -10,7 +10,7 @@ let g:Lf_StlSeparator = { 'left': "\ue0b0", 'right': "\ue0b2", 'font': "DejaVu S
 let g:Lf_PreviewResult = {'Function': 0, 'BufTag': 0 }
 
 let g:Lf_ShortcutF = "<leader>ff"
-noremap <C-o> :<C-U><C-R>=printf("Leaderf file %s", "")<CR><CR>
+noremap <C-f> :<C-U><C-R>=printf("Leaderf file %s", "")<CR><CR>
 
 noremap <leader>fb :<C-U><C-R>=printf("Leaderf buffer %s", "")<CR><CR>
 noremap <leader>fm :<C-U><C-R>=printf("Leaderf mru %s", "")<CR><CR>
