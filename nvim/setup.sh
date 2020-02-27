@@ -6,4 +6,4 @@ pip3 install --user pynvim
 brew install node
 
 # install ctags (required by leaderf.vim)
-brew install ctags
+brew install --HEAD universal-ctags/universal-ctags/universal-ctags
