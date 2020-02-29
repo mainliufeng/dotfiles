@@ -25,9 +25,8 @@ Plug 'Yggdroot/LeaderF', { 'do': './install.sh' }
 " Python-mode
 Plug 'klen/python-mode'
 
-" Airline
-Plug 'bling/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
+" lightline
+Plug 'itchyny/lightline.vim'
 
 " code completion
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
@@ -88,6 +87,10 @@ Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 
 " tagbar
 Plug 'liuchengxu/vista.vim'
+
+" onedark theme
+Plug 'joshdick/onedark.vim'
+Plug 'sheerun/vim-polyglot'
 
 " Initialize plugin system
 call plug#end()

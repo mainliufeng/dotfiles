@@ -51,19 +51,13 @@ let mapleader = ","
 let maplocalleader = ","
 
 " Font
-set guifont=Menlo\ for\ Powerline:h14
+set guifont=Menlo\ for\ Powerline:h12
 
-" Solarized ------------------------------
-set background=dark
-" if has('gui_running')
-"     set background=light
-" else
-"     set background=dark
-" endif
-let g:solarized_termcolors=256
-colorscheme solarized
-" call togglebg#map("<F5>")
-let g:solarized_termcolors=256
+" onedark theme
+let g:onedark_hide_endofbuffer = 1
+let g:onedark_termcolors = 256
+let g:onedark_terminal_italics = 1
+colorscheme onedark
 
 if &term =~ '256color'
     " disable Background Color Erase (BCE) so that color schemes
@@ -74,7 +68,6 @@ endif
 
 set t_8f=^[[38;2;%lu;%lu;%lum        " set foreground color
 set t_8b=^[[48;2;%lu;%lu;%lum        " set background color
-colorscheme solarized
 set t_Co=256                         " Enable 256 colors
 set termguicolors                    " Enable GUI colors for the terminal to get truecolor
 
