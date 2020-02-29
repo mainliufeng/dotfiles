@@ -9,6 +9,10 @@ call plug#begin('~/.local/share/nvim/plugged')
 " 文件列表
 Plug 'scrooloose/nerdtree'
 
+" lf
+Plug 'ptzz/lf.vim'
+Plug 'rbgrouleff/bclose.vim'
+
 " NerdTree Git
 Plug 'Xuyuanp/nerdtree-git-plugin'
 
