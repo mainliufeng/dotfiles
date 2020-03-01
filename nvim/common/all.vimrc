@@ -53,12 +53,6 @@ let maplocalleader = ","
 " Font
 set guifont=Menlo\ for\ Powerline:h12
 
-" onedark theme
-let g:onedark_hide_endofbuffer = 1
-let g:onedark_termcolors = 256
-let g:onedark_terminal_italics = 1
-colorscheme onedark
-
 if &term =~ '256color'
     " disable Background Color Erase (BCE) so that color schemes
     " render properly when inside 256-color tmux and GNU screen.

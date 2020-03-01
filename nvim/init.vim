@@ -88,9 +88,8 @@ Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 " tagbar
 Plug 'liuchengxu/vista.vim'
 
-" onedark theme
-Plug 'joshdick/onedark.vim'
-Plug 'sheerun/vim-polyglot'
+" git-messenger.vim
+Plug 'rhysd/git-messenger.vim'
 
 " Initialize plugin system
 call plug#end()
