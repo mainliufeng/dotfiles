@@ -25,8 +25,9 @@ Plug 'Yggdroot/LeaderF', { 'do': './install.sh' }
 " Python-mode
 Plug 'klen/python-mode'
 
-" lightline
-Plug 'itchyny/lightline.vim'
+" Airline
+Plug 'bling/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
 
 " code completion
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
