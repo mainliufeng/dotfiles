@@ -93,6 +93,9 @@ Plug 'liuchengxu/vista.vim'
 " git-messenger.vim
 Plug 'rhysd/git-messenger.vim'
 
+" golang debug
+Plug 'sebdah/vim-delve'
+
 " Initialize plugin system
 call plug#end()
 

@@ -105,3 +105,6 @@ let g:python3_host_prog = '/usr/local/bin/python3'
 
 " popup menu color
 highlight Pmenu ctermbg=black guibg=black
+
+" get escape back in terminal
+"tnoremap <Esc> <C-\><C-n>
