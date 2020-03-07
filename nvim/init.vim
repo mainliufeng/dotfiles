@@ -19,8 +19,9 @@ Plug 'Xuyuanp/nerdtree-git-plugin'
 " 打开的文件中显示git状态
 Plug 'airblade/vim-gitgutter'
 
-" An efficient fuzzy finder that helps to locate files, buffers, mrus, gtags, etc. on the fly.
-Plug 'Yggdroot/LeaderF', { 'do': './install.sh' }
+" fzf
+Plug '/usr/local/opt/fzf'
+Plug 'junegunn/fzf.vim'
 
 " Python-mode
 Plug 'klen/python-mode'
