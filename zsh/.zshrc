@@ -16,7 +16,6 @@ SAVEHIST=10000000
 
 # oh-my-zsh
 zplug "robbyrussell/oh-my-zsh", use:"lib/history.zsh"
-zplug "robbyrussell/oh-my-zsh", use:"lib/theme-and-appearance.zsh"
 zplug "plugins/git",          from:oh-my-zsh
 zplug "plugins/python",       from:oh-my-zsh
 zplug "plugins/fasd",         from:oh-my-zsh
@@ -31,11 +30,9 @@ zplug "djui/alias-tips"
 zplug "lukechilds/gifgen", as:command, use:"gifgen"
 
 # theme
-zplug "$DOTFILES_HOME/theme", from:local, use:"cobalt2.zsh-theme", as:theme
-
-# resource (download only)
-zplug "altercation/solarized", ignore:"*"
-zplug "abertsch/Menlo-for-Powerline", hook-build:"mkdir -p ~/.fonts && cp -f $ZPLUG_HOME/repos/abertsch/Menlo-for-Powerline/*.ttf ~/.fonts/ && fc-cache -vf ~/.fonts", ignore:"*"
+source /usr/local/opt/powerlevel9k/powerlevel9k.zsh-theme
+POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(status dir vcs background_jobs)
+POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(go_version virtualenv anaconda)
 
 # allow no match
 setopt no_nomatch
