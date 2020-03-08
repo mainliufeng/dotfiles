@@ -19,6 +19,9 @@ Plug 'Xuyuanp/nerdtree-git-plugin'
 " 打开的文件中显示git状态
 Plug 'airblade/vim-gitgutter'
 
+" vim-fugitive
+Plug 'tpope/vim-fugitive'
+
 " fzf
 Plug '/usr/local/opt/fzf'
 Plug 'junegunn/fzf.vim'
@@ -89,9 +92,6 @@ Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 
 " tagbar
 Plug 'liuchengxu/vista.vim'
-
-" git-messenger.vim
-Plug 'rhysd/git-messenger.vim'
 
 " golang debug
 Plug 'sebdah/vim-delve'
