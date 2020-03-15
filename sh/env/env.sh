@@ -51,6 +51,8 @@ docker_rmi_like_force() {
 
 ## golang
 export PATH=$PATH:$HOME/go/bin
+export GO111MODULE=on
+export GOPROXY=https://goproxy.cn
 
 ## vim
 bindkey 'jk' vi-cmd-mode
