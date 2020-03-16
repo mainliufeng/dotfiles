@@ -3,3 +3,4 @@ brew install python
 brew tap 'homebrew/cask-versions'
 brew tap 'homebrew/bundle'
 brew 'fontconfig'
+xcode-select --install
