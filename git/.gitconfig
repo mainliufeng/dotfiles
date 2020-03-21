@@ -17,3 +17,5 @@
     lg-specific = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) %C(auto)%d%C(reset)%n%C(dim white)%s - %an (%ar) %C(reset)%n'
 [http]
 	postBuffer = 524288000
+[log]
+	date = iso
