@@ -37,8 +37,8 @@ Plug 'vim-airline/vim-airline-themes'
 " code completion
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
-" neomake
-Plug 'neomake/neomake'
+" ale
+Plug 'dense-analysis/ale'
 
 " 窗口选择器
 Plug 't9md/vim-choosewin'
