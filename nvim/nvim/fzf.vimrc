@@ -10,3 +10,6 @@ noremap <C-g> :BCommits<CR>
 noremap <leader>fb :<C-U><C-R>=printf("Buffers")<CR><CR>
 noremap <leader>fl :<C-U><C-R>=printf("Lines")<CR><CR>
 noremap <leader>ff :<C-U><C-R>=printf("FilesMru")<CR><CR>
+
+" fix <CR> mapping to :Commands
+nunmap <CR>
