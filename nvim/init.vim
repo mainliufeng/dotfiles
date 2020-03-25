@@ -74,7 +74,7 @@ Plug 'liuchengxu/vim-which-key'
 Plug 'scrooloose/nerdcommenter'
 
 " vim-tmux-navigator
-Plug 'christoomey/vim-tmux-navigator'
+" Plug 'christoomey/vim-tmux-navigator'
 
 " plist
 Plug 'darfink/vim-plist'
