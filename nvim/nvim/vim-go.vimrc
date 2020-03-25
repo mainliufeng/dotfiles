@@ -25,3 +25,6 @@ let g:go_metalinter_autosave_enabled = ['vet', 'golint']
 
 "
 let g:go_guru_scope = []
+
+" go code coverage
+" run :GoCoverageToggle to show/hide go file coverage
