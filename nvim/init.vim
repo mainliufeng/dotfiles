@@ -97,6 +97,9 @@ Plug 'liuchengxu/vista.vim'
 " golang debug
 Plug 'sebdah/vim-delve'
 
+" open / close quickfix or location list
+Plug 'milkypostman/vim-togglelist'
+
 " Initialize plugin system
 call plug#end()
 
