@@ -6,6 +6,7 @@ noremap <C-b> :Buffers<CR>
 noremap <C-p> :BTags<CR>
 noremap <C-r> :Commands<CR>
 noremap <C-g> :BCommits<CR>
+noremap <C-a> :Ag<CR>
 
 noremap <leader>fb :<C-U><C-R>=printf("Buffers")<CR><CR>
 noremap <leader>fl :<C-U><C-R>=printf("Lines")<CR><CR>
