@@ -8,9 +8,14 @@ noremap <C-r> :Commands<CR>
 noremap <C-g> :BCommits<CR>
 noremap <C-a> :Ag<CR>
 
+noremap <leader>fa :<C-U><C-R>=printf("Ag")<CR><CR>
 noremap <leader>fb :<C-U><C-R>=printf("Buffers")<CR><CR>
+noremap <leader>fc :<C-U><C-R>=printf("Commands")<CR><CR>
+noremap <leader>fg :<C-U><C-R>=printf("BCommits")<CR><CR>
+noremap <leader>fh :<C-U><C-R>=printf("History:")<CR><CR>
 noremap <leader>fl :<C-U><C-R>=printf("Lines")<CR><CR>
 noremap <leader>ff :<C-U><C-R>=printf("FilesMru")<CR><CR>
+noremap <leader>ft :<C-U><C-R>=printf("BTags")<CR><CR>
 
 " fix <CR> mapping to :Commands
 " nunmap <CR>
