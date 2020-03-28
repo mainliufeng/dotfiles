@@ -50,8 +50,9 @@ set nu
 let mapleader = ","
 let maplocalleader = ","
 
-" Font
-set guifont=Menlo\ for\ Powerline:h12
+" color
+colorscheme torte
+set background=dark
 
 if &term =~ '256color'
     " disable Background Color Erase (BCE) so that color schemes
