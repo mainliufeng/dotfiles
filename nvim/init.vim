@@ -9,6 +9,10 @@ call plug#begin('~/.local/share/nvim/plugged')
 " 文件列表
 Plug 'scrooloose/nerdtree'
 
+" fasd
+Plug 'tomtom/tlib_vim'
+Plug 'amiorin/vim-fasd'
+
 " lf
 Plug 'ptzz/lf.vim'
 Plug 'rbgrouleff/bclose.vim'
