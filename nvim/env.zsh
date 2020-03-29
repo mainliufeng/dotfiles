@@ -5,6 +5,9 @@ alias vim="nvim"
 export EDITOR="nvim"
 export VISUAL="nvim"
 
+# fix vim-floaterm issue
+export GIT_EDITOR="nvim"
+
 bindkey -v
 
 # vi style incremental search
