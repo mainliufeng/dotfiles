@@ -96,9 +96,9 @@ Plug 'milkypostman/vim-togglelist'
 " Initialize plugin system
 call plug#end()
 
-for f in split(glob('~/.config/nvim/common/*.vimrc'), '\n')
+for f in split(glob('~/.config/nvim/vim/*.vimrc'), '\n')
     exe 'source' f
 endfor
-for f in split(glob('~/.config/nvim/nvim/*.vimrc'), '\n')
+for f in split(glob('~/.config/nvim/plugin/*.vimrc'), '\n')
     exe 'source' f
 endfor
