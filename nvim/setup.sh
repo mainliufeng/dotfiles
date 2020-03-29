@@ -7,3 +7,6 @@ brew install node
 
 # install ctags (required by leaderf.vim)
 brew install --HEAD universal-ctags/universal-ctags/universal-ctags
+
+# vim-floaterm
+pip3 install neovim-remote

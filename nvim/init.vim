@@ -93,6 +93,8 @@ Plug 'sebdah/vim-delve'
 " open / close quickfix or location list
 Plug 'milkypostman/vim-togglelist'
 
+Plug 'voldikss/vim-floaterm'
+
 " Initialize plugin system
 call plug#end()
 
