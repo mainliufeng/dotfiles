@@ -1,2 +1,2 @@
 " press z as :Z 
-noremap <leader>z :Z 
+noremap z :Z 
