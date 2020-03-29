@@ -1,13 +1,8 @@
 set timeoutlen=500
 let g:which_key_map =  {}
 
-let g:which_key_map.a = {'name': 'Add'}
-let g:which_key_map.s = {'name': 'Source'}
 let g:which_key_map.n = {'name': 'NerdTree'}
-let g:which_key_map.d = {'name': 'Denite'}
-let g:which_key_map.t = {'name': 'Terminal'}
-let g:which_key_map.c = {'name': 'Comment'}
-let g:which_key_map.f = {'name': 'Leaderf'}
+let g:which_key_map.f = {'name': 'Fzf'}
 
 call which_key#register(',', "g:which_key_map")
 nnoremap <silent> <leader> :<c-u>WhichKey ','<CR>

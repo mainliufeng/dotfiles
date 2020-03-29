@@ -8,6 +8,7 @@ call plug#begin('~/.local/share/nvim/plugged')
 " Better file browser
 " 文件列表
 Plug 'scrooloose/nerdtree'
+Plug 'Xuyuanp/nerdtree-git-plugin'
 
 " fasd
 Plug 'tomtom/tlib_vim'
@@ -16,9 +17,6 @@ Plug 'amiorin/vim-fasd'
 " lf
 Plug 'ptzz/lf.vim'
 Plug 'rbgrouleff/bclose.vim'
-
-" NerdTree Git
-Plug 'Xuyuanp/nerdtree-git-plugin'
 
 " 打开的文件中显示git状态
 Plug 'airblade/vim-gitgutter'
@@ -43,9 +41,6 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 " ale
 Plug 'dense-analysis/ale'
-
-" 窗口选择器
-Plug 't9md/vim-choosewin'
 
 " ultisnips
 Plug 'SirVer/ultisnips'
@@ -73,12 +68,6 @@ Plug 'jiangmiao/auto-pairs'
 
 " Guide key
 Plug 'liuchengxu/vim-which-key'
-
-" Nerdcommenter
-Plug 'scrooloose/nerdcommenter'
-
-" vim-tmux-navigator
-" Plug 'christoomey/vim-tmux-navigator'
 
 " plist
 Plug 'darfink/vim-plist'

@@ -75,20 +75,6 @@ imap kj <Esc>
 onoremap p i(
 onoremap b /return<cr>
 
-" 打开vimrc，source vimrc快捷键
-" nnoremap <leader>rc :vsplit $MYVIMRC<cr>
-nnoremap <leader>src :source $MYVIMRC<cr>
-
-" 在word外加符号
-nnoremap <leader>a" viw<esc>a"<esc>hbi"<esc>lel
-nnoremap <leader>a' viw<esc>a'<esc>hbi'<esc>lel
-nnoremap <leader>a( viw<esc>a)<esc>hbi(<esc>lel
-nnoremap <leader>a) viw<esc>a)<esc>hbi(<esc>lel
-nnoremap <leader>a[ viw<esc>a]<esc>hbi[<esc>lel
-nnoremap <leader>a] viw<esc>a]<esc>hbi[<esc>lel
-nnoremap <leader>a{ viw<esc>a}<esc>hbi{<esc>lel
-nnoremap <leader>a} viw<esc>a}<esc>hbi{<esc>lel
-
 " Autocommand
 
 " html
