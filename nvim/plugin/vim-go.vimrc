@@ -28,3 +28,6 @@ let g:go_guru_scope = []
 
 " go code coverage
 " run :GoCoverageToggle to show/hide go file coverage
+
+" disable mapping
+let g:go_def_mapping_enabled = 0
