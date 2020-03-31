@@ -1,3 +1,6 @@
+let g:go_def_mode='gopls'
+let g:go_info_mode='gopls'
+
 " change gofmt to goimports
 let g:go_fmt_command = "goimports"
 
@@ -17,7 +20,7 @@ let g:go_list_type = "quickfix"
 let g:go_list_autoclose = 1
 let g:go_jump_to_error = 0
 "let g:go_metalinter_enabeld = ['deadcode', 'errcheck', 'gosimple', 'govet', 'staticcheck', 'typecheck', 'unused', 'varcheck']
-let g:go_metalinter_enabeld = ['vet', 'golint', 'errcheck']
+let g:go_metalinter_enabeld = ['vet', 'golint', 'errcheck', 'gocyclo']
 let g:go_metalinter_command = "golangci-lint"
 let g:go_metalinter_deadline = "15s"
 let g:go_metalinter_autosave = 0
