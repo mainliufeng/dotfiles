@@ -16,3 +16,6 @@ noremap <leader>fh :<C-U><C-R>=printf("History:")<CR><CR>
 noremap <leader>fl :<C-U><C-R>=printf("Lines")<CR><CR>
 noremap <leader>ff :<C-U><C-R>=printf("FilesMru")<CR><CR>
 noremap <leader>ft :<C-U><C-R>=printf("BTags")<CR><CR>
+
+nnoremap <Leader>q :Quickfix<CR>
+nnoremap <Leader>l :Quickfix!<CR>

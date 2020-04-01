@@ -17,14 +17,15 @@ let g:go_code_completion_enabled = 0
 
 " lint
 let g:go_list_type = "quickfix"
+"let g:go_list_height = 0
 let g:go_list_autoclose = 1
 let g:go_jump_to_error = 0
 "let g:go_metalinter_enabeld = ['deadcode', 'errcheck', 'gosimple', 'govet', 'staticcheck', 'typecheck', 'unused', 'varcheck']
 let g:go_metalinter_enabeld = ['vet', 'golint', 'errcheck', 'gocyclo']
 let g:go_metalinter_command = "golangci-lint"
 let g:go_metalinter_deadline = "15s"
-let g:go_metalinter_autosave = 0
-let g:go_metalinter_autosave_enabled = ['vet', 'golint']
+let g:go_metalinter_autosave = 1
+let g:go_metalinter_autosave_enabled = ['vet', 'golint', 'gocyclo']
 
 "
 let g:go_guru_scope = []

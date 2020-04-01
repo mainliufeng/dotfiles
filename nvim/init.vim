@@ -28,6 +28,7 @@ Plug 'tpope/vim-fugitive'
 Plug '/usr/local/opt/fzf'
 Plug 'junegunn/fzf.vim'
 Plug 'tweekmonster/fzf-filemru'
+Plug 'fszymanski/fzf-quickfix', {'on': 'Quickfix'}
 
 " Python-mode
 Plug 'klen/python-mode'
@@ -90,9 +91,7 @@ Plug 'liuchengxu/vista.vim'
 " golang debug
 Plug 'sebdah/vim-delve'
 
-" open / close quickfix or location list
-Plug 'milkypostman/vim-togglelist'
-
+" float terminal
 Plug 'voldikss/vim-floaterm'
 
 " Initialize plugin system
