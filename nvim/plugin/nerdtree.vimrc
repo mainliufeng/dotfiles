@@ -1,13 +1,5 @@
 " NERDTree -----------------------------
 
-" toggle nerdtree display
-" 打开 nerdtree 快捷键
-map <F3> :NERDTreeToggle<CR>
-nmap <leader>nt :NERDTreeToggle<CR>
-
-" open nerdtree with the current file selected
-nmap <leader>nf :NERDTreeFind<CR>
-
 " don;t show these file types
 " nerdtree 中不显示的文件类型
 let NERDTreeIgnore = ['\.pyc$', '\.pyo$', '\.swp$', '__pycache__']
@@ -31,4 +23,3 @@ let g:NERDTreeDirArrowExpandable = '▸'
 let g:NERDTreeDirArrowCollapsible = '▾'
 
 let g:NERDTreeNaturalSort = 1
-

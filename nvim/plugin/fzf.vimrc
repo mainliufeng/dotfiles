@@ -1,21 +1,6 @@
-let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
+let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.9 } }
 let g:fzf_buffers_jump = 1
+let g:fzf_preview_window = 'down:50%'
 
-noremap <C-f> :FilesMru<CR>
-noremap <C-b> :Buffers<CR>
-noremap <C-p> :BTags<CR>
-noremap <C-r> :Commands<CR>
-noremap <C-g> :BCommits<CR>
-noremap <C-a> :Ag<CR>
-
-noremap <leader>fa :<C-U><C-R>=printf("Ag")<CR><CR>
-noremap <leader>fb :<C-U><C-R>=printf("Buffers")<CR><CR>
-noremap <leader>fc :<C-U><C-R>=printf("Commands")<CR><CR>
-noremap <leader>fg :<C-U><C-R>=printf("BCommits")<CR><CR>
-noremap <leader>fh :<C-U><C-R>=printf("History:")<CR><CR>
-noremap <leader>fl :<C-U><C-R>=printf("Lines")<CR><CR>
-noremap <leader>ff :<C-U><C-R>=printf("FilesMru")<CR><CR>
-noremap <leader>ft :<C-U><C-R>=printf("BTags")<CR><CR>
-
-nnoremap <Leader>q :Quickfix<CR>
-nnoremap <Leader>l :Quickfix!<CR>
+let g:coc_fzf_opts = ['--layout=reverse-list']
+let g:coc_fzf_preview = 'down:50%'

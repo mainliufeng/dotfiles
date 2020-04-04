@@ -29,6 +29,7 @@ Plug '/usr/local/opt/fzf'
 Plug 'junegunn/fzf.vim'
 Plug 'tweekmonster/fzf-filemru'
 Plug 'fszymanski/fzf-quickfix', {'on': 'Quickfix'}
+Plug 'antoinemadec/coc-fzf'
 
 " Python-mode
 Plug 'klen/python-mode'
@@ -97,9 +98,9 @@ Plug 'voldikss/vim-floaterm'
 " Initialize plugin system
 call plug#end()
 
-for f in split(glob('~/.config/nvim/vim/*.vimrc'), '\n')
+for f in split(glob('~/.config/nvim/plugin/*.vimrc'), '\n')
     exe 'source' f
 endfor
-for f in split(glob('~/.config/nvim/plugin/*.vimrc'), '\n')
+for f in split(glob('~/.config/nvim/vim/*.vimrc'), '\n')
     exe 'source' f
 endfor
