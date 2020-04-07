@@ -1,9 +1,14 @@
 {
     "languageserver": {
         "golang": {
-            "command": "gopls",
+            "command": "coc-go",
             "rootPatterns": ["go.mod"],
             "filetypes": ["go"]
         }
+    },
+    "go.goplsOptions": {
+        "completeUnimported": true,
+        "fuzzyMatching": true,
+        "usePlaceholders": true
     }
 }

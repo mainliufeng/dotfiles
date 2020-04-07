@@ -20,6 +20,7 @@ set signcolumn=yes
 " C-j补全, C-k上一个
 inoremap <silent><expr> <C-j>
       \ pumvisible() ? "\<C-n>" :
+      \ coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" :
       \ <SID>check_back_space() ? "\<C-j>" :
       \ coc#refresh()
 inoremap <expr><C-k> pumvisible() ? "\<C-p>" : "\<C-k>"
@@ -28,6 +29,8 @@ function! s:check_back_space() abort
   let col = col('.') - 1
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
+
+let g:coc_snippet_next = '<C-l>'
 
 " c-space触发补全
 " inoremap <silent><expr> <c-space> coc#refresh()
