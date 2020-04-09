@@ -24,7 +24,7 @@ let g:go_jump_to_error = 0
 let g:go_metalinter_enabeld = ['vet', 'golint', 'errcheck', 'gocyclo']
 let g:go_metalinter_command = "golangci-lint"
 let g:go_metalinter_deadline = "15s"
-let g:go_metalinter_autosave = 1
+let g:go_metalinter_autosave = 0
 let g:go_metalinter_autosave_enabled = ['vet', 'golint', 'gocyclo']
 
 "
