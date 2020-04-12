@@ -1,7 +1,7 @@
 {
     "languageserver": {
         "golang": {
-            "command": "coc-go",
+            "command": "gopls",
             "rootPatterns": ["go.mod"],
             "filetypes": ["go"]
         }
