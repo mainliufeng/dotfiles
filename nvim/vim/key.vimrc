@@ -2,7 +2,7 @@
 noremap <C-f> :FilesMru<CR>
 noremap <C-b> :Buffers<CR>
 nnoremap <silent> <C-p> :<C-u>CocFzfList outline<CR>
-nnoremap <silent> <C-t> :<C-u>CocList symbols<CR>
+nnoremap <silent> <C-s> :<C-u>CocList symbols<CR>
 noremap ; :Commands<CR>
 
 nnoremap <Leader>q :Quickfix<CR>
@@ -16,7 +16,7 @@ nmap <leader>nf :NERDTreeFind<CR>
 "let g:floaterm_keymap_new    = '<F7>'
 "let g:floaterm_keymap_prev   = '<F8>'
 "let g:floaterm_keymap_next   = '<F9>'
-let g:floaterm_keymap_toggle = '<C-0>'
+let g:floaterm_keymap_toggle = '<C-t>'
 
 " coc.nvim
 nnoremap <silent> K :call <SID>show_documentation()<CR> 
