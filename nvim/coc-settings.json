@@ -3,12 +3,13 @@
         "golang": {
             "command": "gopls",
             "rootPatterns": ["go.mod"],
-            "filetypes": ["go"]
+            "filetypes": ["go"],
+            "disableWorkspaceFolders": true
         }
     },
     "go.goplsOptions": {
         "completeUnimported": true,
         "fuzzyMatching": true,
-        "usePlaceholders": true
+        "usePlaceholders": false
     }
 }
