@@ -5,11 +5,6 @@ call plug#begin('~/.local/share/nvim/plugged')
 
 " Make sure you use single quotes
 
-" Better file browser
-" 文件列表
-Plug 'scrooloose/nerdtree'
-Plug 'Xuyuanp/nerdtree-git-plugin'
-
 " fasd
 Plug 'tomtom/tlib_vim'
 Plug 'amiorin/vim-fasd'
@@ -31,6 +26,10 @@ Plug 'tweekmonster/fzf-filemru'
 Plug 'fszymanski/fzf-quickfix', {'on': 'Quickfix'}
 Plug 'antoinemadec/coc-fzf'
 
+" asynctasks.vim
+Plug 'skywind3000/asynctasks.vim'
+Plug 'skywind3000/asyncrun.vim'
+
 " Python-mode
 Plug 'klen/python-mode'
 
@@ -40,6 +39,7 @@ Plug 'vim-airline/vim-airline-themes'
 
 " code completion
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+"Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
 
 " ale
 Plug 'dense-analysis/ale'
@@ -80,20 +80,17 @@ Plug 'chase/vim-ansible-yaml'
 " targets.vim
 Plug 'wellle/targets.vim'
 
-" markdown
-Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app & yarn install'  }
-
 " vim-go
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
-
-" tagbar
-Plug 'liuchengxu/vista.vim'
 
 " golang debug
 Plug 'sebdah/vim-delve'
 
 " float terminal
 Plug 'voldikss/vim-floaterm'
+
+" vim-polyglot
+Plug 'sheerun/vim-polyglot'
 
 " Initialize plugin system
 call plug#end()

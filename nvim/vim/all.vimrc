@@ -25,7 +25,8 @@ augroup tab_length
     autocmd FileType javascript setlocal shiftwidth=2 tabstop=2 softtabstop=2
     autocmd FileType java setlocal shiftwidth=4 tabstop=4 softtabstop=4
     autocmd FileType scala setlocal shiftwidth=2 tabstop=2 softtabstop=2
-    autocmd FileType python setlocal shiftwidth=2 tabstop=2 softtabstop=2
+    " autocmd FileType python setlocal shiftwidth=2 tabstop=2 softtabstop=2
+    autocmd FileType python setlocal shiftwidth=4 tabstop=4 softtabstop=4
 augroup END
 
 " always show status bar
@@ -88,7 +89,7 @@ onoremap b /return<cr>
 autocmd InsertLeave,WinEnter * set cursorline
 autocmd InsertEnter,WinLeave * set nocursorline
 
-let g:python3_host_prog = '/usr/local/bin/python3'
+let g:python3_host_prog = '/usr/bin/python3'
 
 " popup menu color
 highlight Pmenu ctermbg=black guibg=black

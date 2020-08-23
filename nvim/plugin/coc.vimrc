@@ -102,3 +102,4 @@ augroup end
 " Add status line support, for integration with other plugin, checkout `:h coc-status`
 set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
 
+autocmd BufWritePre *.go :call CocAction('runCommand', 'editor.action.organizeImport')

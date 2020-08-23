@@ -8,10 +8,6 @@ noremap ; :Commands<CR>
 nnoremap <Leader>q :Quickfix<CR>
 nnoremap <Leader>l :Quickfix!<CR>
 
-" NerdTree
-nmap <leader>nt :NERDTreeToggle<CR>
-nmap <leader>nf :NERDTreeFind<CR>
-
 " vim-floaterm
 "let g:floaterm_keymap_new    = '<F7>'
 "let g:floaterm_keymap_prev   = '<F8>'
@@ -42,9 +38,17 @@ let g:multi_cursor_prev_key='<C-p>'
 let g:multi_cursor_skip_key='<C-x>'
 let g:multi_cursor_quit_key='<Esc>'
 
+" coc-explorer
+nmap <leader>e :CocCommand explorer<CR>
+
 " which key
 call which_key#register(',', "g:which_key_map")
 nnoremap <silent> <leader> :<c-u>WhichKey ','<CR>
 vnoremap <silent> <leader> :<c-u>WhichKeyVisual ','<CR>
 " nnoremap <localleader> :<c-u>WhichKey  ','<CR>
 " vnoremap <localleader> :<c-u>WhichKeyVisual  ','<CR>
+
+" git-fugitive
+nmap <leader>gs :G<CR>
+nmap <leader>gh :diffget //2<CR>
+nmap <leader>gl :diffget //3<CR>

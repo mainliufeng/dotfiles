@@ -1,7 +1,6 @@
 set timeoutlen=500
 let g:which_key_map =  {}
 
-let g:which_key_map.n = {'name': 'NerdTree'}
 let g:which_key_map.f = {'name': 'Fzf'}
 
 autocmd! FileType which_key
