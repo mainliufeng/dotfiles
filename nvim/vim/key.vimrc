@@ -9,9 +9,6 @@ nnoremap <Leader>q :Quickfix<CR>
 nnoremap <Leader>l :Quickfix!<CR>
 
 " vim-floaterm
-"let g:floaterm_keymap_new    = '<F7>'
-"let g:floaterm_keymap_prev   = '<F8>'
-"let g:floaterm_keymap_next   = '<F9>'
 let g:floaterm_keymap_toggle = '<C-t>'
 
 " coc.nvim
@@ -22,12 +19,6 @@ nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 nmap <leader>rf <Plug>(coc-refactor)
 nmap <leader>rn <Plug>(coc-rename)
-
-" fasd.vimrc
-noremap z :Z 
-
-" Lf
-noremap <leader>lf :Lf<CR>
 
 " EasyMotion
 nmap s <Plug>(easymotion-overwin-f2)

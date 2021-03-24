@@ -5,14 +5,6 @@ call plug#begin('~/.local/share/nvim/plugged')
 
 " Make sure you use single quotes
 
-" fasd
-Plug 'tomtom/tlib_vim'
-Plug 'amiorin/vim-fasd'
-
-" lf
-Plug 'ptzz/lf.vim'
-Plug 'rbgrouleff/bclose.vim'
-
 " 打开的文件中显示git状态
 Plug 'airblade/vim-gitgutter'
 
@@ -25,10 +17,6 @@ Plug 'junegunn/fzf.vim'
 Plug 'tweekmonster/fzf-filemru'
 Plug 'fszymanski/fzf-quickfix', {'on': 'Quickfix'}
 Plug 'antoinemadec/coc-fzf'
-
-" asynctasks.vim
-Plug 'skywind3000/asynctasks.vim'
-Plug 'skywind3000/asyncrun.vim'
 
 " Python-mode
 Plug 'klen/python-mode'
@@ -76,9 +64,6 @@ Plug 'darfink/vim-plist'
 
 " yaml
 Plug 'chase/vim-ansible-yaml'
-
-" targets.vim
-Plug 'wellle/targets.vim'
 
 " vim-go
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
