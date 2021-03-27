@@ -1,3 +1,2 @@
 mkdir -p ~/.config
 ln -svfn ~/dotfiles/nvim ~/.config/nvim
-ln -svfn ~/.config/nvim/init.vim ~/.vimrc

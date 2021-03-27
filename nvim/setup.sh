@@ -1,26 +1,30 @@
 #!/bin/sh
 
-sudo pacman -S neovim vim-plug
+# install neovim nightly manually
 
-#curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+# install vim-plug
+sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
+       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+
+# install neovim py
 pip3 install --user pynvim
 
-# install luarocks (required by lua-lsp)
-sudo pacman -S luarocks
-
 # install nodejs (required by coc.vim)
-sudo pacman -S nodejs npm yarn
+brew install node npm yarn
 sudo npm install -g neovim
+
+# install luarocks (required by lua-lsp) 
+brew install luarocks
+sudo luarocks install --server=http://luarocks.org/dev lua-lsp
+
+# install gopls
 go get golang.org/x/tools/gopls@latest
 
 # install ripgrep (required by coc-search)
-sudo pacman -S ripgrep
+brew install ripgrep
 
 # vim-floaterm
 pip3 install neovim-remote
 
 # :CocInstall coc-python
-# sudo luarocks install --server=http://luarocks.org/dev lua-lsp
 # :CocInstall coc-marketplace
-
-sudo pacman -S ctags

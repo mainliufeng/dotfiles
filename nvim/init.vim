@@ -11,12 +11,11 @@ Plug 'airblade/vim-gitgutter'
 " vim-fugitive
 Plug 'tpope/vim-fugitive'
 
-" fzf
-Plug '/usr/local/opt/fzf'
-Plug 'junegunn/fzf.vim'
-Plug 'tweekmonster/fzf-filemru'
-Plug 'fszymanski/fzf-quickfix', {'on': 'Quickfix'}
-Plug 'antoinemadec/coc-fzf'
+" telescope
+Plug 'nvim-lua/popup.nvim'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim'
+Plug 'nvim-telescope/telescope-fzy-native.nvim'
 
 " Python-mode
 Plug 'klen/python-mode'

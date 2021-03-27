@@ -1,17 +1,14 @@
-" fzf
-noremap <C-f> :FilesMru<CR>
-noremap <C-b> :Buffers<CR>
-nnoremap <silent> <C-p> :<C-u>CocFzfList outline<CR>
-nnoremap <silent> <C-s> :<C-u>CocList symbols<CR>
-noremap ; :Commands<CR>
-
-nnoremap <Leader>q :Quickfix<CR>
-nnoremap <Leader>l :Quickfix!<CR>
+" telescope
+nnoremap <C-f> <cmd>Telescope find_files<cr>
+nnoremap <C-b> <cmd>Telescope buffers<cr>
+nnoremap ; <cmd>Telescope commands<cr>
 
 " vim-floaterm
 let g:floaterm_keymap_toggle = '<C-t>'
 
-" coc.nvim
+"" coc.nvim
+nnoremap <silent> <C-p> <cmd>CocList outline<CR>
+nnoremap <silent> <C-s> :<C-u>CocList symbols<CR>
 nnoremap <silent> K :call <SID>show_documentation()<CR> 
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
