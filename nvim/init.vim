@@ -11,6 +11,10 @@ Plug 'airblade/vim-gitgutter'
 " vim-fugitive
 Plug 'tpope/vim-fugitive'
 
+" fzf
+Plug '/usr/local/opt/fzf'
+Plug 'junegunn/fzf.vim'
+
 " telescope
 Plug 'nvim-lua/popup.nvim'
 Plug 'nvim-lua/plenary.nvim'
