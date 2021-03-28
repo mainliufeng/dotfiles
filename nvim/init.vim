@@ -89,3 +89,7 @@ endfor
 for f in split(glob('~/.config/nvim/vim/*.vimrc'), '\n')
     exe 'source' f
 endfor
+
+lua << EOF
+require("plugin.telescope")
+EOF
