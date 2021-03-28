@@ -44,16 +44,6 @@ source /usr/local/opt/powerlevel10k/powerlevel10k.zsh-theme
 # allow no match
 setopt no_nomatch
 
-for bin in $DOTFILES_HOME/*/bin; 
-do
-    zplug "$bin", from:local, as:command, use:"(*).(py|sh|zsh)", rename-to:'$1'
-done
-for bin in $DOTFILES_HOME/private/*/bin; 
-do
-    zplug "$bin", from:local, as:command, use:"(*).(py|sh|zsh)", rename-to:'$1'
-done
-
-
 # Install packages that have not been installed yet
 if ! zplug check --verbose; then
     printf "Install? [y/N]: "

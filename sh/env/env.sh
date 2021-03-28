@@ -19,9 +19,6 @@ export M2_REPO=$HOME/.m2/repository
 export PATH=$PATH:$M2_HOME/bin
 export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512m"
 
-## pinyin completion
-source /usr/share/pinyin-completion/shell/pinyin-comp.zsh
-
 ## trash
 alias rm='echo "rm is disabled, use trash or /bin/rm instead."'
 
