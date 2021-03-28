@@ -2,6 +2,7 @@
 nnoremap <C-f> <cmd>Telescope find_files<cr>
 nnoremap <C-b> <cmd>Telescope buffers<cr>
 nnoremap ; <cmd>Telescope commands<cr>
+nnoremap <leader>dot <cmd>lua require('plugin.telescope').search_dotfiles()<cr>
 
 " vim-floaterm
 let g:floaterm_keymap_toggle = '<C-t>'
