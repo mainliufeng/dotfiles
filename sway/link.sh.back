@@ -1,0 +1,3 @@
+mkdir -p ~/.config/sway
+ln -svfn ~/dotfiles/sway/config ~/.config/sway/config
+ln -svfn ~/dotfiles/sway/waybar ~/.config/waybar

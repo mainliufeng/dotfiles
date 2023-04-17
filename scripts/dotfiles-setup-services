@@ -1,0 +1,49 @@
+#!/usr/bin/sh
+
+
+## timesyncd
+sudo systemctl start systemd-timesyncd.service
+sudo systemctl enable systemd-timesyncd.service
+
+## docker
+sudo pacman -S docker
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo gpasswd -a $USER docker
+sudo usermod -aG docker liufeng
+# 配置镜像加速 https://cr.console.aliyun.com/cn-hangzhou/instances/mirrors
+
+# ## es
+# echo 'change cluster.name in /etc/elasticsearch/elasticsearch.yml'
+# docker pull elasticsearch:2.4
+# docker run --name xxx-es -p 9200:9200 -p 9300:9300 -v /var/lib/elasticsearch:/var/lib/elasticsearch -v /etc/elasticsearch:/etc/elasticsearch -e "discovery.type=single-node" -d elasticsearch:2.4
+# 
+# ## kafka
+# echo 'change /usr/lib/systemd/system/kafka.service, Xlog:gc -> Xloggc'
+# sudo pacman -S kafka
+# sudo systemctl start kafka.service
+# sudo systemctl enable kafka.service
+
+## mysql
+# docker pull mysql:5.7
+# docker run --name xxx-mysql -p 3306:3306 -v /var/lib/mysql:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=1234 -d mysql:5.7
+
+## redis
+sudo pacman -S redis
+sudo systemctl start redis.service
+sudo systemctl enable redis.service
+
+## tlp
+sudo pacman -S tlp
+sudo systemctl mask systemd-rfkill.service
+sudo systemctl mask systemd-rfkill.socket
+sudo systemctl enable tlp.service
+
+## ntp
+# sudo pacman -S ntp
+# sudo systemctl enable ntpd.service
+# sudo systemctl start ntpd.service
+
+## systemd-resolved
+sudo systemctl start systemd-resolved.service
+sudo systemctl enable systemd-resolved.service

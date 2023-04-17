@@ -1,0 +1,2 @@
+mkdir -p ~/.config/xmobar
+ln -svfn ~/dotfiles/xmonad/xmobar/xmobarrc ~/.config/xmobar/xmobarrc

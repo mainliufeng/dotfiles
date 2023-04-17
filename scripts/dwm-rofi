@@ -1,0 +1,2 @@
+#!/bin/sh
+rofi -combi-modi window,drun,ssh -show combi -modi combi -font 'hack 38'

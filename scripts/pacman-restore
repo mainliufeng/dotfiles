@@ -1,0 +1,2 @@
+sudo pacman -S --needed - < ~/dotfiles/pacman/pkglist.txt
+yay -S --needed - < ~/dotfiles/pacman/foreignpkglist.txt

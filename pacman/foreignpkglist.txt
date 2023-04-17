@@ -1,0 +1,16 @@
+dingtalk-bin
+elasticdump
+fcitx5-pinyin-sougou
+gnome-shell-extension-paperwm-git
+gnome-shell-extension-tray-icons-reloaded
+google-chrome-dev
+grimblast-git
+krew-bin
+microsoft-edge-dev-bin
+openvpn-update-systemd-resolved
+rime-ice-git
+shc
+trash
+visual-studio-code-bin
+wemeet-bin
+wps-office

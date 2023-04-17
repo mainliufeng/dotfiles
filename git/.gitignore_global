@@ -1,0 +1,10 @@
+*~
+.DS_Store
+.springBeans
+*.pyc
+.meghanada
+.classpath
+pom.xml.versionsBackup
+.factorypath
+*.log
+.tasks

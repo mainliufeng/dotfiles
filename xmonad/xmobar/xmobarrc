@@ -1,0 +1,45 @@
+Config { 
+
+   -- 外观
+     font =         "Hack Nerd Font 24" -- 字体
+   , bgColor =      "#242424" -- 背景颜色
+   , fgColor =      "#FFFFFF" -- 前景颜色
+   , position =     TopH 48 -- 位置
+   , border =       BottomB -- 边框
+   , borderColor =  "#646464" -- 边框颜色
+
+   -- 布局
+   , sepChar =  "%"   -- 插件名称和纯文本之间的分隔符
+   , alignSep = "}{"  -- 左右对齐之间的分隔符
+   , iconRoot = "/home/liufeng/dotfiles/xmonad/xmobar/xpm/"  -- 默认值："."
+   , template = " <icon=haskell.xpm/> %UnsafeStdinReader% }{ <action=`gnome-calendar` button=1><fc=#a8cc8c>%date%</fc></action>|%mybattery%|<action=`st -e alsamixer` button=1><fc=gray>%myvolume_value%</fc></action><action=`amixer -D pulse set Master 1+ toggle` button=1>%myvolume_icon%</action>|<action=`nm-connection-editor` button=1><icon=network.xpm/></action>" -- 模板
+
+   -- 一般行为
+   , lowerOnStart =     True    -- 启动时将其发送到窗口堆栈底部
+   , hideOnStart =      False   -- 启动时窗口未映射（隐藏）
+   , allDesktops =      True    -- 在所有桌面上显示
+   , overrideRedirect = True    -- 设置覆盖重定向标志（Xlib）
+   , pickBroadest =     False   -- 选择最宽的显示（多监视器）
+   , persistent =       True    -- 启用/禁用隐藏（True = 禁用）
+
+   -- 插件
+   --   数字可以根据其值自动着色。 xmobar
+   --   根据三层/两个截止系统控制命令选项来决定颜色：
+   --     --Low 设置低截止值
+   --     --High 设置高截止值
+   --
+   --     --low 设置低于--Low截止值的颜色
+   --     --normal 设置--Low和--High截止值之间的颜色
+   --     --High 设置高于--High截止值的颜色
+   --
+   --   --template选项控制如何显示插件。文本
+   --   颜色可以通过在<fc> </fc>标记中设置。有关更多详细信息
+   --   请参见http://projects.haskell.org/xmobar/#system-monitor-plugins。
+   , commands = 
+        [ Run Date           "%Y-%m-%d %H:%M" "date" 10
+        , Run UnsafeStdinReader
+        , Run Com "/home/liufeng/dotfiles/xmonad/xmobar/scripts/battery.sh" [] "mybattery" 10
+        , Run Com "/home/liufeng/dotfiles/xmonad/xmobar/scripts/volume_icon.sh" [] "myvolume_icon" 10
+        , Run Com "/home/liufeng/dotfiles/xmonad/xmobar/scripts/volume_value.sh" [] "myvolume_value" 10
+        ]
+   }

@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+import requests
+import os
+import subprocess
+import argparse
+
+# 从环境变量中获取OpenAI API密钥
+api_key = os.environ.get("OPENAI_API_KEY")
+if api_key is None:
+    print("错误：未设置OPENAI_API_KEY环境变量。请设置变量并重试。")
+    exit()
+
+def text_to_command(text):
+    response = requests.post(
+        "https://api.openai.com/v1/chat/completions",
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        },
+        json={
+            "model": "gpt-3.5-turbo-0301",
+            "messages": [
+                {"role": "system", "content": "将下面文本转换为shell命令，不需要输出任何解释，如果需要执行多个命令，输出多行，文本："},
+                {"role": "user", "content": f"{text}"}
+            ],
+            "temperature": 0.2
+        },
+    )
+
+    try:
+        command = response.json()["choices"][0]["message"]["content"].strip()
+    except KeyError:
+        print("错误：无法从OpenAI API响应中检索命令。")
+        print(response.json())
+        return None
+
+    commands = command.split('\n')
+    return [c for c in commands if c and "```" not in c]
+
+def main():
+    parser = argparse.ArgumentParser(description='将文本转换为shell命令')
+    parser.add_argument('text', type=str, help='要转换的文本')
+    args = parser.parse_args()
+
+    # 将文本转换为shell命令
+    commands = text_to_command(args.text)
+
+    # 如果命令不为None，则打印命令并询问用户确认
+    if commands is not None:
+        print("要执行的命令：")
+        for command in commands:
+            print(command)
+        confirm = input("您是否要执行这些命令？（Y/n）").lower()
+
+        # 如果用户确认，则执行命令
+        if confirm == "y" or confirm == "":
+            command_string = ';'.join(commands)
+            # 执行命令
+            subprocess.run(command_string, shell=True)
+
+if __name__ == '__main__':
+    main()
+

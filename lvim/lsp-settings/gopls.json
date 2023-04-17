@@ -1,0 +1,11 @@
+{
+	"gopls": {
+		"usePlaceholders":true,
+		"experimentalPostfixCompletions": true,
+		"analyses": {
+			"unusedparams": true,
+			"shadow": true
+		},
+		"staticcheck": true
+	}
+}

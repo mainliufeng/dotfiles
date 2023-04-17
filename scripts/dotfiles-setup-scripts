@@ -1,0 +1,6 @@
+#!/usr/bin/sh
+DOTFILES_HOME=$HOME/dotfiles
+for binary in $DOTFILES_HOME/scripts/*; do
+    chmod +x $binary
+    sudo cp "$binary" /usr/local/bin/
+done

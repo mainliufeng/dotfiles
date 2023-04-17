@@ -1,0 +1,1 @@
+ln -svfn ~/dotfiles/xmonad/stalonetray/.stalonetrayrc ~/.stalonetrayrc

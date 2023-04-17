@@ -1,0 +1,2 @@
+#!/usr/bin/sh
+google-chrome-stable --app=http://clash.razord.top/#/proxies
