@@ -35,6 +35,7 @@ zplug "zsh-users/zsh-syntax-highlighting"
 zplug "zsh-users/zsh-history-substring-search" 
 zplug "djui/alias-tips"
 zplug "lukechilds/gifgen", as:command, use:"gifgen"
+zplug "mattberther/zsh-pyenv"
 
 # theme
 source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
