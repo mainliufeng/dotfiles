@@ -1,14 +1,14 @@
 ## vim
-alias vim="lvim"
+alias vim="nvim"
 
 # vim
-export EDITOR="lvim"
-export VISUAL="lvim"
-export MANPAGER='lvim +Man!'
+export EDITOR="nvim"
+export VISUAL="nvim"
+export MANPAGER='nvim +Man!'
 export MANWIDTH=999
 
 # fix vim-floaterm issue
-export GIT_EDITOR="lvim"
+export GIT_EDITOR="nvim"
 
 bindkey -v
 

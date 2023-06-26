@@ -16,9 +16,9 @@ end
 
 cmp.setup({
     snippet = {
-      expand = function(args)
-        require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-      end,
+        expand = function(args)
+            require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+        end,
     },
     window = {
         -- completion = cmp.config.window.bordered(),
@@ -39,10 +39,10 @@ cmp.setup({
                 fallback()
             end
         end, { "i", "s" }),
-        ['<C-b>'] = cmp.mapping(cmp.mapping.scroll_docs(-4), {'i', 'c'}),
-        ['<C-f>'] = cmp.mapping(cmp.mapping.scroll_docs(4), {'i', 'c'}),
+        ['<C-b>'] = cmp.mapping(cmp.mapping.scroll_docs(-4), { 'i', 'c' }),
+        ['<C-f>'] = cmp.mapping(cmp.mapping.scroll_docs(4), { 'i', 'c' }),
         ['<C-e>'] = cmp.mapping({ i = cmp.mapping.close(), c = cmp.mapping.close() }),
-        ['<CR>'] = cmp.mapping(cmp.mapping.confirm({ select = true }), {'i', 'c'}),
+        ['<CR>'] = cmp.mapping(cmp.mapping.confirm({ select = true }), { 'i', 'c' }),
         ["<C-j>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
                 cmp.select_next_item()
@@ -105,7 +105,7 @@ luasnip.config.set_config {
 --     luasnip.parser.parse_snippet("expand", "-- expand text")
 --   },
 --   lua = {
--- 
+--
 --   },
 -- }
 

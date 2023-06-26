@@ -1,125 +1,198 @@
-local fn = vim.fn
-local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
-if fn.empty(fn.glob(install_path)) > 0 then
-  packer_bootstrap = fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+    vim.fn.system({
+        "git",
+        "clone",
+        "--filter=blob:none",
+        "https://github.com/folke/lazy.nvim.git",
+        "--branch=stable", -- latest stable release
+        lazypath,
+    })
 end
+vim.opt.rtp:prepend(lazypath)
 
-vim.cmd('packadd packer.nvim')
-
--- the plugin install follows from here
-return require('packer').startup(function(use)
-  -- Packer can manage itself
-  use 'wbthomason/packer.nvim'
-
-  -----------------------------------------
-  -- Basic
-  -----------------------------------------
-  use 'kyazdani42/nvim-web-devicons' -- for file icons
-  use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
-  use {
-    "cshuaimin/ssr.nvim",
-    module = "ssr",
-    -- Calling setup is optional.
-    config = function()
-      require("ssr").setup {
-        min_width = 50,
-        min_height = 5,
-        keymaps = {
-          close = "q",
-          next_match = "n",
-          prev_match = "N",
-          replace_all = "<leader><cr>",
-        },
-      }
-    end
-  }
-  -- Search
-  use 'nvim-lua/popup.nvim'
-  use 'nvim-lua/plenary.nvim'
-  use 'nvim-telescope/telescope.nvim'
-  -- Line
-  use 'nvim-lualine/lualine.nvim'
-  -- Theme
-  use 'morhetz/gruvbox'
-  -- Undo Tree
-  use 'mbbill/undotree'
-  -- Jump
-  use { 'phaazon/hop.nvim', branch = 'v2' }
-  -- Keybinding
-  use { 'anuvyklack/hydra.nvim', requires = 'anuvyklack/keymap-layer.nvim' }
-  use 'vim-scripts/LargeFile'
-  -- Git
-  use 'airblade/vim-gitgutter'
-  use 'tpope/vim-fugitive'
-  -- Tree
-  use 'kyazdani42/nvim-tree.lua'
-  -- Terminal
-  use { 'akinsho/toggleterm.nvim', tag = '*' }
-  -- Which key
-  use {
-    "folke/which-key.nvim",
-    config = [[ require('config.which-key') ]],
-  }
-  -----------------------------------------
-
-  -- Python
-  use 'klen/python-mode'
-  -- Golang
-  use { 'fatih/vim-go', run = ':GoUpdateBinaries' }
-  -- Jsonc (json which supports comment)
-  use { 'neoclide/jsonc.vim' }
-
-  -- Lsp
-  use {
-    'hrsh7th/nvim-cmp',
-    requires = {
-      { 'hrsh7th/cmp-nvim-lsp', 
-        requires = { 'neovim/nvim-lspconfig' } },
-      { 'L3MON4D3/LuaSnip',
-        requires = {
-          "rafamadriz/friendly-snippets",
-          "molleweide/LuaSnip-snippets.nvim",
-        },
-      },
-      { 'hrsh7th/cmp-nvim-lua', after = 'nvim-cmp' },
-      { 'saadparwaiz1/cmp_luasnip', after = 'nvim-cmp' },
-      { 'lukas-reineke/cmp-under-comparator', after = 'nvim-cmp' },
-      { 'hrsh7th/cmp-nvim-lsp-document-symbol', after = 'nvim-cmp' },
+require("lazy").setup({
+    -----------------------------------------
+    -- Basic
+    -----------------------------------------
+    -- lazy
+    { "folke/lazy.nvim", tag = "stable" },
+    -- treesitter
+    { 'nvim-treesitter/nvim-treesitter', build = ':TSUpdate', event = "User FileOpened" },
+    -- chatgpt
+    {
+        "jackMort/ChatGPT.nvim",
+        event = "VeryLazy",
+        config = function()
+            require("config.chatgpt")
+        end,
+        dependencies = {
+            "MunifTanjim/nui.nvim",
+            "nvim-lua/plenary.nvim",
+            "nvim-telescope/telescope.nvim"
+        }
     },
-    config = [[ require('config.cmp') ]],
-    event = 'InsertEnter *',
-  }
+    -- Search
+    'nvim-lua/popup.nvim',
+    'nvim-lua/plenary.nvim',
+    {
+        'nvim-telescope/telescope.nvim',
+        dependencies = { "nvim-telescope/telescope-fzf-native.nvim" },
+        lazy = true,
+        config = function()
+            require('config.telescope')
+        end
+    },
+    { "nvim-telescope/telescope-fzf-native.nvim", build = "make", lazy = true },
+    -- Line
+    {
+        'nvim-lualine/lualine.nvim',
+        config = function()
+            require('config.lualine')
+        end
+    },
+    -- Theme
+    'morhetz/gruvbox',
+    -- Undo Tree
+    'mbbill/undotree',
+    -- Jump
+    {
+        'phaazon/hop.nvim',
+        branch = 'v2',
+        config = function()
+            require 'hop'.setup { keys = 'etovxqpdygfblzhckisuran' }
+        end
+    },
+    -- Keybinding
+    'vim-scripts/LargeFile',
+    -- Git
+    'airblade/vim-gitgutter',
+    {
+        'tpope/vim-fugitive',
+        cmd = {
+            "G",
+            "Git",
+            "Gdiffsplit",
+            "Gread",
+            "Gwrite",
+            "Ggrep",
+            "GMove",
+            "GDelete",
+            "GBrowse",
+            "GRemove",
+            "GRename",
+            "Glgrep",
+            "Gedit"
+        },
+        ft = { "fugitive" },
+    },
+    -- Tree
+    'kyazdani42/nvim-tree.lua',
+    -- Terminal
+    {
+        'akinsho/toggleterm.nvim',
+        version = '*',
+        config = function()
+            require("toggleterm").setup()
+        end
+    },
+    -- Which key
+    "folke/which-key.nvim",
 
-  -- Debug
-  use { "mfussenegger/nvim-dap" }
-  use {
-    "leoluz/nvim-dap-go",
-    config = function()
-      require('dap-go').setup()
-    end
-  }
-  use { 
-    "rcarriga/nvim-dap-ui", 
-    requires = {"mfussenegger/nvim-dap"}, 
-    config = [[ require('config.dap-ui') ]],
-  }
-  use { 
-    "theHamsta/nvim-dap-virtual-text", 
-    config = function()
-      require("nvim-dap-virtual-text").setup()
-    end
-  }
-  use { 
-    "nvim-telescope/telescope-dap.nvim", 
-    config = [[ require('config.telescope-dap') ]],
-  }
-  use { 
-    "nvim-telescope/telescope-project.nvim",
-    config = [[ require('config.telescope-project') ]],
-  }
+    -----------------------------------------
+    -- Developer
+    -----------------------------------------
+    -- Python
+    'klen/python-mode',
+    -- Golang
+    { 'fatih/vim-go', build = ':GoUpdateBinaries' },
+    -- Jsonc (json which supports comment)
+    { 'neoclide/jsonc.vim' },
+    -- Lsp
+    { 
+        "neovim/nvim-lspconfig", 
+        dependencies = {
+            "hrsh7th/cmp-nvim-lsp",
+        },
+        event = 'BufEnter',
+        config = function()
+            require('config.lsp')
+        end
+    },
+    {
+        'hrsh7th/nvim-cmp',
+        dependencies = {
+            "hrsh7th/cmp-nvim-lsp",
+            "saadparwaiz1/cmp_luasnip",
+            "hrsh7th/cmp-buffer",
+            "hrsh7th/cmp-path",
+            "hrsh7th/cmp-cmdline",
+            'hrsh7th/cmp-nvim-lua',
+            'lukas-reineke/cmp-under-comparator',
+            'hrsh7th/cmp-nvim-lsp-document-symbol',
+        },
+        event = 'InsertEnter *',
+        config = function()
+            require('config.cmp')
+        end
+    },
+    { "hrsh7th/cmp-nvim-lsp", lazy = true },
+    { "saadparwaiz1/cmp_luasnip", lazy = true },
+    { "hrsh7th/cmp-buffer", lazy = true },
+    { "hrsh7th/cmp-path", lazy = true },
+    { "hrsh7th/cmp-cmdline", lazy = true },
+    {
+        "L3MON4D3/LuaSnip",
+        event = "InsertEnter",
+        dependencies = { "friendly-snippets" },
+        config = function()
+            require("luasnip.loaders.from_lua").lazy_load()
+            require("luasnip.loaders.from_vscode").lazy_load()
+            require("luasnip.loaders.from_snipmate").lazy_load()
+        end
+    },
+    { "molleweide/LuaSnip-snippets.nvim", lazy = true },
+    { "rafamadriz/friendly-snippets", lazy = true },
+    { "folke/neodev.nvim", lazy = true },
+    {
+        "cshuaimin/ssr.nvim",
+        -- Calling setup is optional.
+        config = function()
+            require("ssr").setup {
+                min_width = 50,
+                min_height = 5,
+                keymaps = {
+                    close = "q",
+                    next_match = "n",
+                    prev_match = "N",
+                    replace_all = "<leader><cr>",
+                },
+            }
+        end
+    },
+    -- Debug
+    { "mfussenegger/nvim-dap" },
+    { "leoluz/nvim-dap-go" },
+    {
+        "rcarriga/nvim-dap-ui",
+        dependencies = { "mfussenegger/nvim-dap" },
+        config = function()
+            require('config.dap-ui')
+        end
+    },
+    { "theHamsta/nvim-dap-virtual-text" },
+    { "nvim-telescope/telescope-dap.nvim" },
+    { "ThePrimeagen/harpoon" },
+    { "nvim-telescope/telescope-project.nvim", dependencies = { "ThePrimeagen/harpoon" } },
+    -- Error
+    { 'jose-elias-alvarez/null-ls.nvim' },
+    {
+        "folke/trouble.nvim",
+        dependencies = "kyazdani42/nvim-web-devicons",
+        config = function()
+            require('config.trouble')
+        end
+    },
+})
 
-  -- Error
-  use 'jose-elias-alvarez/null-ls.nvim'
-  use { "folke/trouble.nvim", requires = "kyazdani42/nvim-web-devicons" }
-
-end)
+require("config.nvim-tree")
