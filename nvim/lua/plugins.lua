@@ -120,6 +120,30 @@ require("lazy").setup({
         end
     },
     {
+        "ray-x/lsp_signature.nvim",
+        config = function()
+            require('lsp_signature').setup()
+        end
+    },
+    {
+        "simrat39/symbols-outline.nvim",
+        config = function()
+            require('symbols-outline').setup()
+        end
+    },
+    {
+        "glepnir/lspsaga.nvim",
+        event = "LspAttach",
+        config = function()
+            require("config.lspsaga")
+        end,
+        dependencies = {
+            {"nvim-tree/nvim-web-devicons"},
+            --Please make sure you install markdown and markdown_inline parser
+            {"nvim-treesitter/nvim-treesitter"}
+        }
+    },
+    {
         'hrsh7th/nvim-cmp',
         dependencies = {
             "hrsh7th/cmp-nvim-lsp",
@@ -188,7 +212,7 @@ require("lazy").setup({
     { 'jose-elias-alvarez/null-ls.nvim' },
     {
         "folke/trouble.nvim",
-        dependencies = "kyazdani42/nvim-web-devicons",
+        dependencies = "nvim-tree/nvim-web-devicons",
         config = function()
             require('config.trouble')
         end
