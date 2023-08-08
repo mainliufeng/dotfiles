@@ -21,24 +21,19 @@ require("lazy").setup({
     { 'nvim-treesitter/nvim-treesitter', build = ':TSUpdate', event = "User FileOpened" },
     -- chatgpt
     {
-        "jackMort/ChatGPT.nvim",
-        event = "VeryLazy",
+        "mainliufeng/gp.nvim",
+        dir = "~/Code/source/gp.nvim",
         config = function()
-            require("config.chatgpt")
+            require("config.gp")
         end,
-        dependencies = {
-            "MunifTanjim/nui.nvim",
-            "nvim-lua/plenary.nvim",
-            "nvim-telescope/telescope.nvim"
-        }
     },
     -- Search
     'nvim-lua/popup.nvim',
     'nvim-lua/plenary.nvim',
     {
         'nvim-telescope/telescope.nvim',
+        tag = '0.1.2',
         dependencies = { "nvim-telescope/telescope-fzf-native.nvim" },
-        lazy = true,
         config = function()
             require('config.telescope')
         end
@@ -55,6 +50,11 @@ require("lazy").setup({
     'morhetz/gruvbox',
     -- Undo Tree
     'mbbill/undotree',
+    -- markdown
+    {
+        'iamcco/markdown-preview.nvim',
+        build = "cd app && npm install",
+    },
     -- Jump
     {
         'phaazon/hop.nvim',
@@ -109,8 +109,11 @@ require("lazy").setup({
     -- Jsonc (json which supports comment)
     { 'neoclide/jsonc.vim' },
     -- Lsp
-    { 
-        "neovim/nvim-lspconfig", 
+    {
+        'LuaLS/lua-language-server',
+    },
+    {
+        "neovim/nvim-lspconfig",
         dependencies = {
             "hrsh7th/cmp-nvim-lsp",
         },
@@ -138,9 +141,9 @@ require("lazy").setup({
             require("config.lspsaga")
         end,
         dependencies = {
-            {"nvim-tree/nvim-web-devicons"},
+            { "nvim-tree/nvim-web-devicons" },
             --Please make sure you install markdown and markdown_inline parser
-            {"nvim-treesitter/nvim-treesitter"}
+            { "nvim-treesitter/nvim-treesitter" }
         }
     },
     {
