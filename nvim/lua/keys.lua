@@ -40,10 +40,13 @@ keymap("i", "<C-\\>", '<Esc><Cmd>exe v:count1 . "ToggleTerm direction=float"<CR>
 keymap("n", "<leader>x", "<cmd>:term sh %<cr>")
 keymap("n", "<leader>l", "<cmd>:.w !sh<cr>")
 -- chatgpt
-keymap("n", "<leader>cl", cmd "GPTChatFinder")
-keymap("n", "<leader>cc", cmd "GPTChat")
-keymap("v", "<leader>ca", cmd "GPTChatAppendVisual")
-keymap("n", "<leader>cb", cmd "GPTChatAppendBuffer")
+keymap({"n", "i"}, "<leader>cn", cmd "GPTChatNew")
+keymap({"n", "i"}, "<leader>cc", cmd "GPTChatToggle")
+keymap({"n", "i"}, "<leader>cl", cmd "GPTChatFinder")
+keymap("v", "<leader>cn", ":<C-u>'<,'>GPTChatNew<cr>")
+keymap("v", "<leader>cc", ":<C-u>'<,'>GPTChatToggle<cr>")
+keymap("v", "<leader>ca", ":<C-u>'<,'>GPTChatAppend<cr>")
+keymap({"n", "i", "v", "x"}, "<leader>ck", cmd "GPTStop")
 -- debug
 keymap("n", "<F3>", cmd "NvimTreeFindFileToggle")
 keymap("n", "<F4>", cmd "lua require'dapui'.toggle()")
