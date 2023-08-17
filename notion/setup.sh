@@ -1,1 +1,1 @@
-sudo cp ~/dotfiles/notion/notion.desktop /usr/share/applications
+cp ~/dotfiles/notion/notion.desktop ~/.local/share/applications
