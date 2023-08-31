@@ -37,7 +37,7 @@ require 'nvim-tree'.setup {
     sync_root_with_cwd  = true,
     disable_netrw       = true,
     hijack_netrw        = true,
-    ignore_ft_on_setup  = {},
+    -- ignore_ft_on_setup  = {},
     open_on_tab         = false,
     hijack_cursor       = false,
     update_cwd          = false,

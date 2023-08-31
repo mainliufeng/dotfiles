@@ -1,5 +1,6 @@
 -- Install plugins
 require('plugins')
+require('funcs')
 
 for i, file in pairs(vim.split(vim.fn.glob('~/.config/nvim/vim/*.vimrc'), '\n')) do
     vim.cmd('source ' .. file)

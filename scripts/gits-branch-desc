@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+
+import os
+import subprocess
+import sys
+
+def get_commits(directory, branch):
+    if os.path.exists(os.path.join(directory, '.git')):
+        try:
+            os.chdir(directory)
+            branch_output = subprocess.check_output(f'git branch | grep "{branch}"', shell=True).decode('utf-8').strip()
+            print(f'# {directory}\n\n```')
+            if branch_output:
+                result = subprocess.check_output(f'git log `git rev-parse --abbrev-ref {branch}@{{upstream}}`..{branch}', shell=True).decode('utf-8').strip()
+                print(result)
+            print(f'```\n')
+        except Exception as e:
+            pass
+        finally:
+            os.chdir("..")
+    return
+
+def get_subfolder_commits(base_directory, branch):
+    try:
+        # 获取指定目录下的所有第一层子目录
+        subdirectories = [name for name in os.listdir(base_directory) if os.path.isdir(os.path.join(base_directory, name))]
+
+        # 遍历子目录并获取Git分支名
+        for subdir in subdirectories:
+            get_commits(os.path.join(base_directory, subdir), branch)
+    except Exception as e:
+        pass
+
+def print_help():
+    print("Usage: git-projects-branch-info <base_directory> <branch>")
+    print("Lists branch commits of multiple repositories.")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3 or sys.argv[1] == "--help":
+        print_help()
+    else:
+        target_directory = sys.argv[1]
+        branch = sys.argv[2]
+        get_subfolder_commits(target_directory, branch)

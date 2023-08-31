@@ -1,4 +1,5 @@
 local conf = {
+	openai_api_endpoint = "https://api.openai.com/v1/chat/completions",
     -- required openai api key
     openai_api_key = os.getenv("OPENAI_API_KEY"),
     -- prefix for all commands

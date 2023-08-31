@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+
+import os
+import subprocess
+import sys
+
+def get_git_branches(directory):
+    if os.path.exists(os.path.join(directory, '.git')):
+        try:
+            os.chdir(directory)
+            result = subprocess.check_output(['git', 'for-each-ref', 'refs/heads/', '--format="%(refname:short)"']).decode('utf-8').strip().split('\n')
+            return result
+        except subprocess.CalledProcessError:
+            return []
+        except Exception as e:
+            return []
+        finally:
+            os.chdir("..")
+    else:
+        return []
+
+def list_directories_with_branches(base_directory):
+    try:
+        # 获取指定目录下的所有第一层子目录
+        subdirectories = [name for name in os.listdir(base_directory) if os.path.isdir(os.path.join(base_directory, name))]
+
+        # 遍历子目录并获取Git分支名
+        for subdir in subdirectories:
+            branch_names = get_git_branches(os.path.join(base_directory, subdir))
+            for branch_name in branch_names:
+                print("{} {}".format(subdir, branch_name.strip("\"")))
+    except Exception as e:
+        print("Error:", str(e))
+
+def print_help():
+    print("Usage: git-projects-branches <base_directory>")
+    print("Lists first-level subdirectories along with associated Git branch names.")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2 or sys.argv[1] == "--help":
+        print_help()
+    else:
+        target_directory = sys.argv[1]
+        list_directories_with_branches(target_directory)
