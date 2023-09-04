@@ -39,6 +39,7 @@ require("lazy").setup({
         end
     },
     { "nvim-telescope/telescope-fzf-native.nvim", build = "make", lazy = true },
+    { 'stevearc/dressing.nvim' },
     -- Line
     {
         'nvim-lualine/lualine.nvim',
