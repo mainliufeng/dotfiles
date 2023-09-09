@@ -14,6 +14,7 @@ keymap("n", "<C-j>", "<C-w>j")
 keymap("n", "<C-k>", "<C-w>k")
 keymap("n", "<C-h>", "<C-w>h")
 keymap("n", "<C-l>", "<C-w>l")
+keymap('n', '<C-w>z', cmd 'WinMaxToggle')
 -- 搜
 keymap("n", "<C-f>", cmd "Telescope find_files hidden=true no_ignore=true")
 keymap("n", "<C-b>", cmd "Telescope buffers initial_mode=insert")

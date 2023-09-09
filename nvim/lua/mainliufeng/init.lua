@@ -24,7 +24,7 @@ require("lazy").setup({
         "mainliufeng/gp.nvim",
         dir = "~/Code/source/gp.nvim",
         config = function()
-            require("config.gp")
+            require("mainliufeng.config.gp")
         end,
     },
     -- Search
@@ -35,7 +35,7 @@ require("lazy").setup({
         tag = '0.1.2',
         dependencies = { "nvim-telescope/telescope-fzf-native.nvim" },
         config = function()
-            require('config.telescope')
+            require('mainliufeng.config.telescope')
         end
     },
     { "nvim-telescope/telescope-fzf-native.nvim", build = "make", lazy = true },
@@ -44,7 +44,7 @@ require("lazy").setup({
     {
         'nvim-lualine/lualine.nvim',
         config = function()
-            require('config.lualine')
+            require('mainliufeng.config.lualine')
         end
     },
     -- Theme
@@ -64,6 +64,51 @@ require("lazy").setup({
             require 'hop'.setup { keys = 'etovxqpdygfblzhckisuran' }
         end
     },
+    {
+        "kwkarlwang/bufresize.nvim",
+        config = function()
+            require("bufresize").setup({
+                register = {
+                    keys = {},
+                    trigger_events = { "BufWinEnter", "WinEnter" },
+                },
+                resize = {
+                    keys = {},
+                    trigger_events = { "VimResized" },
+                    increment = 5,
+                },
+            })
+        end,
+    },
+    --{
+    --    'anuvyklack/windows.nvim',
+    --    dependencies = {
+    --        'anuvyklack/middleclass',
+    --        'anuvyklack/animation.nvim'
+    --    },
+    --    config = function()
+    --        vim.o.winwidth = 10
+    --        vim.o.winminwidth = 10
+    --        vim.o.equalalways = false
+    --        require('windows').setup({
+    --            autowidth = {
+    --                enable = true, -- false
+    --                winwidth = 10,
+    --                filetype = {
+    --                },
+    --            },
+    --            ignore = {
+    --                buftype = {
+    --                },
+    --                filetype = {
+    --                }
+    --            },
+    --            animation = {
+    --                enable = false,
+    --            }
+    --        })
+    --    end
+    --},
     -- Keybinding
     'vim-scripts/LargeFile',
     -- Git
@@ -120,7 +165,7 @@ require("lazy").setup({
         },
         event = 'BufEnter',
         config = function()
-            require('config.lsp')
+            require('mainliufeng.config.lsp')
         end
     },
     {
@@ -139,7 +184,7 @@ require("lazy").setup({
         "glepnir/lspsaga.nvim",
         event = "LspAttach",
         config = function()
-            require("config.lspsaga")
+            require("mainliufeng.config.lspsaga")
         end,
         dependencies = {
             { "nvim-tree/nvim-web-devicons" },
@@ -161,7 +206,7 @@ require("lazy").setup({
         },
         event = 'InsertEnter *',
         config = function()
-            require('config.cmp')
+            require('mainliufeng.config.cmp')
         end
     },
     { "hrsh7th/cmp-nvim-lsp", lazy = true },
@@ -181,7 +226,7 @@ require("lazy").setup({
     },
     { "molleweide/LuaSnip-snippets.nvim", lazy = true },
     { "rafamadriz/friendly-snippets", lazy = true },
-    { "folke/neodev.nvim", lazy = true },
+    { "folke/neodev.nvim", opts = {} },
     {
         "cshuaimin/ssr.nvim",
         -- Calling setup is optional.
@@ -205,7 +250,7 @@ require("lazy").setup({
         "rcarriga/nvim-dap-ui",
         dependencies = { "mfussenegger/nvim-dap" },
         config = function()
-            require('config.dap-ui')
+            require('mainliufeng.config.dap-ui')
         end
     },
     { "theHamsta/nvim-dap-virtual-text" },
@@ -218,9 +263,16 @@ require("lazy").setup({
         "folke/trouble.nvim",
         dependencies = "nvim-tree/nvim-web-devicons",
         config = function()
-            require('config.trouble')
+            require('mainliufeng.config.trouble')
         end
     },
 })
 
-require("config.nvim-tree")
+require("mainliufeng.config.nvim-tree")
+
+-- 本地插件
+require("mainliufeng.plugins.git")
+require("mainliufeng.plugins.window")
+
+-- 通用配置
+require("mainliufeng.keys")

@@ -59,7 +59,9 @@ vim.api.nvim_create_user_command("GitsBranchDesc", function()
         local repos = repos_branches[branch]
 
         for _, repo in ipairs(repos) do
-            local command_output = vim.fn.systemlist('git log -C ' .. repo .. ' `git rev-parse --abbrev-ref ' .. branch .. '@{upstream}`..' .. branch)
+            local command = 'git -C ' .. repo .. ' log `git -C ' .. repo .. ' rev-parse --abbrev-ref ' .. branch .. '@{upstream}`..' .. branch
+            print(command)
+            local command_output = vim.fn.systemlist(command)
             local output = {}
             table.insert(output, '#' .. repo)
             table.insert(output, '')
