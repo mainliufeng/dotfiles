@@ -3,7 +3,7 @@ local conf = {
     -- required openai api key
     openai_api_key = os.getenv("OPENAI_API_KEY"),
     -- prefix for all commands
-    cmd_prefix = "GPT",
+    cmd_prefix = "Gp",
 
     -- directory for storing chat files
     chat_dir = vim.fn.stdpath("data"):gsub("/$", "") .. "/gp/chats",

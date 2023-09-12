@@ -18,3 +18,18 @@ alias git-upstream-branch="git rev-parse --abbrev-ref --symbolic-full-name @{u} 
 alias git-upstream-branches="git branch -r | grep upstream | grep -v HEAD | cut -d '/' -f2"
 
 alias gb="git branch --sort=-committerdate"
+
+# 列出git stash列表，让用户选择并应用stash
+function gstpick() {
+  # 列出git stash列表并使用fzf选择一个stash
+  selected_stash=$(git stash list | sed 's/:/ /' | fzf --preview "git stash show -p {}")
+
+  # 检查是否有选择
+  if [ -n "$selected_stash" ]; then
+    # 应用所选的stash
+    git stash apply "$(echo "$selected_stash" | awk '{print $1}')"
+    echo "已应用stash: $selected_stash"
+  else
+    echo "未选择stash，退出"
+  fi
+}

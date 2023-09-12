@@ -27,6 +27,13 @@ require("lazy").setup({
             require("mainliufeng.config.gp")
         end,
     },
+    {
+        "mainliufeng/gpt",
+        dir = "~/dotfiles/nvim/plugins/gpt",
+        config = function()
+            require("gpt").setup()
+        end,
+    },
     -- Search
     'nvim-lua/popup.nvim',
     'nvim-lua/plenary.nvim',
@@ -132,8 +139,14 @@ require("lazy").setup({
         },
         ft = { "fugitive" },
     },
-    -- Tree
+    -- File
     'kyazdani42/nvim-tree.lua',
+    {
+        'stevearc/oil.nvim',
+        opts = {},
+        -- Optional dependencies
+        dependencies = { "nvim-tree/nvim-web-devicons" },
+    },
     -- Terminal
     {
         'akinsho/toggleterm.nvim',
@@ -245,7 +258,12 @@ require("lazy").setup({
     },
     -- Debug
     { "mfussenegger/nvim-dap" },
-    { "leoluz/nvim-dap-go" },
+    {
+        "leoluz/nvim-dap-go",
+        config = function()
+            require('dap-go').setup()
+        end
+    },
     {
         "rcarriga/nvim-dap-ui",
         dependencies = { "mfussenegger/nvim-dap" },
