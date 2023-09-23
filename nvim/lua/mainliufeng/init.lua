@@ -21,13 +21,6 @@ require("lazy").setup({
     { 'nvim-treesitter/nvim-treesitter', build = ':TSUpdate', event = "User FileOpened" },
     -- chatgpt
     {
-        "mainliufeng/gp.nvim",
-        dir = "~/Code/source/gp.nvim",
-        config = function()
-            require("mainliufeng.config.gp")
-        end,
-    },
-    {
         "mainliufeng/gpt",
         dir = "~/dotfiles/nvim/plugins/gpt",
         config = function()
@@ -291,6 +284,7 @@ require("mainliufeng.config.nvim-tree")
 -- 本地插件
 require("mainliufeng.plugins.git")
 require("mainliufeng.plugins.window")
+require("mainliufeng.plugins.highlight")
 
 -- 通用配置
 require("mainliufeng.keys")

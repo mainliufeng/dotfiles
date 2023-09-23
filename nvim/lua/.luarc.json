@@ -54,7 +54,9 @@
         "${3rd}/skynet/library",
         "${3rd}/bee/library",
         "${3rd}/love2d/library",
-        "${3rd}/Jass/library"
+        "${3rd}/Jass/library",
+        "${3rd}/luassert/library",
+        "${3rd}/luassert/library"
     ],
     "diagnostics.globals": [
         "vim",
@@ -63,5 +65,5 @@
     "runtime.special": {
         "love.filesystem.load": "loadfile"
     },
-    "runtime.version": "Lua 5.3"
+    "runtime.version": "LuaJIT"
 }
