@@ -8,6 +8,9 @@ local function keymap(m, k, c)
     return vim.keymap.set(m, k, c, opts)
 end
 
+vim.g.mapleader = ','
+vim.api.nvim_set_var("localleader", ',')
+
 -- 跳
 keymap("n", "s", cmd "HopWord")
 keymap("n", "<C-j>", "<C-w>j")
@@ -38,8 +41,8 @@ keymap("n", "<space>rn", "<cmd>lua vim.lsp.buf.rename()<CR>")
 -- terminal
 keymap("n", "<C-\\>", cmd 'exe v:count1 . "ToggleTerm direction=float"')
 keymap("i", "<C-\\>", '<Esc><Cmd>exe v:count1 . "ToggleTerm direction=float"<CR>')
-keymap("n", "<leader>x", "<cmd>:term sh %<cr>")
-keymap("n", "<leader>l", "<cmd>:.w !sh<cr>")
+keymap("n", "<leader>x", "<cmd>:read !sh %<cr>")
+--keymap("n", "<leader>l", "<cmd>:.w !sh<cr>")
 -- debug
 keymap("n", "<F3>", cmd "NvimTreeFindFileToggle")
 keymap("n", "<F4>", cmd "lua require'dapui'.toggle()")

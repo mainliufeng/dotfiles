@@ -52,10 +52,10 @@ require("lazy").setup({
     -- Undo Tree
     'mbbill/undotree',
     -- markdown
-    {
-        'iamcco/markdown-preview.nvim',
-        build = "cd app && npm install",
-    },
+    --{
+    --    'iamcco/markdown-preview.nvim',
+    --    build = "cd app && npm install",
+    --},
     -- Jump
     {
         'phaazon/hop.nvim',
@@ -161,9 +161,9 @@ require("lazy").setup({
     -- Jsonc (json which supports comment)
     { 'neoclide/jsonc.vim' },
     -- Lsp
-    {
-        'LuaLS/lua-language-server',
-    },
+    --{
+    --    'LuaLS/lua-language-server',
+    --},
     {
         "neovim/nvim-lspconfig",
         dependencies = {
@@ -222,6 +222,8 @@ require("lazy").setup({
     { "hrsh7th/cmp-cmdline", lazy = true },
     {
         "L3MON4D3/LuaSnip",
+        version = "v2",
+        build = "make install_jsregexp",
         event = "InsertEnter",
         dependencies = { "friendly-snippets" },
         config = function()
