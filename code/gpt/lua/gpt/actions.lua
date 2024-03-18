@@ -1,15 +1,15 @@
-local Session = require("gpt.session")
+local Session = require("gpt.sessions")
 local buffers = require("gpt.buffers")
 
-local M = {}
+local actions = {}
 
 local config = {
     current_session_file = vim.fn.stdpath("data"):gsub("/$", "") .. "/gpt/sessions/current.md",
-    default_model = "gpt-3.5-turbo-0301",
+    default_model = "gpt-4",
     default_temperature = 0.2,
 }
 
-function M.setup(user_config)
+function actions.setup(user_config)
     config = vim.tbl_deep_extend("force", config, user_config or {})
 end
 
@@ -19,7 +19,7 @@ end
 ---@param action string 动作
 ---       newbuffer: 在新buffer中输出回答
 ---       replace: 替换当前buffer中选中的内容
-function M.run_command(params, command, action)
+function actions.run_command(params, command, action)
     local callback = function(callback_command)
 	    -- get current buffer
 	    local buf = vim.api.nvim_get_current_buf()
@@ -49,7 +49,7 @@ function M.run_command(params, command, action)
                 return
             end
         else
-            session = Session:new(config.default_model, config.default_temperature)
+            session = Session:new({model = config.default_model, temperature = config.default_temperature})
         end
 
 
@@ -57,8 +57,6 @@ function M.run_command(params, command, action)
         if selection ~= nil then
             content = content .. "\n```" .. selection .. "```\n\n"
         end
-
-        session:append_message(Session.Modes.USER.role, content)
 
         local cb
         if action == "replace" then
@@ -97,7 +95,7 @@ function M.run_command(params, command, action)
             end
         end
 
-        session:do_request(cb)
+        session:ask(content, cb)
     end
 
 	vim.schedule(function()
@@ -115,40 +113,11 @@ function M.run_command(params, command, action)
 end
 
 -- 加载当前buffer（md文件）的session，并继续
-function M.run_session()
+function actions.run_session()
 	vim.cmd("stopinsert")
     local buffer = vim.api.nvim_get_current_buf()
     local session = Session:from_buf(buffer)
-
-    local callback = function(text, state)
-        if state == "START" or state == "CONTINUE" then
-            local callback_lines = vim.split(text, "\n", {})
-            local length = #callback_lines
-
-            for i, callback_line in ipairs(callback_lines) do
-                local current_line = vim.api.nvim_buf_get_lines(buffer, -2, -1, false)[1]
-                vim.api.nvim_buf_set_lines(buffer, -2, -1, false, { current_line .. callback_line })
-
-                if i == length and i > 1 then
-                    vim.api.nvim_buf_set_lines(buffer, -1, -1, false, { "" })
-                end
-            end
-        elseif state == "END" then
-            vim.api.nvim_buf_set_lines(buffer, -1, -1, false, { "", Session.Modes.USER.prefix, "", "" })
-        end
-    end
-
-    vim.api.nvim_buf_set_lines(buffer, -1, -1, false, { "", Session.Modes.ASSISTANT.prefix, "", "" })
-    session:do_request(callback)
+    session:run(buffer)
 end
 
-function M.to_buffer()
-	vim.cmd("stopinsert")
-    local buffer = vim.api.nvim_get_current_buf()
-    local session = Session:from_buf(buffer)
-
-    session:append_message(Session.Modes.USER.role, "aaaa")
-    session:to_buf(buffer)
-end
-
-return M
+return actions

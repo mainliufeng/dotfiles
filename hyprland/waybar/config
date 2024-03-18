@@ -5,7 +5,7 @@
     // "width": 1280, // Waybar width
     "spacing": 4, // Gaps between modules (4px)
     // Choose the order of the modules
-    "modules-left": ["wlr/workspaces", "sway/mode", "sway/scratchpad", "custom/media"],
+    "modules-left": ["hyprland/workspaces", "sway/mode", "sway/scratchpad", "custom/media"],
     "modules-center": ["hyprland/window"],
     "modules-right": ["mpd", "idle_inhibitor", "pulseaudio", "cpu", "memory", "temperature", "backlight", "battery", "battery#bat2", "clock", "tray"],
     "wlr/taskbar": {
@@ -15,24 +15,29 @@
         "tooltip-format": "{title}",
         "on-click": "activate"
     },
-    "wlr/workspaces": {
-        "format": "{icon}",
-        "on-click": "activate",
-        "format-icons": {
-            "1": "1",
-            "2": "2",
-            "3": "3",
-            "4": "4",
-            "5": "5",
-            "6": "6",
-            "7": "7",
-            "8": "8",
-            "9": "9",
-            "10": "0",
-            "default": ""
-        },
-        "sort-by-number": true
+    "hyprland/workspaces": {
+         "format": "{icon}",
+         "on-scroll-up": "hyprctl dispatch workspace e+1",
+         "on-scroll-down": "hyprctl dispatch workspace e-1"
     },
+    // "wlr/workspaces": {
+    //     "format": "{icon}",
+    //     "on-click": "activate",
+    //     "format-icons": {
+    //         "1": "1",
+    //         "2": "2",
+    //         "3": "3",
+    //         "4": "4",
+    //         "5": "5",
+    //         "6": "6",
+    //         "7": "7",
+    //         "8": "8",
+    //         "9": "9",
+    //         "10": "0",
+    //         "default": ""
+    //     },
+    //     "sort-by-number": true
+    // },
     // Modules configuration
     // "sway/workspaces": {
     //     "disable-scroll": true,

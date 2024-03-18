@@ -1,22 +1,20 @@
 local curl = require("plenary.curl")
 
-local M = {}
+local client = {}
 
 local config = {
-    openai = {
-        url = "",
-        api_key = "",
-    },
+    openai_url = "",
+    openai_api_key = "",
 }
 
-function M.setup(user_config)
+function client.setup(user_config)
     config = vim.tbl_deep_extend("force", config, user_config or {})
 end
 
 -- 调用openai http接口
 ---@param session table # session, 包括model, temperature, messages
 ---@param callback function(string, string) # callback函数，第一个参数是content，第二个参数是state（选项"START", "CONTINUE", "ERROR", "DONE"）
-function M.do_request(session, callback)
+function client.do_request(session, callback)
     -- Prepare the request body
     local req_body = {
         model = session.model,
@@ -28,7 +26,7 @@ function M.do_request(session, callback)
     -- Prepare the request headers
     local req_headers = {}
     req_headers["Content-Type"] = "application/json"
-    req_headers["Authorization"] = "Bearer " .. config.openai.api_key
+    req_headers["Authorization"] = "Bearer " .. config.openai_api_key
 
     -- Convert the request body to a JSON string
     local req_body_string = vim.fn.json_encode(req_body)
@@ -39,7 +37,7 @@ function M.do_request(session, callback)
     callback = vim.schedule_wrap(callback)
 
     -- Make the POST request using plenary.curl
-    curl.post(config.openai.url, {
+    curl.post(config.openai_url, {
         body = req_body_string,
         headers = req_headers,
         stream = function(error, chunk)
@@ -78,4 +76,4 @@ function M.do_request(session, callback)
     })
 end
 
-return M
+return client

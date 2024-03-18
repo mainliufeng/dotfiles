@@ -11,6 +11,10 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- set leader
+vim.g.mapleader = ','
+vim.api.nvim_set_var("localleader", ',')
+
 require("lazy").setup({
     -----------------------------------------
     -- Basic
@@ -22,9 +26,15 @@ require("lazy").setup({
     -- chatgpt
     {
         "mainliufeng/gpt",
-        dir = "~/dotfiles/nvim/plugins/gpt",
+        dir = "~/dotfiles/code/gpt",
         config = function()
-            require("gpt").setup()
+            require("gpt").setup({
+                current_session_file = vim.fn.stdpath("data"):gsub("/$", "") .. "/gpt/sessions/current.md",
+                default_model = "gpt-4",
+                default_temperature = 0.2,
+                openai_url = "https://api.openai-proxy.org/v1/chat/completions",
+                openai_api_key = os.getenv("OPENAI_API_KEY"),
+            })
         end,
     },
     -- Search
@@ -32,8 +42,11 @@ require("lazy").setup({
     'nvim-lua/plenary.nvim',
     {
         'nvim-telescope/telescope.nvim',
-        tag = '0.1.2',
-        dependencies = { "nvim-telescope/telescope-fzf-native.nvim" },
+        tag = '0.1.5',
+        dependencies = {
+            "nvim-telescope/telescope-fzf-native.nvim",
+            "nvim-lua/plenary.nvim",
+        },
         config = function()
             require('mainliufeng.config.telescope')
         end
@@ -51,11 +64,6 @@ require("lazy").setup({
     'morhetz/gruvbox',
     -- Undo Tree
     'mbbill/undotree',
-    -- markdown
-    --{
-    --    'iamcco/markdown-preview.nvim',
-    --    build = "cd app && npm install",
-    --},
     -- Jump
     {
         'phaazon/hop.nvim',
@@ -80,35 +88,6 @@ require("lazy").setup({
             })
         end,
     },
-    --{
-    --    'anuvyklack/windows.nvim',
-    --    dependencies = {
-    --        'anuvyklack/middleclass',
-    --        'anuvyklack/animation.nvim'
-    --    },
-    --    config = function()
-    --        vim.o.winwidth = 10
-    --        vim.o.winminwidth = 10
-    --        vim.o.equalalways = false
-    --        require('windows').setup({
-    --            autowidth = {
-    --                enable = true, -- false
-    --                winwidth = 10,
-    --                filetype = {
-    --                },
-    --            },
-    --            ignore = {
-    --                buftype = {
-    --                },
-    --                filetype = {
-    --                }
-    --            },
-    --            animation = {
-    --                enable = false,
-    --            }
-    --        })
-    --    end
-    --},
     -- Keybinding
     'vim-scripts/LargeFile',
     -- Git
@@ -154,6 +133,16 @@ require("lazy").setup({
     -----------------------------------------
     -- Developer
     -----------------------------------------
+    {
+        "ThePrimeagen/refactoring.nvim",
+        dependencies = {
+            "nvim-lua/plenary.nvim",
+            "nvim-treesitter/nvim-treesitter",
+        },
+        config = function()
+            require("refactoring").setup()
+        end,
+    },
     -- Python
     'klen/python-mode',
     -- Golang
@@ -161,9 +150,6 @@ require("lazy").setup({
     -- Jsonc (json which supports comment)
     { 'neoclide/jsonc.vim' },
     -- Lsp
-    --{
-    --    'LuaLS/lua-language-server',
-    --},
     {
         "neovim/nvim-lspconfig",
         dependencies = {
@@ -181,10 +167,14 @@ require("lazy").setup({
         end
     },
     {
-        "simrat39/symbols-outline.nvim",
-        config = function()
-            require('symbols-outline').setup()
-        end
+        "hedyhli/outline.nvim",
+        lazy = true,
+        cmd = { "Outline", "OutlineOpen" },
+        keys = {
+            { "go", "<cmd>Outline<CR>", desc = "Toggle outline" },
+        },
+        opts = {
+        },
     },
     {
         "glepnir/lspsaga.nvim",
@@ -261,14 +251,22 @@ require("lazy").setup({
     },
     {
         "rcarriga/nvim-dap-ui",
-        dependencies = { "mfussenegger/nvim-dap" },
+        dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" },
         config = function()
             require('mainliufeng.config.dap-ui')
         end
     },
     { "theHamsta/nvim-dap-virtual-text" },
     { "nvim-telescope/telescope-dap.nvim" },
-    { "ThePrimeagen/harpoon" },
+    {
+        "ThePrimeagen/harpoon",
+        branch = "harpoon2",
+        dependencies = { "nvim-lua/plenary.nvim" },
+        config = function()
+            require('mainliufeng.config.harpoon')
+        end
+
+    },
     { "nvim-telescope/telescope-project.nvim", dependencies = { "ThePrimeagen/harpoon" } },
     -- Error
     { 'jose-elias-alvarez/null-ls.nvim' },

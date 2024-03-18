@@ -1,40 +1,39 @@
 local client = require("gpt.openai_client")
 
--- 解析session文件的模式
-local Modes = {
-    MODEL = {role = "", prefix =  "# Model"},
-    SYSTEM = {role = "system", prefix =  "# System"},
-    USER = {role = "user", prefix =  "# User"},
-    ASSISTANT = {role = "assistant", prefix =  "# Assistant"},
+local Session = {
+    model = "",
+    temperature = 0.0,
+    messages = {},
 }
 
-local function prefix_to_mode(prefix)
-    for _, mode in pairs(Modes) do
+function Session:new(o)
+    local session = setmetatable(o or {}, self)
+    self.__index = self
+
+    self.modes = {
+        model = {role = "", prefix =  "# Model"},
+        system = {role = "system", prefix =  "# System"},
+        user = {role = "user", prefix =  "# User"},
+        assistant = {role = "assistant", prefix =  "# Assistant"},
+    }
+
+    return session
+end
+
+function Session:prefix_to_mode(prefix)
+    for _, mode in pairs(self.modes) do
         if mode.prefix == prefix then
             return mode
         end
     end
 end
 
-local function role_to_mode(role)
-    for _, mode in pairs(Modes) do
+function Session:role_to_mode(role)
+    for _, mode in pairs(self.modes) do
         if mode.role == role then
             return mode
         end
     end
-end
-
-local Session = {
-    Modes = Modes,
-}
-Session.__index = Session
-
-function Session:new(model, temperature, messages)
-    self = setmetatable({}, Session)
-    self.model = model
-    self.temperature = temperature
-    self.messages = messages or {}
-    return self
 end
 
 function Session:from_file(file_path)
@@ -53,33 +52,33 @@ function Session:from_buf(buffer)
 end
 
 function Session:from_lines(lines)
-    self = setmetatable({}, Session)
-    self.messages = {}
+    local session = Session:new({})
+    session.messages = {}
 
 	local content = ""
     local mode
 
     local parse_content = function()
         if mode ~= nil then
-            if mode == Modes.MODEL then
+            if mode == self.modes.model then
                 local model_lines = vim.split(content, "\n", {})
 	            for _, model_line in ipairs(model_lines) do
                     local ok, json = pcall(vim.json.decode, model_line)
                     if ok and json ~= nil then
                         if json.model ~= nil then
-                            self.model = json.model
+                            session.model = json.model
                         end
                         if json.temperature ~= nil then
-                            self.temperature = json.temperature
+                            session.temperature = json.temperature
                         end
                     end
                 end
-            elseif mode == Modes.SYSTEM then
-                self:append_message(Modes.SYSTEM.role, content)
-            elseif mode == Modes.USER then
-                self:append_message(Modes.USER.role, content)
-            elseif mode == Modes.ASSISTANT then
-                self:append_message(Modes.ASSISTANT.role, content)
+            elseif mode == self.modes.system then
+                session:append_message(self.modes.system.role, content)
+            elseif mode == self.modes.user then
+                session:append_message(self.modes.user.role, content)
+            elseif mode == self.modes.assistant then
+                session:append_message(self.modes.assistant.role, content)
             end
         end
 
@@ -87,7 +86,7 @@ function Session:from_lines(lines)
 
 	for _, line in ipairs(lines) do
         local prefix = line:match("^(# %w+)")
-        local maybe_mode = prefix_to_mode(prefix)
+        local maybe_mode = self:prefix_to_mode(prefix)
         if maybe_mode ~= nil then
             parse_content()
             mode = maybe_mode
@@ -101,7 +100,7 @@ function Session:from_lines(lines)
         parse_content()
     end
 
-    return self
+    return session
 end
 
 function Session:to_buf(buffer)
@@ -110,7 +109,7 @@ end
 
 function Session:to_lines()
     local lines = {
-        Session.Modes.MODEL.prefix,
+        self.modes.model.prefix,
         "",
         vim.json.encode({model = self.model, temperature = self.temperature}),
         "",
@@ -121,7 +120,7 @@ function Session:to_lines()
             local content = message.content:gsub("^%s*(.-)%s*$","%1")
 
             if content ~= "" then
-                table.insert(lines, role_to_mode(message.role).prefix)
+                table.insert(lines, self:role_to_mode(message.role).prefix)
                 table.insert(lines, "")
 
                 local content_lines = vim.split(content, "\n", {})
@@ -144,6 +143,11 @@ function Session:append_message(role, content)
     })
 end
 
+function Session:ask(prompt, callback)
+    self:append_message(self.modes.user.role, prompt)
+    self:do_request(callback)
+end
+
 function Session:do_request(callback)
     local length = #self.messages
     if length == 0 then
@@ -151,18 +155,41 @@ function Session:do_request(callback)
     end
 
     local last_message = self.messages[length]
-    if last_message.role == Modes.ASSISTANT.role then
+    if last_message.role == self.modes.assistant.role then
         return
     end
 
     client.do_request(self, function(text, state)
         callback(text, state)
         if state == "END" then
-            self:append_message(Modes.ASSISTANT.role, text)
+            self:append_message(self.modes.assistant.role, text)
         elseif state == "ERROR" then
             print(text)
         end
     end)
+end
+
+function Session:run(buffer)
+    local callback = function(text, state)
+        if state == "START" or state == "CONTINUE" then
+            local callback_lines = vim.split(text, "\n", {})
+            local length = #callback_lines
+
+            for i, callback_line in ipairs(callback_lines) do
+                local current_line = vim.api.nvim_buf_get_lines(buffer, -2, -1, false)[1]
+                vim.api.nvim_buf_set_lines(buffer, -2, -1, false, { current_line .. callback_line })
+
+                if i < length then
+                    vim.api.nvim_buf_set_lines(buffer, -1, -1, false, { "" })
+                end
+            end
+        elseif state == "END" then
+            vim.api.nvim_buf_set_lines(buffer, -1, -1, false, { "", self.modes.user.prefix, "", "" })
+        end
+    end
+
+    vim.api.nvim_buf_set_lines(buffer, -1, -1, false, { "", self.modes.assistant.prefix, "", "" })
+    self:do_request(callback)
 end
 
 return Session
