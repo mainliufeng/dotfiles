@@ -8,17 +8,24 @@ local function keymap(m, k, c)
     return vim.keymap.set(m, k, c, opts)
 end
 
--- 跳
+-- 跳-word
 keymap("n", "s", cmd "HopWord")
+
+-- 跳到当前函数，上一个函数：[[
+-- 跳到下一个函数：]]
+
+-- 窗口
 keymap("n", "<C-j>", "<C-w>j")
 keymap("n", "<C-k>", "<C-w>k")
 keymap("n", "<C-h>", "<C-w>h")
 keymap("n", "<C-l>", "<C-w>l")
 keymap('n', '<C-w>z', cmd 'WinMaxToggle')
+
 -- 搜
 keymap("n", "<C-f>", cmd "Telescope find_files hidden=true no_ignore=true")
 keymap("n", "<C-b>", cmd "Telescope buffers initial_mode=insert")
 keymap("n", ";", cmd "Telescope commands")
+
 -- lsp
 keymap("n", "gh", "<cmd>Lspsaga lsp_finder<CR>")
 keymap("n", "gd", "<cmd>lua require('telescope.builtin').lsp_definitions()<CR>")
@@ -32,10 +39,12 @@ keymap("n", "<C-p>", "<cmd>lua require('telescope.builtin').lsp_document_symbols
 keymap("n", "<C-s>", "<cmd>lua require('telescope.builtin').lsp_dynamic_workspace_symbols()<CR>")
 keymap({ "n", "v" }, "ga", "<cmd>Lspsaga code_action<CR>")
 keymap("n", "<space>rn", "<cmd>lua vim.lsp.buf.rename()<CR>")
+
 -- terminal
 keymap("n", "<C-\\>", cmd 'exe v:count1 . "ToggleTerm direction=float"')
 keymap("i", "<C-\\>", '<Esc><Cmd>exe v:count1 . "ToggleTerm direction=float"<CR>')
 keymap("n", "<leader>x", "<cmd>:read !sh %<cr>")
+
 -- debug
 keymap("n", "<F3>", cmd "NvimTreeFindFileToggle")
 keymap("n", "<F4>", cmd "lua require'dapui'.toggle()")

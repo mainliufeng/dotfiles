@@ -66,11 +66,9 @@ require("lazy").setup({
     'mbbill/undotree',
     -- Jump
     {
-        'phaazon/hop.nvim',
-        branch = 'v2',
-        config = function()
-            require 'hop'.setup { keys = 'etovxqpdygfblzhckisuran' }
-        end
+        'smoka7/hop.nvim',
+        branch = 'feat-treesitter-nodes',
+        opts = {},
     },
     {
         "kwkarlwang/bufresize.nvim",
