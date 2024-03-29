@@ -1,16 +1,3 @@
-function on_attach(client, bufnr)
-    local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
-
-    local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
-
-    --Enable completion triggered by <c-x><c-o>
-    -- buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
-
-    -- Mappings.
-    local opts = { noremap = true, silent = true }
-
-end
-
 -- Setup lspconfig.
 local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
 capabilities.textDocument.completion.completionItem.snippetSupport = true
@@ -22,7 +9,7 @@ local nvim_lsp = require('lspconfig')
 -- GoLang
 nvim_lsp['gopls'].setup {
     cmd = { 'gopls' },
-    on_attach = on_attach,
+    --on_attach = on_attach,
     flags = {
         -- This will be the default in neovim 0.7+
         debounce_text_changes = 150,
@@ -31,7 +18,7 @@ nvim_lsp['gopls'].setup {
     settings = {
         gopls = {
             usePlaceholders = true,
-            experimentalPostfixCompletions = true,
+            --experimentalPostfixCompletions = true,
             analyses = {
                 unusedparams = true,
                 shadow = true,
@@ -65,6 +52,18 @@ nvim_lsp['lua_ls'].setup {
             },
         },
     },
+}
+nvim_lsp.pylsp.setup{
+  settings = {
+    pylsp = {
+      plugins = {
+        pycodestyle = {
+          ignore = {'W391'},
+          maxLineLength = 100
+        }
+      }
+    }
+  }
 }
 
 function goimports(wait_ms)

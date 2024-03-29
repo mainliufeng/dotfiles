@@ -12,6 +12,10 @@ sudo pacman -S luarocks
 go get golang.org/x/tools/gopls@latest
 sudo pacman -S delve
 
+# python (need pyenv active)
+pip install python-lsp-server
+pip install jedi
+
 # install bash-language-server
 yay -S bash-language-server
 # or npm i -g bash-language-server

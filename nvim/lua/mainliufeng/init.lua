@@ -22,7 +22,7 @@ require("lazy").setup({
     -- lazy
     { "folke/lazy.nvim", tag = "stable" },
     -- treesitter
-    { 'nvim-treesitter/nvim-treesitter', build = ':TSUpdate', event = "User FileOpened" },
+    { 'nvim-treesitter/nvim-treesitter', tag = "v0.9.2", build = ':TSUpdate', event = "User FileOpened" },
     -- chatgpt
     {
         "mainliufeng/gpt",
@@ -30,12 +30,25 @@ require("lazy").setup({
         config = function()
             require("gpt").setup({
                 current_session_file = vim.fn.stdpath("data"):gsub("/$", "") .. "/gpt/sessions/current.md",
-                default_model = "gpt-4",
+                --default_model = "gpt-4",
+                default_model = "qianxun-l-128k",
                 default_temperature = 0.2,
-                openai_url = "https://api.openai-proxy.org/v1/chat/completions",
-                openai_api_key = os.getenv("OPENAI_API_KEY"),
+                --openai_url = "https://api.openai-proxy.org/v1/chat/completions",
+                --openai_api_key = os.getenv("OPENAI_API_KEY"),
+                openai_url = "https://qianxun-dev.rcrai.com/open/v1/chat/completions",
+                openai_api_key = "ckm-248338a4ef7a0c728cce2624db60f3d4",
             })
         end,
+    },
+    -- mark
+    {
+        "ThePrimeagen/harpoon",
+        branch = "harpoon2",
+        dependencies = { "nvim-lua/plenary.nvim" },
+        config = function()
+            require('mainliufeng.config.harpoon')
+        end
+
     },
     -- Search
     'nvim-lua/popup.nvim',
@@ -52,6 +65,7 @@ require("lazy").setup({
         end
     },
     { "nvim-telescope/telescope-fzf-native.nvim", build = "make", lazy = true },
+    { "nvim-telescope/telescope-project.nvim", dependencies = { "ThePrimeagen/harpoon" } },
     { 'stevearc/dressing.nvim' },
     -- Line
     {
@@ -67,8 +81,8 @@ require("lazy").setup({
     -- Jump
     {
         'smoka7/hop.nvim',
-        branch = 'feat-treesitter-nodes',
-        opts = {},
+        version = '*',
+        opt = {},
     },
     {
         "kwkarlwang/bufresize.nvim",
@@ -142,7 +156,7 @@ require("lazy").setup({
         end,
     },
     -- Python
-    'klen/python-mode',
+    --'klen/python-mode',
     -- Golang
     { 'fatih/vim-go', build = ':GoUpdateBinaries' },
     -- Jsonc (json which supports comment)
@@ -256,16 +270,6 @@ require("lazy").setup({
     },
     { "theHamsta/nvim-dap-virtual-text" },
     { "nvim-telescope/telescope-dap.nvim" },
-    {
-        "ThePrimeagen/harpoon",
-        branch = "harpoon2",
-        dependencies = { "nvim-lua/plenary.nvim" },
-        config = function()
-            require('mainliufeng.config.harpoon')
-        end
-
-    },
-    { "nvim-telescope/telescope-project.nvim", dependencies = { "ThePrimeagen/harpoon" } },
     -- Error
     { 'jose-elias-alvarez/null-ls.nvim' },
     {
