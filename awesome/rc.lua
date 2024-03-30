@@ -19,6 +19,7 @@ local hotkeys_popup = require("awful.hotkeys_popup")
 require("awful.hotkeys_popup.keys")
 
 local scratch = require("scratch")
+local battery_widget = require("battery-widget")
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -108,7 +109,7 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 -- }}}
 
 -- Keyboard map indicator and switcher
-mykeyboardlayout = awful.widget.keyboardlayout()
+mykeyboardlayout = awful.widget.keyboardlayout() 
 
 -- {{{ Wibar
 -- Create a textclock widget
@@ -174,8 +175,9 @@ awful.screen.connect_for_each_screen(function(s)
     set_wallpaper(s)
 
     -- Each screen has its own tag table.
-    awful.tag({ "  1  ", "  2  ", "  3  ", "  4  ", "  5  ", "  6  ", "  7  ", "  8  ", "  9  " }, s,
-        awful.layout.layouts[1])
+    awful.tag({ "  1  ", "  2  ", "  3  ", "  4  " }, s, awful.layout.layouts[1])
+    awful.tag({ "  5  " }, s, awful.layout.suit.floating)
+    awful.tag({ "  6  ", "  7  ", "  8  ", "  9  " }, s, awful.layout.layouts[1])
 
     -- Create a promptbox for each screen
     s.mypromptbox = awful.widget.prompt()
@@ -220,6 +222,7 @@ awful.screen.connect_for_each_screen(function(s)
             wibox.widget.systray(),
             mytextclock,
             s.mylayoutbox,
+            battery_widget {adaptor = true},
         },
     }
 end)
