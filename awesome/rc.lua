@@ -615,3 +615,4 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 
 awful.spawn.with_shell("picom -b --config  $HOME/.config/awesome/picom.conf")
 awful.spawn.with_shell("nitrogen --restore")
+awful.spawn.with_shell("/usr/lib/org_kde_powerdevil")
