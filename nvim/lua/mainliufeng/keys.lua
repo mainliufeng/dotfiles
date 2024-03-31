@@ -46,7 +46,8 @@ keymap("i", "<C-\\>", '<Esc><Cmd>exe v:count1 . "ToggleTerm direction=float"<CR>
 keymap("n", "<leader>x", "<cmd>:read !sh %<cr>")
 
 -- debug
-keymap("n", "<F3>", cmd "NvimTreeFindFileToggle")
+--keymap("n", "<F3>", cmd "NvimTreeFindFileToggle")
+keymap("n", "<Tab>", cmd "Neotree toggle")
 keymap("n", "<F4>", cmd "lua require'dapui'.toggle()")
 keymap("n", "<F5>", cmd "lua require'dap'.continue()")
 keymap("n", "<F10>", cmd "lua require'dap'.step_over()")

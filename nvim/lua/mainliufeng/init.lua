@@ -30,13 +30,16 @@ require("lazy").setup({
         config = function()
             require("gpt").setup({
                 current_session_file = vim.fn.stdpath("data"):gsub("/$", "") .. "/gpt/sessions/current.md",
-                --default_model = "gpt-4",
-                default_model = "qianxun-l-128k",
                 default_temperature = 0.2,
-                --openai_url = "https://api.openai-proxy.org/v1/chat/completions",
-                --openai_api_key = os.getenv("OPENAI_API_KEY"),
-                openai_url = "https://qianxun-dev.rcrai.com/open/v1/chat/completions",
-                openai_api_key = "ckm-248338a4ef7a0c728cce2624db60f3d4",
+                -- gpt4 turbo
+                default_model = "gpt-4-0125-preview",
+                openai_url = "https://api.openai-proxy.org/v1/chat/completions",
+                openai_api_key = os.getenv("OPENAI_API_KEY"),
+
+                -- 千循
+                -- default_model = "qianxun-l-128k",
+                -- openai_url = "https://qianxun-dev.rcrai.com/open/v1/chat/completions",
+                -- openai_api_key = "ckm-248338a4ef7a0c728cce2624db60f3d4",
             })
         end,
     },
@@ -130,6 +133,19 @@ require("lazy").setup({
         opts = {},
         -- Optional dependencies
         dependencies = { "nvim-tree/nvim-web-devicons" },
+    },
+    {
+        "nvim-neo-tree/neo-tree.nvim",
+        branch = "v3.x",
+        dependencies = {
+            "nvim-lua/plenary.nvim",
+            "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+            "MunifTanjim/nui.nvim",
+        },
+        config = function()
+            require("mainliufeng.config.neotree")
+        end
+
     },
     -- Terminal
     {
