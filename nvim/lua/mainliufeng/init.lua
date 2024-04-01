@@ -21,8 +21,8 @@ require("lazy").setup({
     -----------------------------------------
     -- lazy
     { "folke/lazy.nvim", tag = "stable" },
-    -- treesitter
-    { 'nvim-treesitter/nvim-treesitter', tag = "v0.9.2", build = ':TSUpdate', event = "User FileOpened" },
+    -- Which key
+    "folke/which-key.nvim",
     -- chatgpt
     {
         "mainliufeng/gpt",
@@ -103,7 +103,7 @@ require("lazy").setup({
             })
         end,
     },
-    -- Keybinding
+    -- LargeFile
     'vim-scripts/LargeFile',
     -- Git
     'airblade/vim-gitgutter',
@@ -126,7 +126,7 @@ require("lazy").setup({
         },
         ft = { "fugitive" },
     },
-    -- File
+    -- File tree
     'kyazdani42/nvim-tree.lua',
     {
         'stevearc/oil.nvim',
@@ -155,12 +155,9 @@ require("lazy").setup({
             require("toggleterm").setup()
         end
     },
-    -- Which key
-    "folke/which-key.nvim",
 
-    -----------------------------------------
-    -- Developer
-    -----------------------------------------
+    -- Treesitter
+    { 'nvim-treesitter/nvim-treesitter', tag = "v0.9.2", build = ':TSUpdate', event = "User FileOpened" },
     {
         "ThePrimeagen/refactoring.nvim",
         dependencies = {
@@ -171,13 +168,20 @@ require("lazy").setup({
             require("refactoring").setup()
         end,
     },
-    -- Python
-    --'klen/python-mode',
-    -- Golang
-    { 'fatih/vim-go', build = ':GoUpdateBinaries' },
-    -- Jsonc (json which supports comment)
-    { 'neoclide/jsonc.vim' },
-    -- Lsp
+    {
+        "glepnir/lspsaga.nvim",
+        event = "LspAttach",
+        config = function()
+            require("mainliufeng.config.lspsaga")
+        end,
+        dependencies = {
+            { "nvim-tree/nvim-web-devicons" },
+            --Please make sure you install markdown and markdown_inline parser
+            { "nvim-treesitter/nvim-treesitter" }
+        }
+    },
+
+    -- Lsp 
     {
         "neovim/nvim-lspconfig",
         dependencies = {
@@ -193,28 +197,6 @@ require("lazy").setup({
         config = function()
             require('lsp_signature').setup()
         end
-    },
-    {
-        "hedyhli/outline.nvim",
-        lazy = true,
-        cmd = { "Outline", "OutlineOpen" },
-        keys = {
-            { "go", "<cmd>Outline<CR>", desc = "Toggle outline" },
-        },
-        opts = {
-        },
-    },
-    {
-        "glepnir/lspsaga.nvim",
-        event = "LspAttach",
-        config = function()
-            require("mainliufeng.config.lspsaga")
-        end,
-        dependencies = {
-            { "nvim-tree/nvim-web-devicons" },
-            --Please make sure you install markdown and markdown_inline parser
-            { "nvim-treesitter/nvim-treesitter" }
-        }
     },
     {
         'hrsh7th/nvim-cmp',
@@ -253,6 +235,20 @@ require("lazy").setup({
     { "molleweide/LuaSnip-snippets.nvim", lazy = true },
     { "rafamadriz/friendly-snippets", lazy = true },
     { "folke/neodev.nvim", opts = {} },
+
+    -- Developer
+    { 'fatih/vim-go', build = ':GoUpdateBinaries' },
+    { 'neoclide/jsonc.vim' },
+    {
+        "hedyhli/outline.nvim",
+        lazy = true,
+        cmd = { "Outline", "OutlineOpen" },
+        keys = {
+            { "go", "<cmd>Outline<CR>", desc = "Toggle outline" },
+        },
+        opts = {
+        },
+    },
     {
         "cshuaimin/ssr.nvim",
         -- Calling setup is optional.
