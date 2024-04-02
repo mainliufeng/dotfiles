@@ -58,17 +58,16 @@ require("lazy").setup({
     'nvim-lua/plenary.nvim',
     {
         'nvim-telescope/telescope.nvim',
-        tag = '0.1.5',
+        branch = '0.1.x',
         dependencies = {
-            "nvim-telescope/telescope-fzf-native.nvim",
-            "nvim-lua/plenary.nvim",
+            { "nvim-lua/plenary.nvim" },
+            { "nvim-telescope/telescope-fzf-native.nvim", build = "make", lazy = true },
+            { "nvim-telescope/telescope-project.nvim", dependencies = { "ThePrimeagen/harpoon" } },
         },
         config = function()
             require('mainliufeng.config.telescope')
         end
     },
-    { "nvim-telescope/telescope-fzf-native.nvim", build = "make", lazy = true },
-    { "nvim-telescope/telescope-project.nvim", dependencies = { "ThePrimeagen/harpoon" } },
     { 'stevearc/dressing.nvim' },
     -- Line
     {
@@ -86,6 +85,9 @@ require("lazy").setup({
         'smoka7/hop.nvim',
         version = '*',
         opt = {},
+        config = function()
+            require("hop").setup({ keys = 'etovxqpdygfblzhckisuran' })
+        end
     },
     {
         "kwkarlwang/bufresize.nvim",
@@ -183,58 +185,36 @@ require("lazy").setup({
 
     -- Lsp 
     {
-        "neovim/nvim-lspconfig",
+        'hrsh7th/nvim-cmp',
         dependencies = {
-            "hrsh7th/cmp-nvim-lsp",
+            -- lsp
+            { "neovim/nvim-lspconfig" },
+            { "ray-x/lsp_signature.nvim" },
+            -- complete
+            { "hrsh7th/cmp-nvim-lsp" },
+            { "saadparwaiz1/cmp_luasnip" },
+            { "hrsh7th/cmp-buffer" },
+            { "hrsh7th/cmp-path" },
+            { "hrsh7th/cmp-cmdline" },
+            { 'hrsh7th/cmp-nvim-lua' },
+            { 'lukas-reineke/cmp-under-comparator' },
+            { 'hrsh7th/cmp-nvim-lsp-document-symbol' },
+            -- snippet
+            { "L3MON4D3/LuaSnip", version = "v2", build = "make install_jsregexp" },
+            { "molleweide/LuaSnip-snippets.nvim" },
+            { "rafamadriz/friendly-snippets" },
+            { "folke/neodev.nvim" },
         },
         event = 'BufEnter',
         config = function()
-            require('mainliufeng.config.lsp')
-        end
-    },
-    {
-        "ray-x/lsp_signature.nvim",
-        config = function()
-            require('lsp_signature').setup()
-        end
-    },
-    {
-        'hrsh7th/nvim-cmp',
-        dependencies = {
-            "hrsh7th/cmp-nvim-lsp",
-            "saadparwaiz1/cmp_luasnip",
-            "hrsh7th/cmp-buffer",
-            "hrsh7th/cmp-path",
-            "hrsh7th/cmp-cmdline",
-            'hrsh7th/cmp-nvim-lua',
-            'lukas-reineke/cmp-under-comparator',
-            'hrsh7th/cmp-nvim-lsp-document-symbol',
-        },
-        event = 'InsertEnter *',
-        config = function()
             require('mainliufeng.config.cmp')
-        end
-    },
-    { "hrsh7th/cmp-nvim-lsp", lazy = true },
-    { "saadparwaiz1/cmp_luasnip", lazy = true },
-    { "hrsh7th/cmp-buffer", lazy = true },
-    { "hrsh7th/cmp-path", lazy = true },
-    { "hrsh7th/cmp-cmdline", lazy = true },
-    {
-        "L3MON4D3/LuaSnip",
-        version = "v2",
-        build = "make install_jsregexp",
-        event = "InsertEnter",
-        dependencies = { "friendly-snippets" },
-        config = function()
+            require('mainliufeng.config.lsp')
+            require('lsp_signature').setup()
             require("luasnip.loaders.from_lua").lazy_load()
             require("luasnip.loaders.from_vscode").lazy_load()
             require("luasnip.loaders.from_snipmate").lazy_load()
         end
     },
-    { "molleweide/LuaSnip-snippets.nvim", lazy = true },
-    { "rafamadriz/friendly-snippets", lazy = true },
-    { "folke/neodev.nvim", opts = {} },
 
     -- Developer
     { 'fatih/vim-go', build = ':GoUpdateBinaries' },
@@ -275,7 +255,10 @@ require("lazy").setup({
     },
     {
         "rcarriga/nvim-dap-ui",
-        dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" },
+        dependencies = {
+            "mfussenegger/nvim-dap",
+            "nvim-neotest/nvim-nio",
+        },
         config = function()
             require('mainliufeng.config.dap-ui')
         end
