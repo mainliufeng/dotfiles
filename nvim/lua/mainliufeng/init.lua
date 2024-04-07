@@ -24,26 +24,33 @@ require("lazy").setup({
     -- Which key
     "folke/which-key.nvim",
     -- chatgpt
-    {
-        "mainliufeng/gpt",
-        dir = "~/dotfiles/code/gpt",
-        config = function()
-            require("gpt").setup({
-                current_session_file = vim.fn.stdpath("data"):gsub("/$", "") .. "/gpt/sessions/current.md",
-                default_temperature = 0.2,
-                -- gpt4 turbo
-                default_model = "gpt-4-0125-preview",
-                openai_url = "https://api.openai-proxy.org/v1/chat/completions",
-                openai_api_key = os.getenv("OPENAI_API_KEY"),
+    --{
+    --    "mainliufeng/gpt",
+    --    dir = "~/dotfiles/code/gpt",
+    --    config = function()
+    --        require("gpt").setup({
+    --            current_session_file = vim.fn.stdpath("data"):gsub("/$", "") .. "/gpt/sessions/current.md",
+    --            default_temperature = 0.2,
+    --            -- gpt4 turbo
+    --            default_model = "gpt-4-0125-preview",
+    --            openai_url = "https://api.openai-proxy.org/v1/chat/completions",
+    --            openai_api_key = os.getenv("OPENAI_API_KEY"),
 
-                -- 千循
-                -- default_model = "qianxun-l-128k",
-                -- openai_url = "https://qianxun-dev.rcrai.com/open/v1/chat/completions",
-                -- openai_api_key = "ckm-248338a4ef7a0c728cce2624db60f3d4",
-            })
+    --            -- 千循
+    --            -- default_model = "qianxun-l-128k",
+    --            -- openai_url = "https://qianxun-dev.rcrai.com/open/v1/chat/completions",
+    --            -- openai_api_key = "ckm-248338a4ef7a0c728cce2624db60f3d4",
+    --        })
+    --    end,
+    --},
+    -- mark
+    {
+        "robitx/gp.nvim",
+        dir = "~/dotfiles/code/gp.nvim",
+        config = function()
+            require('mainliufeng.config.gp')
         end,
     },
-    -- mark
     {
         "ThePrimeagen/harpoon",
         branch = "harpoon2",
