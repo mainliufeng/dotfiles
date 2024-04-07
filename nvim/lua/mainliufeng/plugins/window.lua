@@ -26,8 +26,10 @@ vim.api.nvim_create_user_command("WinMaxToggle", function()
       ori_w = 0
       ori_h = 0
     else
-      vim.api.nvim_win_set_width(ori_win, ori_w)
-      vim.api.nvim_win_set_height(ori_win, ori_h)
+      if vim.api.nvim_win_is_valid(ori_win) then
+          vim.api.nvim_win_set_width(ori_win, ori_w)
+          vim.api.nvim_win_set_height(ori_win, ori_h)
+      end
       save_window_size()
       maximize_current_window()
     end
