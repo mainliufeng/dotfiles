@@ -136,13 +136,6 @@ require("lazy").setup({
         ft = { "fugitive" },
     },
     -- File tree
-    'kyazdani42/nvim-tree.lua',
-    {
-        'stevearc/oil.nvim',
-        opts = {},
-        -- Optional dependencies
-        dependencies = { "nvim-tree/nvim-web-devicons" },
-    },
     {
         "nvim-neo-tree/neo-tree.nvim",
         branch = "v3.x",
@@ -282,8 +275,6 @@ require("lazy").setup({
         end
     },
 })
-
-require("mainliufeng.config.nvim-tree")
 
 -- 本地插件
 require("mainliufeng.plugins.git")

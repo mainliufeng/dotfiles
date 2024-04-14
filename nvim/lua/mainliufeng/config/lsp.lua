@@ -53,18 +53,7 @@ nvim_lsp['lua_ls'].setup {
         },
     },
 }
-nvim_lsp.pylsp.setup{
-  settings = {
-    pylsp = {
-      plugins = {
-        pycodestyle = {
-          ignore = {'W391'},
-          maxLineLength = 100
-        }
-      }
-    }
-  }
-}
+nvim_lsp.pyright.setup{}
 
 function goimports(wait_ms)
     local params = vim.lsp.util.make_range_params()

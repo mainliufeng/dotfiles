@@ -47,7 +47,7 @@ keymap("n", "<leader>x", "<cmd>:read !sh %<cr>")
 
 -- debug
 keymap("n", "<F3>", cmd "Neotree reveal=true position=left toggle")
-keymap("n", "<Tab>", cmd "Neotree reveal=true toggle")
+keymap("n", "<C-e>", cmd "Neotree reveal=true toggle")
 keymap("n", "<F4>", cmd "lua require'dapui'.toggle()")
 keymap("n", "<F5>", cmd "lua require'dap'.continue()")
 keymap("n", "<F10>", cmd "lua require'dap'.step_over()")
@@ -59,6 +59,10 @@ require "which-key".register({
         p = { "<cmd>Telescope project<CR>", "Projects" },
         g = { "<cmd>Telescope live_grep<cr>", "Live grep" },
         b = { "<cmd>Telescope git_branches<cr>", "Checkout branch" },
+        e = { function()
+            local harpoon = require("harpoon")
+            harpoon.ui:toggle_quick_menu(harpoon:list())
+        end, "Harpoon" },
     },
 })
 require "which-key".register({
