@@ -9,7 +9,7 @@ func main() {
 	llm.ChatWithLLM(
 		&llm.OpenAI{},
 		[]tool.Tool{
-			&tool.WikiPediaSearch{Lang: "en"},
+			&tool.WikiPediaSearch{},
 			&tool.Calculator{},
 			&tool.DuckDuckGoSearch{},
 		},

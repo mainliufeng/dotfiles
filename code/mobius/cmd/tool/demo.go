@@ -15,7 +15,7 @@ func main() {
 	agent := &llm.LLMWithTools{
 		LLM: &llm.OpenAI{},
 		Tools: []tool.Tool{
-			&tool.WikiPediaSearch{Lang: "en"},
+			&tool.WikiPediaSearch{},
 			&tool.Calculator{},
 			&tool.DuckDuckGoSearch{},
 		},
