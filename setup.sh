@@ -1,5 +1,5 @@
 # base
-sudo pacman -S base-devel acpilight patch clash yay gcc make automake pkg-config fasd the_silver_searcher dmenu fasd htop pass browserpass pinyin-completion alsa-utils vulkan-intel feh ripgrep xclip downgrade libinput-gestures xdotool wmctrl
+sudo pacman -S base-devel acpilight patch clash-verge yay gcc make automake pkg-config fasd the_silver_searcher dmenu fasd htop pass browserpass pinyin-completion alsa-utils vulkan-intel feh ripgrep xclip downgrade libinput-gestures xdotool wmctrl
 yay -S batterymon-clone nerd-fonts-hack
 
 # git
@@ -25,5 +25,5 @@ sudo pacman -S npm
 sudo pacman -S rust
 
 # application
-sudo pacman -S clash volumeicon blueman libinput-gestures network-manager-applet flameshot xautolock slock nitrogen
+sudo pacman -S clash-verge volumeicon blueman libinput-gestures network-manager-applet flameshot xautolock slock nitrogen
 yay -S google-chrome

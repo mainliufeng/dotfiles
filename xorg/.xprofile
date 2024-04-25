@@ -40,7 +40,6 @@ libinput-gestures-setup start &
 
 case $1 in
     awesome)
-        clash &
         volumeicon &
         blueman-applet &
         nm-applet &
@@ -51,7 +50,6 @@ case $1 in
         /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
         ;;
     xmonad)
-        clash &
         volumeicon &
         blueman-applet &
         nm-applet &
@@ -63,7 +61,6 @@ case $1 in
         /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
         ;;
     dwm)
-        clash &
         wmname LG3D &
         spt &
 
