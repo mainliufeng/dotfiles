@@ -69,10 +69,10 @@ fi
 
 zplug load
 
-for sh in $DOTFILES_HOME/*/env/*; do source $sh; done
-for sh in $DOTFILES_HOME/*/env.*sh; do source $sh; done
-for sh in $DOTFILES_HOME/code/*/env/*; do source $sh; done
-for sh in $DOTFILES_HOME/code/*/env.*sh; do source $sh; done
+for sh in $DOTFILES_HOME/*/env/*; do [ -f "$sh" ] && source "$sh"; done
+for sh in $DOTFILES_HOME/*/env.*sh; do [ -f "$sh" ] && source "$sh"; done
+for sh in $DOTFILES_HOME/code/*/env/*; do [ -f "$sh" ] && source "$sh"; done
+for sh in $DOTFILES_HOME/code/*/env.*sh; do [ -f "$sh" ] && source "$sh"; done
 
 PRIVATE_DOTFILES_HOME="$HOME/dotfiles-private"
 for sh in $PRIVATE_DOTFILES_HOME/*/env.*sh; do source $sh; done
