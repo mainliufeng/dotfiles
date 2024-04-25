@@ -359,8 +359,18 @@ local clientkeys = gears.table.join(
         { description = "close", group = "client" }),
     awful.key({ modkey, }, "f", awful.client.floating.toggle,
         { description = "toggle floating", group = "client" }),
-    awful.key({ modkey, }, "Return", function(c) c:swap(awful.client.getmaster()) end,
-        { description = "move to master", group = "client" }),
+    awful.key({ modkey, }, "Return", function(c)
+        local master = awful.client.getmaster()
+        if c == master then
+            local windows = awful.client.visible(c.screen)
+            if #windows > 1 then
+                c:swap(windows[2])
+            end
+        else
+            c:swap(master)
+        end
+    end,
+    { description = "move to master or swap master with second", group = "client" }),
     awful.key({ modkey, }, "o", function(c) c:move_to_screen() end,
         { description = "move to screen", group = "client" }),
     awful.key({ modkey, }, "t", function(c) c.ontop = not c.ontop end,
