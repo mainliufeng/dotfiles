@@ -68,6 +68,7 @@ local altkey = "Mod1"
 -- Table of layouts to cover with awful.layout.inc, order matters.
 awful.layout.layouts = {
     awful.layout.suit.tile,
+    awful.layout.suit.magnifier,
     awful.layout.suit.max,
     awful.layout.suit.floating,
     -- awful.layout.suit.tile.left,
@@ -365,9 +366,13 @@ local clientkeys = gears.table.join(
             local windows = awful.client.visible(c.screen)
             if #windows > 1 then
                 c:swap(windows[2])
+                client.focus = windows[2]
+                windows[2]:raise()
             end
         else
             c:swap(master)
+            client.focus = awful.client.getmaster()
+            master:raise()
         end
     end,
     { description = "move to master or swap master with second", group = "client" }),
