@@ -18,7 +18,7 @@ local config = {
 	-- openai_api_key = os.getenv("env_name.."),
 	openai_api_key = os.getenv("OPENAI_API_KEY"),
 	-- api endpoint (you can change this to azure endpoint)
-	openai_api_endpoint = "https://api.openai-proxy.org/v1",
+	openai_api_endpoint = os.getenv("OPENAI_BASE_URL"),
 	-- openai_api_endpoint = "https://$URL.openai.azure.com/openai/deployments/{{model}}/chat/completions?api-version=2023-03-15-preview",
 	-- prefix for all commands
 	cmd_prefix = "Gp",
@@ -104,28 +104,62 @@ local config = {
 				.. "- Take a deep breath; You've got this!\n",
 		},
 		{
-			name = "CodeGPT4",
-			chat = false,
-			command = true,
+			name = "Phi-3",
+			chat = true,
+			command = false,
 			-- string with model name or table with model name and parameters
-			model = { model = "gpt-4-turbo-2024-04-09", temperature = 0.8, top_p = 1 },
+			model = { model = "phi3", temperature = 0.2, top_p = 1 },
 			-- system prompt (use this to specify the persona/role of the AI)
+			system_prompt = "You are a general AI assistant.\n\n"
+				.. "The user provided the additional info about how they would like you to respond:\n\n"
+				.. "- If you're unsure don't guess and say you don't know instead.\n"
+				.. "- Ask question if you need clarification to provide better answer.\n"
+				.. "- Think deeply and carefully from first principles step by step.\n"
+				.. "- Zoom out first to see the big picture and then zoom in to details.\n"
+				.. "- Use Socratic method to improve your thinking and coding skills.\n"
+				.. "- Don't elide any code from your output if the answer requires coding.\n"
+				.. "- Take a deep breath; You've got this!\n",
+		},
+        {
+            name = "qianxun-l-128k",
+            chat = true,
+            command = true,
+            -- string with model name or table with model name and parameters
+            model = { model = "qianxun-l-128k", temperature = 0.2, top_p = 1 },
+            -- system prompt (use this to specify the persona/role of the AI)
+            system_prompt = "You are a general AI assistant.\n\n"
+            .. "The user provided the additional info about how they would like you to respond:\n\n"
+            .. "- If you're unsure don't guess and say you don't know instead.\n"
+            .. "- Ask question if you need clarification to provide better answer.\n"
+            .. "- Think deeply and carefully from first principles step by step.\n"
+            .. "- Zoom out first to see the big picture and then zoom in to details.\n"
+            .. "- Use Socratic method to improve your thinking and coding skills.\n"
+            .. "- Don't elide any code from your output if the answer requires coding.\n"
+            .. "- Take a deep breath; You've got this!\n",
+        },
+        {
+            name = "CodeGPT4",
+            chat = false,
+            command = true,
+            -- string with model name or table with model name and parameters
+            model = { model = "gpt-4-turbo-2024-04-09", temperature = 0.8, top_p = 1 },
+            -- system prompt (use this to specify the persona/role of the AI)
 			system_prompt = "You are an AI working as a code editor.\n\n"
 				.. "Please AVOID COMMENTARY OUTSIDE OF THE SNIPPET RESPONSE.\n"
 				.. "START AND END YOUR ANSWER WITH:\n\n```",
 		},
-		{
-			name = "CodeGPT3-5",
-			chat = false,
-			command = true,
-			-- string with model name or table with model name and parameters
-			model = { model = "gpt-3.5-turbo-1106", temperature = 0.8, top_p = 1 },
-			-- system prompt (use this to specify the persona/role of the AI)
-			system_prompt = "You are an AI working as a code editor.\n\n"
-				.. "Please AVOID COMMENTARY OUTSIDE OF THE SNIPPET RESPONSE.\n"
-				.. "START AND END YOUR ANSWER WITH:\n\n```",
-		},
-	},
+        {
+            name = "CodeGPT3-5",
+            chat = false,
+            command = true,
+            -- string with model name or table with model name and parameters
+            model = { model = "gpt-3.5-turbo-1106", temperature = 0.8, top_p = 1 },
+            -- system prompt (use this to specify the persona/role of the AI)
+            system_prompt = "You are an AI working as a code editor.\n\n"
+            .. "Please AVOID COMMENTARY OUTSIDE OF THE SNIPPET RESPONSE.\n"
+            .. "START AND END YOUR ANSWER WITH:\n\n```",
+        },
+    },
 
 	-- directory for storing chat files
 	chat_dir = vim.fn.stdpath("data"):gsub("/$", "") .. "/gp/chats",
