@@ -1,14 +1,19 @@
 import os
+import json
 
 from langchain.tools.ddg_search import DuckDuckGoSearchRun
 from langchain_openai import ChatOpenAI
+from langchain_core.messages import AIMessage
+from langchain_core.runnables import Runnable
 
 from mobius.tools.qianxun import qianxun_file_search
 from mobius.tools.sql import get_create_statements
+from mobius.tools.shell import shell_tool
 
 tools = [qianxun_file_search, 
          get_create_statements, 
-         DuckDuckGoSearchRun()]
+         DuckDuckGoSearchRun(),
+         shell_tool]
 
 model = os.environ["OPENAI_DEFAULT_MODEL"]
 if not model:
@@ -16,3 +21,20 @@ if not model:
 
 llm = ChatOpenAI(model=model, temperature=0.7)
 
+def human_approval(msg: AIMessage) -> Runnable:
+    tool_strs = '\n\n'.join([
+        f'工具：{tool_call["name"]}\n参数：{tool_call["args"]}' 
+        for tool_call in msg.tool_calls 
+        if tool_call["name"] in [shell_tool.name]
+        ])
+    if not tool_strs:
+        return msg
+
+    input_msg = (f"是否授权执行下面工具\n\n{tool_strs}\n\n"
+                 "任何非'Y'/'Yes' (大小写不敏感) 都会被视为拒绝：")
+    resp = input(input_msg)
+    if resp.lower() not in ("yes", "y"):
+        raise ValueError(f"拒绝执行工具:\n\n{tool_strs}")
+    return msg
+
+llm_with_tools = llm.bind_tools(tools)
