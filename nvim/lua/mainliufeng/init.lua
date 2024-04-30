@@ -218,6 +218,20 @@ require("lazy").setup({
 
     -- Developer
     { 'fatih/vim-go', build = ':GoUpdateBinaries' },
+    {
+        "ray-x/go.nvim",
+        dependencies = {
+            "ray-x/guihua.lua",
+            "neovim/nvim-lspconfig",
+            "nvim-treesitter/nvim-treesitter",
+        },
+        config = function()
+            require("go").setup()
+        end,
+        event = {"CmdlineEnter"},
+        ft = {"go", 'gomod'},
+        build = ':lua require("go.install").update_all_sync()' -- if you need to install/update all binaries
+    },
     { 'neoclide/jsonc.vim' },
     {
         "hedyhli/outline.nvim",

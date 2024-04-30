@@ -53,7 +53,7 @@ XTerm*selectToClipboard: true
 
 
 Xcursor.theme: xcursor-breeze
-Xcursor.size: 64
+Xcursor.size: 128
 
 rofi.kb-row-up:                      Up,Control+k,Shift+Tab,Shift+ISO_Left_Tab
 rofi.kb-row-down:                    Down,Control+j
