@@ -1,7 +1,5 @@
 import os
-import json
 
-from langchain.tools.ddg_search import DuckDuckGoSearchRun
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage
 from langchain_core.runnables import Runnable
@@ -9,23 +7,27 @@ from langchain_core.runnables import Runnable
 from mobius.tools.qianxun import qianxun_file_search
 from mobius.tools.sql import get_create_statements
 from mobius.tools.shell import shell_tool
+from mobius.tools.python import python_repl_tool
+from mobius.tools.duckduckgo import duckduckgo_search
+
 
 tools = [qianxun_file_search, 
          get_create_statements, 
-         DuckDuckGoSearchRun(),
-         shell_tool]
+         duckduckgo_search,
+         shell_tool,
+         python_repl_tool]
 
 model = os.environ["OPENAI_DEFAULT_MODEL"]
 if not model:
     model = "gpt-4-turbo"
 
-llm = ChatOpenAI(model=model, temperature=0.7)
+llm = ChatOpenAI(model=model, temperature=0.4)
 
 def human_approval(msg: AIMessage) -> Runnable:
     tool_strs = '\n\n'.join([
         f'工具：{tool_call["name"]}\n参数：{tool_call["args"]}' 
         for tool_call in msg.tool_calls 
-        if tool_call["name"] in [shell_tool.name]
+        if tool_call["name"] in [shell_tool.name, python_repl_tool.name]
         ])
     if not tool_strs:
         return msg
