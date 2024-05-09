@@ -9,13 +9,14 @@ from mobius.tools.sql import get_create_statements
 from mobius.tools.shell import shell_tool
 from mobius.tools.python import python_repl_tool
 from mobius.tools.duckduckgo import duckduckgo_search
-
+from mobius.tools.url_loader import url_loader
 
 tools = [qianxun_file_search, 
          get_create_statements, 
          duckduckgo_search,
          shell_tool,
-         python_repl_tool]
+         python_repl_tool,
+         url_loader]
 
 model = os.environ["OPENAI_DEFAULT_MODEL"]
 if not model:
