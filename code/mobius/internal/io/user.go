@@ -14,6 +14,8 @@ func GetUserInputMessages(ctx context.Context) (messages []openai.ChatCompletion
 	var userInput string
 	fmt.Scanln(&userInput)
 
+	fmt.Println("")
+
 	switch userInput {
 	case "p":
 		imageMessage, err := GetScreenshotMessage(ctx)

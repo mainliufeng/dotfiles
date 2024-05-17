@@ -21,6 +21,10 @@ func main() {
 			&tool.WikiPediaSearch{},
 		},
 		LLM: &llm.OpenAI{},
+
+		OnToolCall: func(tool openai.Tool, output string) {
+			fmt.Printf("执行工具：%s，输出：\n%s\n", tool.Function.Name, output)
+		},
 	}
 
 	input := agent.AgentInput{
@@ -38,9 +42,10 @@ func main() {
 
 		if output.Resp != nil {
 			choice := output.Resp.Choices[0]
-			fmt.Printf("\n%s\n", choice.Message.Content)
+			fmt.Printf("\n模型输出：%s\n\n", choice.Message.Content)
 		}
 
+		doToolCall := false
 		for _, toolCall := range output.ToolCalls {
 			fmt.Printf(
 				"准备执行工具：%s\n参数：%s\n是否允许（y或Y表示允许）：",
@@ -56,8 +61,13 @@ func main() {
 			switch userInput {
 			case "y", "yes":
 				input.ConfirmToolCallIDs = append(input.ConfirmToolCallIDs, toolCall.ID)
+				doToolCall = true
 			}
+		}
 
+		if doToolCall {
+			fmt.Println("")
+			continue
 		}
 
 		userInput := io.GetUserInputMessages(ctx)

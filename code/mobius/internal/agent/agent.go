@@ -2,8 +2,6 @@ package agent
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
 	"mobius/internal/llm"
 	"mobius/internal/tool"
@@ -25,6 +23,8 @@ type Agent struct {
 	Tools []tool.Tool
 	LLM   llm.LLM
 
+	OnToolCall func(tool openai.Tool, output string)
+
 	Messages             []openai.ChatCompletionMessage
 	NeedConfirmToolCalls []openai.ToolCall
 	LastRequest          *openai.ChatCompletionRequest
@@ -42,7 +42,7 @@ func (agent *Agent) Chat(ctx context.Context, input AgentInput) (output AgentOut
 	newMessages := make([]openai.ChatCompletionMessage, 0)
 	if len(agent.NeedConfirmToolCalls) > 0 {
 		var toolCallMessages []openai.ChatCompletionMessage
-		toolCallMessages, err = tool.Call(ctx, agent.Tools, agent.NeedConfirmToolCalls, input.ConfirmToolCallIDs)
+		toolCallMessages, err = agent.CallTools(ctx, input.ConfirmToolCallIDs)
 		if err != nil {
 			return
 		}
@@ -68,12 +68,12 @@ func (agent *Agent) Chat(ctx context.Context, input AgentInput) (output AgentOut
 		return
 	}
 
-	req.Tools = tool.ToOpenaiTools(agent.Tools)
+	req.Tools = toOpenaiTools(agent.Tools)
 	agent.Messages = append(agent.Messages, newMessages...)
 	req.Messages = agent.Messages
 
-	bs, _ := json.Marshal(req)
-	fmt.Printf("req: %s\n\n", string(bs))
+	// bs, _ := json.Marshal(req)
+	// fmt.Printf("req: %s\n\n", string(bs))
 
 	resp, err := agent.LLM.CreateChatCompletion(ctx, *req)
 	if err != nil {
@@ -81,8 +81,8 @@ func (agent *Agent) Chat(ctx context.Context, input AgentInput) (output AgentOut
 	}
 	agent.LastRequest = req
 
-	bs, _ = json.Marshal(resp)
-	fmt.Printf("resp: %s\n\n", string(bs))
+	// bs, _ = json.Marshal(resp)
+	// fmt.Printf("resp: %s\n\n", string(bs))
 
 	choice := resp.Choices[0]
 	agent.Messages = append(agent.Messages, choice.Message)
@@ -96,6 +96,49 @@ func (agent *Agent) Chat(ctx context.Context, input AgentInput) (output AgentOut
 	agent.NeedConfirmToolCalls = choice.Message.ToolCalls
 	output = AgentOutput{
 		ToolCalls: choice.Message.ToolCalls,
+	}
+	return
+}
+
+func (agent *Agent) CallTools(ctx context.Context, confirmToolCallIDs []string) (messages []openai.ChatCompletionMessage, err error) {
+	confirmSet := make(map[string]struct{}, len(confirmToolCallIDs))
+	for _, toolCallID := range confirmToolCallIDs {
+		confirmSet[toolCallID] = struct{}{}
+	}
+
+	nameToolMap := make(map[string]tool.Tool, len(agent.Tools))
+	for _, tool := range agent.Tools {
+		nameToolMap[tool.Tool().Function.Name] = tool
+	}
+
+	for _, toolCall := range agent.NeedConfirmToolCalls {
+		tool, toolOK := nameToolMap[toolCall.Function.Name]
+		_, confirm := confirmSet[toolCall.ID]
+		if toolOK && confirm {
+			var toolOutput string
+			toolOutput, err = tool.Call(ctx, toolCall.Function.Arguments)
+			if err != nil {
+				return
+			}
+
+			if agent.OnToolCall != nil {
+				agent.OnToolCall(tool.Tool(), toolOutput)
+			}
+
+			messages = append(messages, openai.ChatCompletionMessage{
+				Role:       openai.ChatMessageRoleTool,
+				Content:    toolOutput,
+				ToolCallID: toolCall.ID,
+			})
+		}
+	}
+
+	return
+}
+
+func toOpenaiTools(tools []tool.Tool) (openaiTools []openai.Tool) {
+	for _, tool := range tools {
+		openaiTools = append(openaiTools, tool.Tool())
 	}
 	return
 }
