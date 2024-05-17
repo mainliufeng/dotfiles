@@ -17,6 +17,7 @@ langchainhub = "^0.1.15"
 langchain-experimental = "^0.0.57"
 bs4 = "^0.0.2"
 html2text = "^2024.2.26"
+pyautogen = {version = "^0.2.27", python = ">=3.11,<3.13"}
 
 
 [build-system]

@@ -3,17 +3,22 @@ import sys
 from langchain.agents import AgentExecutor
 from mobius.cases.dev import tools, llm_with_tools, human_approval
 
-from langchain import hub
 from langchain.agents import AgentExecutor
 from langchain.agents.format_scratchpad.tools import (
     format_to_tool_messages,
 )
 from langchain.agents.output_parsers.tools import ToolsAgentOutputParser
 from langchain_core.runnables import RunnablePassthrough
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 # prompt
-prompt = hub.pull("hwchase17/openai-tools-agent")
-# prompt.pretty_print()
+prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", "你是一个AI助手"),
+        ("user", "{input}"),
+        MessagesPlaceholder(variable_name="agent_scratchpad"),
+    ]
+)
 
 # agent
 agent = (
