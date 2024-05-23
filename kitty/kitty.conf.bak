@@ -13,6 +13,6 @@ background_opacity 0.5
 
 
 # BEGIN_KITTY_THEME
-# Solarized8 Dark
+# Atom
 include current-theme.conf
 # END_KITTY_THEME
