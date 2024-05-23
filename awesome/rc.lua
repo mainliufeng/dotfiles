@@ -52,7 +52,7 @@ end
 beautiful.init("/home/liufeng/.config/awesome/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
-local terminal = "st"
+local terminal = "kitt"
 --editor = os.getenv("EDITOR") or "nvim"
 local editor = "nvim"
 local editor_cmd = terminal .. " -e " .. editor
@@ -255,7 +255,7 @@ local globalkeys = gears.table.join(
     -- Scratchpad
     awful.key({ modkey }, "-",
         function()
-            scratch.toggle("st -n scratch")
+            scratch.toggle("kitt --name scratch")
         end,
         { description = "view scratchpad tag", group = "tag" }),
 
