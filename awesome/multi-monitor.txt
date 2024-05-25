@@ -1,8 +1,0 @@
-镜像显示
-xrandr --output eDP-1 --same-as HDMI-1 --mode 1920x1080
-
-放左边
-xrandr --output eDP-1 --auto --output HDMI-1 --auto --left-of eDP-1
-
-恢复
-xrandr --output eDP-1 --auto

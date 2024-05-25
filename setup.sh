@@ -1,5 +1,5 @@
 # base
-sudo pacman -S base-devel acpilight patch clash-verge yay gcc make automake pkg-config fasd the_silver_searcher dmenu fasd htop pass browserpass pinyin-completion alsa-utils vulkan-intel feh ripgrep xclip downgrade libinput-gestures xdotool wmctrl
+sudo pacman -S base-devel acpilight patch clash-verge yay gcc make automake pkg-config fasd the_silver_searcher dmenu fasd htop pass browserpass pinyin-completion alsa-utils vulkan-intel feh ripgrep xclip downgrade libinput-gestures xdotool wmctrl the_silver_searcher ripgrep
 yay -S batterymon-clone nerd-fonts-hack
 
 # git

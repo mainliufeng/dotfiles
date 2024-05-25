@@ -255,7 +255,7 @@ local globalkeys = gears.table.join(
     -- Scratchpad
     awful.key({ modkey }, "-",
         function()
-            scratch.toggle("kitt --name scratch")
+            scratch.toggle("kitt-scratch")
         end,
         { description = "view scratchpad tag", group = "tag" }),
 

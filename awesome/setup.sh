@@ -1,1 +1,1 @@
-sudo pacman -S awesome picom
+sudo pacman -S awesome
