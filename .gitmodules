@@ -1,0 +1,3 @@
+[submodule "code/gp.nvim"]
+	path = code/gp.nvim
+	url = git@github.com:mainliufeng/gp.nvim.git
