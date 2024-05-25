@@ -19,6 +19,7 @@ func main() {
 		Tools: []tool.Tool{
 			&tool.Calculator{},
 			&tool.WikiPediaSearch{},
+			&tool.GoogleSearch{},
 		},
 		LLM: &llm.OpenAI{},
 
