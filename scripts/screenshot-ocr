@@ -1,0 +1,10 @@
+#!/bin/sh
+
+ts=$(date +%s)
+picfile="$HOME/Pictures/ocr.${ts}.png"
+textfile="$HOME/Pictures/ocr.${ts}.text"
+flameshot gui -p ${picfile}
+tesseract ${picfile} - -l eng+chi_sim --psm 3 > ${textfile}
+st -e nvim "$textfile"
+rm ${picfile}
+rm ${textfile}

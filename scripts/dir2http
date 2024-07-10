@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+
+import os
+from flask import Flask, send_from_directory
+
+app = Flask(__name__)
+
+@app.route('/files/<path:subpath>')
+def get_directory(subpath):
+    # 发送目录下的文件给客户端
+    return send_from_directory(os.path.abspath("."), subpath)
+
+if __name__ == '__main__':
+    print("使用http://localhost:5000/files/文件路径 来访问文件")
+    app.run(host='0.0.0.0', port=5000)

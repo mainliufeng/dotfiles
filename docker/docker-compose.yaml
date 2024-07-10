@@ -1,0 +1,16 @@
+version: '3.7'
+
+services:
+  swagger-editor:
+    image: swaggerapi/swagger-editor:latest
+    ports:
+      - "8082:8080"
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8083:8080"
+    environment:
+      SWAGGER_JSON: /usr/share/nginx/html/swagger.json
+    volumes:
+      - /home/liufeng/dotfiles-private/swagger/docs:/usr/share/nginx/html/docs

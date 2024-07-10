@@ -1,0 +1,2 @@
+pacman -Qqe > ~/dotfiles/pacman/pkglist.txt
+pacman -Qqm > ~/dotfiles/pacman/foreignpkglist.txt

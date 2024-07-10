@@ -1,0 +1,2 @@
+#!/bin/sh
+sudo kill `xprop | grep PID | cut -d " " -f3`

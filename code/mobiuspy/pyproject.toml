@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "mobius"
+version = "0.1.0"
+description = ""
+authors = ["刘峰 <mainliufeng@gmail.com>"]
+readme = "README.md"
+packages = [{include = "mobius"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langchain = "^0.1.16"
+langchain-openai = "^0.1.4"
+pymysql = "^1.1.0"
+sqlalchemy = "^2.0.29"
+duckduckgo-search = "^5.3.0"
+langchainhub = "^0.1.15"
+langchain-experimental = "^0.0.57"
+bs4 = "^0.0.2"
+html2text = "^2024.2.26"
+pyautogen = {version = "^0.2.27", python = ">=3.11,<3.13"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

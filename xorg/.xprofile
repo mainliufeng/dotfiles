@@ -1,0 +1,78 @@
+#!/bin/sh
+#
+# ~/.xprofile
+#
+
+userresources=$HOME/.Xresources
+usermodmap=$HOME/.Xmodmap
+sysresources=/etc/X11/xinit/.Xresources
+sysmodmap=/etc/X11/xinit/.Xmodmap
+
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS="@im=fcitx"
+fcitx5 &
+
+DEFAULT_SESSION=awesome
+
+# merge in defaults and keymaps
+
+if [ -f $sysresources ]; then
+    xrdb -merge $sysresources
+fi
+
+if [ -f $sysmodmap ]; then
+    xmodmap $sysmodmap
+fi
+
+if [ -f "$userresources" ]; then
+    xrdb -merge "$userresources"
+fi
+
+if [ -f "$usermodmap" ]; then
+    xmodmap "$usermodmap"
+fi
+
+# start some nice programs
+
+libinput-gestures-setup start &
+#picom &
+
+case $1 in
+    awesome)
+        volumeicon &
+        blueman-applet &
+        nm-applet &
+        xautolock -time 10 -locker slock & 
+        batterymon &
+        flameshot &
+        #/usr/bin/bd-qimpanel.watchdog.sh &
+        /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
+        ;;
+    xmonad)
+        volumeicon &
+        blueman-applet &
+        nm-applet &
+        xautolock -time 10 -locker slock &
+        nitrogen --restore &
+        batterymon &
+        flameshot &
+        #/usr/bin/bd-qimpanel.watchdog.sh &
+        /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
+        ;;
+    dwm)
+        wmname LG3D &
+        spt &
+
+        #set statusbar
+        while true
+        do
+           if acpi -a | grep off-line > /dev/null; then
+               xsetroot -name "Bat. $( acpi -b | awk '{ print $4 }' | tr -d ',' ) | $(date +"%F %R")"
+           else
+               xsetroot -name "$(date +"%F %R")"
+           fi
+           sleep 1s   
+        done & ;;
+	*) ;;
+esac

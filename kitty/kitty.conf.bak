@@ -1,0 +1,18 @@
+font_family      Hack Nerd Font
+bold_font        auto
+italic_font      auto
+bold_italic_font auto
+
+font_size 12.0
+
+cursor_shape block
+
+scrollback_lines 50000
+
+background_opacity 0.5
+
+
+# BEGIN_KITTY_THEME
+# Atom
+include current-theme.conf
+# END_KITTY_THEME

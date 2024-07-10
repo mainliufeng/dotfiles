@@ -1,0 +1,17 @@
+## China
+Server = https://mirrors.qvq.net.cn/archlinux/$repo/os/$arch
+
+## China
+Server = https://mirrors.sjtug.sjtu.edu.cn/archlinux/$repo/os/$arch
+
+## China
+Server = https://mirrors.xjtu.edu.cn/archlinux/$repo/os/$arch
+
+## China
+Server = https://mirrors.jlu.edu.cn/archlinux/$repo/os/$arch
+
+## China
+Server = https://mirrors.neusoft.edu.cn/archlinux/$repo/os/$arch
+
+## China
+Server = https://mirrors.shanghaitech.edu.cn/archlinux/$repo/os/$arch
