@@ -16,6 +16,10 @@ yay -S pyright
 
 # install bash-language-server
 yay -S bash-language-server
+
+# lua language server
+yay -S lua-language-server 
+
 # or npm i -g bash-language-server
 
 sudo pacman -S ctags
