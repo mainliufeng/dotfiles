@@ -12,7 +12,7 @@ sudo pacman -S fzf
 sudo pacman -S fcitx5-qt fcitx5-gtk fcitx5-configtool fcitx5-chinese-addons fcitx5
 yay -S fcitx5-pinyin-zhwiki rime-ice-git fcitx5-rime
 # rime-ice-git配置
-# https://github.com/iDvel/rime-ice#%E9%85%8D%E7%BD%AE
+# https://github.com/iDvel/rime-ice?tab=readme-ov-file#arch-linux
 # rime选择输入法快捷键“ctrl+`”
 
 # font

@@ -105,7 +105,7 @@ execute "yay -S dingtalk-bin"
 # rcrai
 execute "sh ~/dotfiles-private/setup.sh"
 
-# manual_step "rime-ice-git配置：https://github.com/iDvel/rime-ice#%E9%85%8D%E7%BD%AE"
+manual_step "rime-ice-git配置：https://github.com/iDvel/rime-ice?tab=readme-ov-file#arch-linux"
 manual_step "clash-verge导入订阅"
 
 execute "sh go/after.sh"
