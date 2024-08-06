@@ -1,3 +1,9 @@
 [submodule "code/gp.nvim"]
 	path = code/gp.nvim
 	url = git@github.com:mainliufeng/gp.nvim.git
+[submodule "kde/kwin-last-used-desktop"]
+	path = kde/kwin-last-used-desktop
+	url = https://github.com/NoahHakansson/kwin-last-used-desktop.git
+[submodule "kde/krohnkite"]
+	path = kde/krohnkite
+	url = https://github.com/esjeon/krohnkite.git
