@@ -185,36 +185,86 @@ require("lazy").setup({
 
     -- Lsp 
     {
-        'hrsh7th/nvim-cmp',
+        "neovim/nvim-lspconfig", -- REQUIRED: for native Neovim LSP integration
+        lazy = false, -- REQUIRED: tell lazy.nvim to start this plugin at startup
         dependencies = {
-            -- lsp
-            { "neovim/nvim-lspconfig" },
-            { "ray-x/lsp_signature.nvim" },
-            -- complete
-            { "hrsh7th/cmp-nvim-lsp" },
-            { "saadparwaiz1/cmp_luasnip" },
-            { "hrsh7th/cmp-buffer" },
-            { "hrsh7th/cmp-path" },
-            { "hrsh7th/cmp-cmdline" },
-            { 'hrsh7th/cmp-nvim-lua' },
-            { 'lukas-reineke/cmp-under-comparator' },
-            { 'hrsh7th/cmp-nvim-lsp-document-symbol' },
-            -- snippet
-            { "L3MON4D3/LuaSnip", version = "v2", build = "make install_jsregexp" },
-            { "molleweide/LuaSnip-snippets.nvim" },
-            { "rafamadriz/friendly-snippets" },
-            { "folke/neodev.nvim" },
+            -- main one
+            { "ms-jpq/coq_nvim", branch = "coq" },
+
+            -- 9000+ Snippets
+            { "ms-jpq/coq.artifacts", branch = "artifacts" },
+
+            -- lua & third party sources -- See https://github.com/ms-jpq/coq.thirdparty
+            -- Need to **configure separately**
+            { 'ms-jpq/coq.thirdparty', branch = "3p" }
+            -- - shell repl
+            -- - nvim lua api
+            -- - scientific calculator
+            -- - comment banner
+            -- - etc
         },
-        event = 'BufEnter',
+        init = function()
+            vim.g.coq_settings = {
+                auto_start = true, -- if you want to start COQ at startup
+                -- Your COQ settings here
+                keymap = {
+                    recommended = false,
+                    pre_select = false,
+                    jump_to_mark = "<tab>",
+                    manual_complete = "<c-space>",
+                    bigger_preview = "<c-b>",
+                },
+            }
+
+            -- Keybindings
+            vim.api.nvim_set_keymap('i', '<Esc>', [[pumvisible() ? "\<C-e><Esc>" : "\<Esc>"]], { expr = true, silent = true })
+            vim.api.nvim_set_keymap('i', '<C-c>', [[pumvisible() ? "\<C-e><C-c>" : "\<C-c>"]], { expr = true, silent = true })
+            vim.api.nvim_set_keymap('i', '<BS>', [[pumvisible() ? "\<C-e><BS>" : "\<BS>"]], { expr = true, silent = true })
+            vim.api.nvim_set_keymap(
+              "i",
+              "<CR>",
+              [[pumvisible() ? (complete_info().selected == -1 ? "\<C-e><CR>" : "\<C-y>") : "\<CR>"]],
+              { expr = true, silent = true }
+            )
+            vim.api.nvim_set_keymap('i', '<C-j>', [[pumvisible() ? "\<C-n>" : "\<C-space>"]], { expr = true, silent = true })
+            vim.api.nvim_set_keymap('i', '<C-k>', [[pumvisible() ? "\<C-p>" : "\<C-k>"]], { expr = true, silent = true })
+        end,
         config = function()
-            require('mainliufeng.config.cmp')
+            -- Your LSP settings here
             require('mainliufeng.config.lsp')
-            require('lsp_signature').setup()
-            --require("luasnip.loaders.from_lua").lazy_load()
-            --require("luasnip.loaders.from_vscode").lazy_load()
-            --require("luasnip.loaders.from_snipmate").lazy_load()
-        end
+        end,
     },
+    --{
+    --    'hrsh7th/nvim-cmp',
+    --    dependencies = {
+    --        -- lsp
+    --        { "neovim/nvim-lspconfig" },
+    --        { "ray-x/lsp_signature.nvim" },
+    --        -- complete
+    --        { "hrsh7th/cmp-nvim-lsp" },
+    --        { "saadparwaiz1/cmp_luasnip" },
+    --        { "hrsh7th/cmp-buffer" },
+    --        { "hrsh7th/cmp-path" },
+    --        { "hrsh7th/cmp-cmdline" },
+    --        { 'hrsh7th/cmp-nvim-lua' },
+    --        { 'lukas-reineke/cmp-under-comparator' },
+    --        { 'hrsh7th/cmp-nvim-lsp-document-symbol' },
+    --        -- snippet
+    --        { "L3MON4D3/LuaSnip", version = "v2", build = "make install_jsregexp" },
+    --        { "molleweide/LuaSnip-snippets.nvim" },
+    --        { "rafamadriz/friendly-snippets" },
+    --        { "folke/neodev.nvim" },
+    --    },
+    --    event = 'BufEnter',
+    --    config = function()
+    --        require('mainliufeng.config.cmp')
+    --        require('mainliufeng.config.lsp')
+    --        require('lsp_signature').setup()
+    --        --require("luasnip.loaders.from_lua").lazy_load()
+    --        --require("luasnip.loaders.from_vscode").lazy_load()
+    --        --require("luasnip.loaders.from_snipmate").lazy_load()
+    --    end
+    --},
 
     -- Developer
     { 'fatih/vim-go', build = ':GoUpdateBinaries' },

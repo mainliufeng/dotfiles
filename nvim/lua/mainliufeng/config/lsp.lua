@@ -1,20 +1,21 @@
 -- Setup lspconfig.
-local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
-capabilities.textDocument.completion.completionItem.snippetSupport = true
+----local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
+----capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 -- Setup lspconfig.
 local nvim_lsp = require('lspconfig')
+local coq = require "coq"
 
 -- setup languages
 -- GoLang
-nvim_lsp['gopls'].setup {
+nvim_lsp['gopls'].setup(coq.lsp_ensure_capabilities({
     cmd = { 'gopls' },
     --on_attach = on_attach,
     flags = {
         -- This will be the default in neovim 0.7+
         debounce_text_changes = 150,
     },
-    capabilities = capabilities,
+    ----capabilities = capabilities,
     settings = {
         gopls = {
             usePlaceholders = true,
@@ -29,7 +30,7 @@ nvim_lsp['gopls'].setup {
     init_options = {
         usePlaceholders = true,
     }
-}
+}))
 nvim_lsp['bashls'].setup {}
 nvim_lsp['lua_ls'].setup {
     settings = {
