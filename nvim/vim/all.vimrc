@@ -124,3 +124,6 @@ endfunction
 
 command! -range CamelCase silent! call <SID>Camelize(<range>)
 command! -range SnakeCase silent! call <SID>Snakeize(<range>)
+
+nnoremap <C-i> <C-i>
+nnoremap <C-o> <C-o>

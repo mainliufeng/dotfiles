@@ -113,7 +113,7 @@ require("lazy").setup({
         end,
     },
     -- LargeFile
-    'vim-scripts/LargeFile',
+    --'vim-scripts/LargeFile',
     -- Git
     'airblade/vim-gitgutter',
     {

@@ -1,5 +1,6 @@
 if vim.g.vscode then
-    -- VSCode extension
+    -- Install plugins
+    require('mainliufengvscode')
 else
     -- Install plugins
     require('mainliufeng')
