@@ -54,4 +54,4 @@ keymap("n", "gr", ":call VSCodeNotify('editor.action.goToReferences')<CR>")
 keymap("n", "gD", ":call VSCodeNotify('editor.action.goToTypeDefinition')<CR>")
 keymap("n", "gd", ":call VSCodeNotify('editor.action.goToDeclaration')<CR>")
 keymap("n", "<space>rn", ":call VSCodeNotify('editor.action.rename')<CR>")
-
+keymap("n", "<C-j>", ":call VSCodeNotify('workbench.action.togglePanel')<CR>")
