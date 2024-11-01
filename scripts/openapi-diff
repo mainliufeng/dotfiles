@@ -1,0 +1,13 @@
+#!/usr/bin/sh
+
+# openapi-diff 是用来比较两个openapi文件的差异，并生成一个html文件, 用浏览器打开
+# 
+# 使用方法： 
+# openapi-diff 旧openapi文件 新openapi文件
+
+if ! command -v oasdiff &> /dev/null
+then
+    go install github.com/tufin/oasdiff@latest
+fi
+oasdiff changelog -f html $1 $2 > /tmp/openapi-diff.html && xdg-open /tmp/openapi-diff.html
+
