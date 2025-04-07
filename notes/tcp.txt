@@ -1,0 +1,25 @@
+## 查看最大支持多少socket连接
+
+命令：
+sudo sysctl -a | grep conntrack_max
+
+
+## 查看当前tcp连接状态
+
+命令：
+cat /proc/net/sockstat
+sockets: used 2318
+TCP: inuse 152 orphan 0 tw 12 alloc 155 mem 1501
+UDP: inuse 13 mem 1965
+UDPLITE: inuse 0
+RAW: inuse 0
+FRAG: inuse 0 memory 0
+
+说明：
+alloc=s.tcp_total=s.tcp_total=s.tcp4_hashed + s.tcp6_hashed + s.closed - s.tcp_tws
+
+
+## 清除time_wait的连接
+
+命令：
+fuser -k -n tcp 8080
