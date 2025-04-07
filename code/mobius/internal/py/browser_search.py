@@ -35,9 +35,16 @@ async def search_google(query):
         await browser.close()
         return results
 
-# 示例用法
-query = sys.argv[1]
-results = asyncio.run(search_google(query))
-for result in results:
-    print(f"Title: {result['title']}\nURL: {result['url']}\n")
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: browser-search <query>")
+        sys.exit(1)
+    
+    query = sys.argv[1]
+    results = asyncio.run(search_google(query))
+    for result in results:
+        print(f"Title: {result['title']}\nURL: {result['url']}\n")
+
+if __name__ == "__main__":
+    main()
 

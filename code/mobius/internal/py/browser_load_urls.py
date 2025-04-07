@@ -28,9 +28,16 @@ async def load_urls(urls):
         await browser.close()
     return [content for content in text_contents if content is not None]
 
-# 示例用法
-urls = sys.argv[1:]
-text_contents = asyncio.run(load_urls(urls))
-for text_content in text_contents:
-    print(f"{text_content[:2000]}\n")  # 只输出前2000个字符以示例
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: browser-load-urls <url1> [url2 ...]")
+        sys.exit(1)
+    
+    urls = sys.argv[1:]
+    text_contents = asyncio.run(load_urls(urls))
+    for text_content in text_contents:
+        print(f"{text_content[:2000]}\n")  # 只输出前2000个字符以示例
+
+if __name__ == "__main__":
+    main()
 
