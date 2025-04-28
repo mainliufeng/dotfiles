@@ -1,0 +1,168 @@
+{
+  "name": "promptAndModel",
+  "node_trigger_mode": "AllPredecessor",
+  "input_type": {
+    "title": "map[string]any"
+  },
+  "output_type": {
+    "title": "*schema.Message"
+  },
+  "gen_local_state": {},
+  "id": "-Wu4kn",
+  "component": "Graph",
+  "nodes": [
+    {
+      "id": "start",
+      "key": "start",
+      "name": "Start",
+      "type": "start",
+      "layoutData": {
+        "position": {
+          "x": -388,
+          "y": -22
+        }
+      }
+    },
+    {
+      "id": "end",
+      "key": "end",
+      "name": "End",
+      "type": "end",
+      "layoutData": {
+        "position": {
+          "x": 400,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": "-0Y7p3",
+      "key": "ChatTemplate1",
+      "name": "",
+      "type": "ChatTemplate",
+      "component_schema": {
+        "name": "chatTemplate",
+        "component": "ChatTemplate",
+        "component_source": "official",
+        "identifier": "github.com/cloudwego/eino/components/prompt",
+        "input_type": {
+          "title": "map[string]any",
+          "description": ""
+        },
+        "output_type": {
+          "title": "[]*schema.Message",
+          "description": ""
+        },
+        "config": {
+          "description": "github.com/cloudwego/eino/blob/main/components/prompt/chat_template.go",
+          "schema": {
+            "type": "object",
+            "description": "",
+            "properties": {
+              "FormatType": {
+                "type": "number",
+                "description": "",
+                "enum": [
+                  "0",
+                  "1",
+                  "2"
+                ],
+                "goDefinition": {
+                  "libraryRef": {
+                    "version": "",
+                    "module": "",
+                    "pkgPath": ""
+                  },
+                  "typeName": "schema.FormatType",
+                  "kind": "uint8",
+                  "isPtr": false
+                }
+              }
+            },
+            "propertyOrder": [
+              "FormatType"
+            ],
+            "goDefinition": {
+              "libraryRef": {
+                "version": "",
+                "module": "",
+                "pkgPath": ""
+              },
+              "typeName": "Config",
+              "kind": "struct",
+              "isPtr": false
+            }
+          },
+          "config_input": "{}"
+        },
+        "is_io_type_mutable": false,
+        "version": "1.0.0"
+      },
+      "node_option": {},
+      "layoutData": {
+        "position": {
+          "x": -164,
+          "y": -249
+        }
+      }
+    },
+    {
+      "id": "1CIyd3",
+      "key": "CustomChatModel1",
+      "name": "",
+      "type": "ChatModel",
+      "component_schema": {
+        "name": "ChatModel",
+        "component": "ChatModel",
+        "component_source": "custom",
+        "input_type": {
+          "title": "[]*schema.Message",
+          "description": ""
+        },
+        "output_type": {
+          "title": "*schema.Message",
+          "description": ""
+        },
+        "is_io_type_mutable": false,
+        "version": "1.0.0"
+      },
+      "layoutData": {
+        "position": {
+          "x": 100,
+          "y": 34
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "",
+      "name": "",
+      "sourceWorkflowNodeId": "start",
+      "targetWorkflowNodeId": "-0Y7p3",
+      "source_node_key": "start",
+      "target_node_key": "ChatTemplate1"
+    },
+    {
+      "id": "",
+      "name": "",
+      "sourceWorkflowNodeId": "1CIyd3",
+      "targetWorkflowNodeId": "end",
+      "source_node_key": "CustomChatModel1",
+      "target_node_key": "end"
+    },
+    {
+      "id": "",
+      "name": "",
+      "sourceWorkflowNodeId": "-0Y7p3",
+      "targetWorkflowNodeId": "1CIyd3",
+      "source_node_key": "ChatTemplate1",
+      "target_node_key": "CustomChatModel1"
+    }
+  ],
+  "branches": [],
+  "nodeCounter": {
+    "ChatTemplate": 2,
+    "Lambda": 2
+  }
+}

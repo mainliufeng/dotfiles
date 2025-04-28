@@ -11,6 +11,7 @@ import (
 	"mobius/internal/tools"
 	"os"
 
+	ccb "github.com/cloudwego/eino-ext/callbacks/cozeloop"
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components/tool"
@@ -18,10 +19,22 @@ import (
 	"github.com/cloudwego/eino/flow/agent"
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
+	"github.com/coze-dev/cozeloop-go"
 )
 
 func main() {
 	ctx := context.Background()
+
+	// cozeloop
+	client, err := cozeloop.NewClient()
+	if err != nil {
+		panic(err)
+	}
+	defer client.Close(ctx)
+	// 在服务 init 时 once 调用
+	handler := ccb.NewLoopHandler(client)
+	callbacks.AppendGlobalHandlers(handler)
+
 	tools := []tool.BaseTool{
 		tools.SearchTool,
 		tools.UrlLoaderTool,
@@ -56,8 +69,8 @@ func main() {
 			Role:    schema.User,
 			Content: "辽阳今天天气",
 		},
-	}, agent.WithComposeOptions())
-	//}, agent.WithComposeOptions(compose.WithCallbacks(&LoggerCallback{})))
+		//}, agent.WithComposeOptions())
+	}, agent.WithComposeOptions(compose.WithCallbacks(&LoggerCallback{})))
 	if err != nil {
 		logs.Errorf("failed to stream: %v", err)
 		return
