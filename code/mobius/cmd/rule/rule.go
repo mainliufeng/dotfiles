@@ -3,37 +3,48 @@ package main
 import (
 	"context"
 	"log"
+	"mobius/internal/callbacks/jaeger"
 	"mobius/internal/logs"
 	"mobius/internal/tools"
 	"os"
 	"strings"
 
-	ccb "github.com/cloudwego/eino-ext/callbacks/cozeloop"
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
-	"github.com/coze-dev/cozeloop-go"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func main() {
 	ctx := context.Background()
 
-	// cozeloop
-	client, err := cozeloop.NewClient()
+	// // cozeloop
+	// client, err := cozeloop.NewClient()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// defer client.Close(ctx)
+	// // 在服务 init 时 once 调用
+	// handler := ccb.NewLoopHandler(client)
+
+	handler, shutdown, err := jaeger.NewJaegerHandler()
 	if err != nil {
 		panic(err)
 	}
-	defer client.Close(ctx)
-	// 在服务 init 时 once 调用
-	handler := ccb.NewLoopHandler(client)
+	defer shutdown(ctx)
+
 	callbacks.AppendGlobalHandlers(handler)
 
 	// 直接调用api
-	ctx, span := cozeloop.StartSpan(ctx, "开始", "custom")
-	defer span.Finish(ctx)
+	//ctx, span := cozeloop.StartSpan(ctx, "开始", "custom")
+	//defer span.Finish(ctx)
+
+	ctx, span := otel.Tracer("mobius").Start(ctx, "开始", trace.WithSpanKind(trace.SpanKindClient))
+	defer span.End()
 
 	tools := []tool.BaseTool{
 		tools.SearchTool,
