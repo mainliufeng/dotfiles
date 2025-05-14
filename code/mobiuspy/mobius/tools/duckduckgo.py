@@ -1,4 +1,0 @@
-from langchain.tools.ddg_search import DuckDuckGoSearchRun
-from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
-
-duckduckgo_search = DuckDuckGoSearchRun(api_wrapper=DuckDuckGoSearchAPIWrapper())
