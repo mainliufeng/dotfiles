@@ -109,3 +109,8 @@ export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 
 # JINA_CLI_END
 
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/home/liufeng/.lmstudio/bin"
+# End of LM Studio CLI section
+
