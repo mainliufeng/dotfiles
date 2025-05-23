@@ -70,7 +70,7 @@ func main() {
 	model, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
 		APIKey:  os.Getenv("OPENAI_API_KEY"),
 		BaseURL: os.Getenv("OPENAI_BASE_URL"),
-		Model:   "gpt-4.1",
+		Model:   "gpt-4o-mini",
 	})
 	if err != nil {
 		log.Fatalf("NewChatModel of gemini failed, err=%v", err)
@@ -87,26 +87,10 @@ func main() {
 		return
 	}
 
-	//message, err := ragent.Generate(ctx, []*schema.Message{
-	//	{
-	//		Role:    schema.System,
-	//		Content: "你是一个AI助手",
-	//	},
-	//	{
-	//		Role:    schema.User,
-	//		Content: "65+88*102等于多少",
-	//	},
-	//}, agent.WithComposeOptions())
-	//if err != nil {
-	//	logs.Errorf("failed to stream: %v", err)
-	//	return
-	//}
-	//logs.Infof("message: %v", message)
-
 	sr, err := ragent.Stream(ctx, []*schema.Message{
 		{
 			Role:    schema.System,
-			Content: "你是一个AI助手",
+			Content: "你是一个AI助手\n如果使用playwright，请记得关闭浏览器",
 		},
 		{
 			Role:    schema.User,
