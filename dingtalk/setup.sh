@@ -14,3 +14,6 @@
 # export QT_QPA_PLATFORM="wayland;xcb"
 
 yay -S lib32-libxcrypt-compat libxcrypt-compat
+
+# 修复共享桌面就退出会议
+# https://claude.ai/share/3bec3fa9-f2a9-4365-abf3-2d2b13ab12a4
