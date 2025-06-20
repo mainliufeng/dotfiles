@@ -633,5 +633,6 @@ client.connect_signal("focus", function(c) c.border_color = beautiful.border_foc
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 -- }}}
 
-awful.spawn.with_shell("/usr/lib/org_kde_powerdevil")
-awful.spawn.with_shell("volumeicon &")
+awful.spawn.once("/usr/lib/org_kde_powerdevil")
+awful.spawn.once("volumeicon")
+awful.spawn.once("picom --config ~/.config/picom/picom.conf --vsync")
