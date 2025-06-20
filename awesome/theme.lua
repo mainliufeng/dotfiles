@@ -12,21 +12,49 @@ local themes_path = gfs.get_themes_dir()
 local theme = {}
 
 -- 设置全局字体
-theme.font               = "Hack Nerd Font Mono 10"
-theme.taglist_font       = "Hack Nerd Font Mono 8"
-theme.fg_normal          = "#FFFFFF"
-theme.fg_focus           = "#FFFFFF"
-theme.bg_focus           = "#555555"
-theme.bg_normal          = "#000000"
-theme.fg_urgent          = "#CC9393"
-theme.bg_urgent          = "#006B8E"
-theme.border_width       = dpi(2)
-theme.border_normal      = "#252525"
-theme.border_focus       = "#B7BA26"
-theme.taglist_fg_focus   = "#FFFFFF"
-theme.tasklist_bg_normal = "#222222"
-theme.tasklist_fg_focus  = "#4CB7DB"
+theme.font               = "Noto Sans 10"
+theme.taglist_font       = "Noto Sans 9"
+-- Solarized Dark 配色
+-- 参考：https://ethanschoonover.com/solarized/
+-- base03:    #002b36
+-- base02:    #073642
+-- base01:    #586e75
+-- base00:    #657b83
+-- base0:     #839496
+-- base1:     #93a1a1
+-- base2:     #eee8d5
+-- base3:     #fdf6e3
+-- yellow:    #b58900
+-- orange:    #cb4b16
+-- red:       #dc322f
+-- magenta:   #d33682
+-- violet:    #6c71c4
+-- blue:      #268bd2
+-- cyan:      #2aa198
+-- green:     #859900
 
+theme.fg_normal          = "#839496"   -- base0
+theme.fg_focus           = "#fdf6e3"   -- base3
+theme.bg_normal          = "#002b36"   -- base03
+theme.bg_focus           = "#073642"   -- base02
+
+theme.fg_urgent          = "#dc322f"   -- red
+theme.bg_urgent          = "#073642"   -- base02
+
+theme.border_width       = dpi(2)
+theme.border_normal      = "#073642"   -- base02
+theme.border_focus       = "#268bd2"   -- blue
+
+theme.taglist_fg_focus   = "#fdf6e3"   -- base3
+theme.taglist_bg_focus   = "#b58900"   -- yellow
+
+theme.tasklist_bg_normal = "#073642"   -- base02
+theme.tasklist_fg_focus  = "#2aa198"   -- cyan
+
+theme.menu_bg_normal     = "#002b36"   -- base03
+theme.menu_bg_focus      = "#268bd2"   -- blue
+theme.menu_fg_normal     = "#839496"   -- base0
+theme.menu_fg_focus      = "#fdf6e3"   -- base3
 
 -- There are other variable sets
 -- overriding the default one when
