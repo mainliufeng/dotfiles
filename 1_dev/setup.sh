@@ -35,31 +35,10 @@ execute() {
     fi
 }
 
-# ssh key
-execute "ssh-keygen -t rsa -b 4096 -C \"mainliufeng@gmail.com\""
-
 # base
-execute "sh pacman/link.sh"
 execute "sudo pacman -S yay"
-execute "sudo pacman -S base-devel patch yay gcc make automake pkg-config fasd the_silver_searcher dmenu fasd htop alsa-utils vulkan-intel feh ripgrep xclip downgrade libinput-gestures xdotool wmctrl the_silver_searcher ripgrep fzf kitty openssh google-chrome"
-#execute "sudo pacman -S acpilight pass browserpass"
-execute "yay -S clash-verge batterymon-clone"
+execute "sudo pacman -S base-devel patch yay gcc make automake pkg-config fasd the_silver_searcher dmenu fasd htop alsa-utils feh ripgrep xclip downgrade the_silver_searcher ripgrep fzf openssh openvpn"
 execute "yay -S nerd-fonts-hack"
-execute "sh libinput/link.sh"
-execute "sh locale/link.sh"
-execute "sh openvpn/setup.sh"
-execute "sh resolv/link.sh"
-execute "sh rofi/setup.sh"
-execute "sh rofi/link.sh"
-execute "sh user-dirs/link.sh"
-execute "sh xorg/setup.sh"
-execute "sh xorg/link.sh"
-execute "sh awesome/setup.sh"
-execute "sh awesome/link.sh"
-
-# input method
-execute "sudo pacman -S fcitx5-qt fcitx5-gtk fcitx5-configtool fcitx5-chinese-addons fcitx5"
-execute "yay -S fcitx5-pinyin-zhwiki rime-ice-git fcitx5-rime"
 
 # zsh
 execute "sh zsh/setup.sh"
@@ -68,9 +47,6 @@ execute "sh zsh/link.sh"
 # git
 execute "sh git/setup.sh"
 execute "sh git/link.sh"
-
-# kitty
-execute "sh kitty/link.sh"
 
 # neovim
 execute "sh nvim/setup.sh"
@@ -95,18 +71,8 @@ execute "sh docker/link.sh"
 # k8s
 execute "sh kube/setup.sh"
 
-# application
-execute "sudo pacman -S volumeicon blueman libinput-gestures network-manager-applet flameshot xautolock slock nitrogen"
-execute "yay -S google-chrome"
-
-# dingtalk
-execute "yay -S dingtalk-bin"
-
 # rcrai
 execute "sh ~/dotfiles-private/setup.sh"
-
-manual_step "rime-ice-git配置：https://github.com/iDvel/rime-ice?tab=readme-ov-file#arch-linux"
-manual_step "clash-verge导入订阅"
 
 execute "sh go/after.sh"
 execute "sh kube/after.sh"
