@@ -50,13 +50,13 @@ require("lazy").setup({
     -- Which key
     "folke/which-key.nvim",
     -- mark
-    {
-        "robitx/gp.nvim",
-        dir = "~/dotfiles/code/gp.nvim",
-        config = function()
-            require('mainliufeng.config.gp')
-        end,
-    },
+    --{
+    --    "robitx/gp.nvim",
+    --    dir = "~/dotfiles/code/gp.nvim",
+    --    config = function()
+    --        require('mainliufeng.config.gp')
+    --    end,
+    --},
     {
         "ThePrimeagen/harpoon",
         branch = "harpoon2",
