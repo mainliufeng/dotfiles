@@ -114,3 +114,7 @@ export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 export PATH="$PATH:/home/liufeng/.lmstudio/bin"
 # End of LM Studio CLI section
 
+# 如果 dbus 未设置，自动启动
+if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+  export $(dbus-launch)
+fi
