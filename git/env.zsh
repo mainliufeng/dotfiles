@@ -33,3 +33,5 @@ function gstpick() {
     echo "未选择stash，退出"
   fi
 }
+
+export LESSCHARSET=utf-8
