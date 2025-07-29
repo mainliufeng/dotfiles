@@ -65,6 +65,8 @@ if &term =~ '256color'
     set t_ut=
 endif
 
+set guicursor=n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20
+
 set t_8f=^[[38;2;%lu;%lu;%lum        " set foreground color
 set t_8b=^[[48;2;%lu;%lu;%lum        " set background color
 set t_Co=256                         " Enable 256 colors
