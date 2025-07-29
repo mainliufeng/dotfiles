@@ -68,6 +68,9 @@ execute "sh python/link.sh"
 execute "sh docker/setup.sh"
 execute "sh docker/link.sh"
 
+# redis
+execute "sh redis/setup.sh"
+
 # k8s
 execute "sh kube/setup.sh"
 
