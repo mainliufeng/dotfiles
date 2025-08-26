@@ -189,58 +189,56 @@ require("lazy").setup({
         }
     },
 
+    -- Completion
+    {
+        'saghen/blink.cmp',
+        lazy = false,
+        dependencies = 'rafamadriz/friendly-snippets',
+        version = 'v0.*',
+        opts = {
+            keymap = {
+                preset = 'none',
+                ['<C-j>'] = { 'select_next', 'fallback' },
+                ['<C-k>'] = { 'select_prev', 'fallback' },
+                ['<CR>'] = { 'accept', 'fallback' },
+                ['<C-Space>'] = { 'show', 'hide' },
+                ['<Tab>'] = { 'snippet_forward', 'fallback' },
+                ['<S-Tab>'] = { 'snippet_backward', 'fallback' },
+                ['<C-b>'] = { 'scroll_documentation_up', 'fallback' },
+                ['<C-f>'] = { 'scroll_documentation_down', 'fallback' },
+                ['<C-e>'] = { 'hide', 'fallback' },
+            },
+            appearance = {
+                use_nvim_cmp_as_default = true,
+                nerd_font_variant = 'mono'
+            },
+            sources = {
+                default = { 'lsp', 'path', 'snippets', 'buffer' },
+            },
+            completion = {
+                accept = {
+                    auto_brackets = {
+                        enabled = true,
+                    },
+                },
+                menu = {
+                    draw = {
+                        treesitter = { 'lsp' }
+                    }
+                },
+                documentation = {
+                    auto_show = true,
+                    auto_show_delay_ms = 200,
+                },
+            },
+        },
+        opts_extend = { "sources.default" }
+    },
     -- Lsp
     {
-        "neovim/nvim-lspconfig", -- REQUIRED: for native Neovim LSP integration
-        lazy = false,            -- REQUIRED: tell lazy.nvim to start this plugin at startup
-        dependencies = {
-            -- main one
-            { "ms-jpq/coq_nvim",       branch = "coq" },
-
-            -- 9000+ Snippets
-            { "ms-jpq/coq.artifacts",  branch = "artifacts" },
-
-            -- lua & third party sources -- See https://github.com/ms-jpq/coq.thirdparty
-            -- Need to **configure separately**
-            { 'ms-jpq/coq.thirdparty', branch = "3p" }
-            -- - shell repl
-            -- - nvim lua api
-            -- - scientific calculator
-            -- - comment banner
-            -- - etc
-        },
-        init = function()
-            vim.g.coq_settings = {
-                auto_start = true, -- if you want to start COQ at startup
-                -- Your COQ settings here
-                keymap = {
-                    recommended = false,
-                    pre_select = false,
-                    jump_to_mark = "<tab>",
-                    manual_complete = "<c-space>",
-                    bigger_preview = "<c-b>",
-                },
-            }
-
-            -- Keybindings
-            vim.api.nvim_set_keymap('i', '<Esc>', [[pumvisible() ? "\<C-e><Esc>" : "\<Esc>"]],
-                { expr = true, silent = true })
-            vim.api.nvim_set_keymap('i', '<C-c>', [[pumvisible() ? "\<C-e><C-c>" : "\<C-c>"]],
-                { expr = true, silent = true })
-            vim.api.nvim_set_keymap('i', '<BS>', [[pumvisible() ? "\<C-e><BS>" : "\<BS>"]],
-                { expr = true, silent = true })
-            vim.api.nvim_set_keymap(
-                "i",
-                "<CR>",
-                [[pumvisible() ? (complete_info().selected == -1 ? "\<C-e><CR>" : "\<C-y>") : "\<CR>"]],
-                { expr = true, silent = true }
-            )
-            vim.api.nvim_set_keymap('i', '<C-j>', [[pumvisible() ? "\<C-n>" : "\<C-space>"]],
-                { expr = true, silent = true })
-            vim.api.nvim_set_keymap('i', '<C-k>', [[pumvisible() ? "\<C-p>" : "\<C-k>"]], { expr = true, silent = true })
-        end,
+        "neovim/nvim-lspconfig",
+        lazy = false,
         config = function()
-            -- Your LSP settings here
             require('mainliufeng.config.lsp')
         end,
     },
