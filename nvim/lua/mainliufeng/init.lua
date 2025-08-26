@@ -191,11 +191,8 @@ require("lazy").setup({
 
     -- AI Code Completion
     {
-        'Exafunction/codeium.nvim',
-        dependencies = {
-            "nvim-lua/plenary.nvim",
-            "hrsh7th/nvim-cmp",
-        },
+        'Exafunction/windsurf.vim',
+        event = 'BufEnter',
         config = function()
             require('mainliufeng.config.windsurf')
         end

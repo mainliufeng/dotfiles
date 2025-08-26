@@ -77,29 +77,13 @@ require "which-key".register({
         a = {
             name = "AI Assistant",
             c = { "<cmd>Codeium Chat<cr>", "Open Codeium Chat" },
-            t = { "<cmd>Codeium Toggle<cr>", "Toggle Codeium" },
+            t = { "<cmd>CodeiumToggle<cr>", "Toggle Codeium" },
             s = { function() 
-                local status = require('codeium.virtual_text').status_string()
+                local status = vim.fn['codeium#GetStatusString']()
                 print("Codeium Status: " .. status)
             end, "Show Codeium Status" },
         },
     },
 })
 
--- Windsurf AI 补全快捷键 (使用 Alt 组合避免冲突)
--- Alt+Enter: 接受 AI 建议
-keymap("i", "<M-CR>", function()
-    return require('codeium.virtual_text').accept()
-end)
--- Alt+]: 下一个 AI 建议  
-keymap("i", "<M-]>", function()
-    return require('codeium.virtual_text').cycle_or_complete(1)
-end)
--- Alt+[: 上一个 AI 建议
-keymap("i", "<M-[>", function()
-    return require('codeium.virtual_text').cycle_or_complete(-1)
-end)
--- Alt+x: 清除 AI 建议
-keymap("i", "<M-x>", function()
-    return require('codeium.virtual_text').clear()
-end)
+-- 注意：Windsurf AI 补全快捷键已在 windsurf.lua 中定义，使用 Alt 组合键避免冲突
