@@ -1,0 +1,9 @@
+{
+  "statusLine": {
+    "type": "command",
+    "command": "bash /home/liufeng/.claude/statusline.sh"
+  },
+  "outputStyle": "default",
+  "autoSave": true,
+  "maxTokens": 4000
+}
