@@ -189,6 +189,17 @@ require("lazy").setup({
         }
     },
 
+    -- AI Code Completion
+    {
+        'Exafunction/codeium.nvim',
+        dependencies = {
+            "nvim-lua/plenary.nvim",
+            "hrsh7th/nvim-cmp",
+        },
+        config = function()
+            require('mainliufeng.config.windsurf')
+        end
+    },
     -- Completion
     {
         'saghen/blink.cmp',
