@@ -292,7 +292,59 @@ require("lazy").setup({
             "nvim-treesitter/nvim-treesitter",
         },
         config = function()
-            require("go").setup()
+            -- Function to load .env file
+            local function load_env_file()
+                local env_file = vim.fn.findfile('.env', '.;')
+                if env_file == '' then
+                    return {}
+                end
+                
+                local env_vars = {}
+                local file = io.open(env_file, 'r')
+                if file then
+                    for line in file:lines() do
+                        -- Skip empty lines and comments
+                        if not line:match('^%s*$') and not line:match('^%s*#') then
+                            local key, value = line:match('^([^=]+)=(.*)$')
+                            if key and value then
+                                -- Remove quotes if present
+                                value = value:gsub('^["\'](.*)["\']$', '%1')
+                                env_vars[key] = value
+                            end
+                        end
+                    end
+                    file:close()
+                end
+                return env_vars
+            end
+            
+            -- Load environment variables and set them
+            local env_vars = load_env_file()
+            for key, value in pairs(env_vars) do
+                vim.fn.setenv(key, value)
+            end
+            
+            require("go").setup({
+                -- Enable environment variable loading for tests
+                test_runner = 'go', -- can be go, ginkgo, richgo, dlv, ginkgo
+                run_in_floaterm = false, -- set to true to run in float window
+                floaterm = {   -- position of float window
+                    posititon = 'auto', -- one of {`top`, `bottom`, `left`, `right`, `center`, `auto`}
+                    width = 0.45, -- width of float window if not auto
+                    height = 0.98, -- height of float window if not auto
+                },
+            })
+            
+            -- Reload env vars on buffer enter
+            vim.api.nvim_create_autocmd({"BufEnter"}, {
+                pattern = {"*.go"},
+                callback = function()
+                    local env_vars = load_env_file()
+                    for key, value in pairs(env_vars) do
+                        vim.fn.setenv(key, value)
+                    end
+                end
+            })
         end,
         event = { "CmdlineEnter" },
         ft = { "go", 'gomod' },
