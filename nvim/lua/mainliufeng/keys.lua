@@ -50,6 +50,7 @@ keymap("n", "<F3>", cmd "Neotree reveal=true position=left toggle")
 keymap("n", "<C-e>", cmd "Neotree reveal=true toggle")
 keymap("n", "<F4>", cmd "lua require'dapui'.toggle()")
 keymap("n", "<F5>", cmd "lua require'dap'.continue()")
+keymap("n", "<F6>", cmd "lua require'mainliufeng.config.go-debug'.setup_debug_with_ui()")
 keymap("n", "<F10>", cmd "lua require'dap'.step_over()")
 keymap("n", "<F11>", cmd "lua require'dap'.step_into()")
 keymap("n", "<F12>", cmd "lua require'dap'.step_out()")
@@ -70,6 +71,23 @@ require "which-key".register({
         t = { "<cmd>'<,'>ToggleTermSendVisualSelection<CR>", "Run visual selection" },
     },
 }, { mode = "v" })
+
+-- Debug 相关快捷键
+require "which-key".register({
+    ["<space>"] = {
+        d = {
+            name = "Debug",
+            c = { "<cmd>lua require'dap'.continue()<cr>", "Continue" },
+            u = { "<cmd>lua require'dapui'.toggle()<cr>", "Toggle UI" },
+            i = { "<cmd>lua require'mainliufeng.config.go-debug'.setup_debug_with_ui()<cr>", "Interactive Debug" },
+            b = { "<cmd>lua require'dap'.toggle_breakpoint()<cr>", "Toggle Breakpoint" },
+            B = { "<cmd>lua require'dap'.set_breakpoint(vim.fn.input('Breakpoint condition: '))<cr>", "Conditional Breakpoint" },
+            s = { "<cmd>Telescope dap configurations<cr>", "Debug Configurations" },
+            r = { "<cmd>lua require'dap'.run_last()<cr>", "Run Last" },
+            t = { "<cmd>lua require'dap'.terminate()<cr>", "Terminate" },
+        },
+    },
+})
 
 -- Windsurf (Codeium) AI 快捷键
 require "which-key".register({

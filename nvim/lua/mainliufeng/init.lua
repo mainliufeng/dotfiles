@@ -383,6 +383,8 @@ require("lazy").setup({
         "leoluz/nvim-dap-go",
         config = function()
             require('dap-go').setup()
+            -- 设置交互式调试配置
+            require('mainliufeng.config.go-debug').setup_quick_debug_presets()
         end
     },
     {
