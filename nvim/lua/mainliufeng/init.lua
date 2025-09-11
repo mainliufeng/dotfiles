@@ -239,6 +239,9 @@ require("lazy").setup({
                     auto_show_delay_ms = 200,
                 },
             },
+            cmdline = {
+                enabled = false,
+            },
         },
         opts_extend = { "sources.default" }
     },
