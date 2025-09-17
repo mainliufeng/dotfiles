@@ -242,12 +242,9 @@ require("lazy").setup({
                     auto_show_delay_ms = 500,  -- 增加延迟减少频繁更新
                     update_delay_ms = 100,
                 },
-                trigger = {
-                    signature_help = {
-                        enabled = true,
-                        blocked_trigger_characters = {},
-                    },
-                },
+            },
+            signature = {
+                enabled = true,
             },
             cmdline = {
                 enabled = false,
