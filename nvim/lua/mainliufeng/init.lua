@@ -104,11 +104,12 @@ require("lazy").setup({
     },
     {
         "kwkarlwang/bufresize.nvim",
+        event = "VimResized",  -- 只在窗口调整大小时加载
         config = function()
             require("bufresize").setup({
                 register = {
                     keys = {},
-                    trigger_events = { "BufWinEnter", "WinEnter" },
+                    trigger_events = { "BufWinEnter" },  -- 减少触发事件
                 },
                 resize = {
                     keys = {},
@@ -192,7 +193,7 @@ require("lazy").setup({
     -- AI Code Completion
     {
         'Exafunction/windsurf.vim',
-        event = 'BufEnter',
+        event = 'InsertEnter',  -- 只在进入插入模式时加载，减少初始化开销
         config = function()
             require('mainliufeng.config.windsurf')
         end
@@ -231,12 +232,21 @@ require("lazy").setup({
                 },
                 menu = {
                     draw = {
-                        treesitter = { 'lsp' }
-                    }
+                        treesitter = { 'lsp' },
+                        columns = { { "label", "label_description", gap = 1 }, { "kind_icon", "kind" } },
+                    },
+                    max_items = 200,  -- 限制补全项数量，提升性能
                 },
                 documentation = {
                     auto_show = true,
-                    auto_show_delay_ms = 200,
+                    auto_show_delay_ms = 500,  -- 增加延迟减少频繁更新
+                    update_delay_ms = 100,
+                },
+                trigger = {
+                    signature_help = {
+                        enabled = true,
+                        blocked_trigger_characters = {},
+                    },
                 },
             },
             cmdline = {
@@ -321,28 +331,52 @@ require("lazy").setup({
                 return env_vars
             end
             
-            -- Load environment variables and set them
-            local env_vars = load_env_file()
+            -- Load environment variables once and cache them
+            local cached_env_vars = nil
+            local last_env_file_mtime = nil
+
+            local function get_env_vars_cached()
+                local env_file = vim.fn.findfile('.env', '.;')
+                if env_file == '' then
+                    return {}
+                end
+
+                -- Check if file was modified
+                local stat = vim.loop.fs_stat(env_file)
+                if not stat then return cached_env_vars or {} end
+
+                local current_mtime = stat.mtime.sec
+                if cached_env_vars and last_env_file_mtime == current_mtime then
+                    return cached_env_vars
+                end
+
+                -- File changed or first load, reload env vars
+                cached_env_vars = load_env_file()
+                last_env_file_mtime = current_mtime
+                return cached_env_vars
+            end
+
+            -- Load environment variables and set them once
+            local env_vars = get_env_vars_cached()
             for key, value in pairs(env_vars) do
                 vim.fn.setenv(key, value)
             end
-            
+
             require("go").setup({
-                -- Enable environment variable loading for tests
-                test_runner = 'go', -- can be go, ginkgo, richgo, dlv, ginkgo
-                run_in_floaterm = false, -- set to true to run in float window
-                floaterm = {   -- position of float window
-                    posititon = 'auto', -- one of {`top`, `bottom`, `left`, `right`, `center`, `auto`}
-                    width = 0.45, -- width of float window if not auto
-                    height = 0.98, -- height of float window if not auto
+                test_runner = 'go',
+                run_in_floaterm = false,
+                floaterm = {
+                    posititon = 'auto',
+                    width = 0.45,
+                    height = 0.98,
                 },
             })
-            
-            -- Reload env vars on buffer enter
-            vim.api.nvim_create_autocmd({"BufEnter"}, {
-                pattern = {"*.go"},
+
+            -- Only reload env vars when .env file changes (much less frequent)
+            vim.api.nvim_create_autocmd({"BufWritePost"}, {
+                pattern = {".env"},
                 callback = function()
-                    local env_vars = load_env_file()
+                    local env_vars = get_env_vars_cached()
                     for key, value in pairs(env_vars) do
                         vim.fn.setenv(key, value)
                     end
