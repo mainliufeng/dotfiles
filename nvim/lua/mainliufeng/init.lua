@@ -299,81 +299,68 @@ require("lazy").setup({
             "nvim-treesitter/nvim-treesitter",
         },
         config = function()
-            -- Function to load .env file
-            local function load_env_file()
+            -- 读取并应用 .env（简化，无需 mtime 缓存），支持清理已删除变量
+            local function read_env_file()
                 local env_file = vim.fn.findfile('.env', '.;')
                 if env_file == '' then
-                    return {}
+                    return nil, {}
                 end
-                
-                local env_vars = {}
+
+                local vars = {}
                 local file = io.open(env_file, 'r')
                 if file then
                     for line in file:lines() do
-                        -- Skip empty lines and comments
                         if not line:match('^%s*$') and not line:match('^%s*#') then
-                            local key, value = line:match('^([^=]+)=(.*)$')
+                            local key, value = line:match('^%s*([^=]+)%s*=%s*(.*)$')
                             if key and value then
-                                -- Remove quotes if present
                                 value = value:gsub('^["\'](.*)["\']$', '%1')
-                                env_vars[key] = value
+                                vars[key] = value
                             end
                         end
                     end
                     file:close()
                 end
-                return env_vars
+                return env_file, vars
             end
-            
-            -- Load environment variables once and cache them
-            local cached_env_vars = nil
-            local last_env_file_mtime = nil
 
-            local function get_env_vars_cached()
-                local env_file = vim.fn.findfile('.env', '.;')
-                if env_file == '' then
-                    return {}
+            local last_env_keys = {}
+
+            local function apply_env_from_dotenv()
+                local _, vars = read_env_file()
+                -- 清理上次设置但这次不存在的变量，避免脏值
+                for key, _ in pairs(last_env_keys) do
+                    if vars[key] == nil then
+                        vim.env[key] = nil
+                    end
                 end
-
-                -- Check if file was modified
-                local stat = vim.loop.fs_stat(env_file)
-                if not stat then return cached_env_vars or {} end
-
-                local current_mtime = stat.mtime.sec
-                if cached_env_vars and last_env_file_mtime == current_mtime then
-                    return cached_env_vars
+                -- 应用新变量
+                for key, value in pairs(vars) do
+                    vim.env[key] = value
                 end
-
-                -- File changed or first load, reload env vars
-                cached_env_vars = load_env_file()
-                last_env_file_mtime = current_mtime
-                return cached_env_vars
+                last_env_keys = {}
+                for key, _ in pairs(vars) do
+                    last_env_keys[key] = true
+                end
             end
 
-            -- Load environment variables and set them once
-            local env_vars = get_env_vars_cached()
-            for key, value in pairs(env_vars) do
-                vim.fn.setenv(key, value)
-            end
+            -- 启动时应用一次
+            apply_env_from_dotenv()
 
             require("go").setup({
                 test_runner = 'go',
                 run_in_floaterm = false,
                 floaterm = {
-                    posititon = 'auto',
+                    position = 'auto',
                     width = 0.45,
                     height = 0.98,
                 },
             })
 
-            -- Only reload env vars when .env file changes (much less frequent)
-            vim.api.nvim_create_autocmd({"BufWritePost"}, {
+            -- .env 保存或删除时刷新环境变量
+            vim.api.nvim_create_autocmd({"BufWritePost", "BufDelete"}, {
                 pattern = {".env"},
                 callback = function()
-                    local env_vars = get_env_vars_cached()
-                    for key, value in pairs(env_vars) do
-                        vim.fn.setenv(key, value)
-                    end
+                    apply_env_from_dotenv()
                 end
             })
         end,
