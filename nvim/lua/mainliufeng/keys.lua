@@ -97,16 +97,3 @@ require "which-key".add({
     { "<space>dr", "<cmd>lua require'dap'.run_last()<cr>", desc = "Run Last" },
     { "<space>dt", "<cmd>lua require'dap'.terminate()<cr>", desc = "Terminate" },
 })
-
--- Windsurf (Codeium) AI 快捷键
-require "which-key".add({
-    { "<space>a", group = "AI Assistant" },
-    { "<space>ac", "<cmd>Codeium Chat<cr>", desc = "Open Codeium Chat" },
-    { "<space>at", "<cmd>CodeiumToggle<cr>", desc = "Toggle Codeium" },
-    { "<space>as", function()
-        local status = vim.fn['codeium#GetStatusString']()
-        print("Codeium Status: " .. status)
-    end, desc = "Show Codeium Status" },
-})
-
--- 注意：Windsurf AI 补全快捷键已在 windsurf.lua 中定义，使用 Alt 组合键避免冲突

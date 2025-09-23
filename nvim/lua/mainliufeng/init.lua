@@ -190,14 +190,6 @@ require("lazy").setup({
         }
     },
 
-    -- AI Code Completion
-    {
-        'Exafunction/windsurf.vim',
-        event = 'InsertEnter',  -- 只在进入插入模式时加载，减少初始化开销
-        config = function()
-            require('mainliufeng.config.windsurf')
-        end
-    },
     -- Completion
     {
         'saghen/blink.cmp',
