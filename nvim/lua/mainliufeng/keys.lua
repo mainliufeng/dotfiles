@@ -8,6 +8,8 @@ local function keymap(m, k, c)
     return vim.keymap.set(m, k, c, opts)
 end
 
+local terminal = require("mainliufeng.config.terminal")
+
 -- 跳-word
 keymap("n", "s", cmd "HopWord")
 
@@ -41,8 +43,16 @@ keymap({ "n", "v" }, "ga", "<cmd>Lspsaga code_action<CR>")
 keymap("n", "<space>rn", "<cmd>lua vim.lsp.buf.rename()<CR>")
 
 -- terminal
-keymap("n", "<C-\\>", cmd 'exe v:count1 . "ToggleTerm direction=float"')
-keymap("i", "<C-\\>", '<Esc><Cmd>exe v:count1 . "ToggleTerm direction=float"<CR>')
+keymap("n", "<C-\\>", function()
+    terminal.toggle(vim.v.count1)
+end)
+keymap("i", "<C-\\>", function()
+    local count = vim.v.count1
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", true)
+    vim.schedule(function()
+        terminal.toggle(count)
+    end)
+end)
 keymap("n", "<leader>x", "<cmd>:read !sh %<cr>")
 
 -- debug
@@ -65,7 +75,14 @@ require "which-key".add({
     end, desc = "Harpoon" },
 })
 require "which-key".add({
-    { "<space>t", "<cmd>'<,'>ToggleTermSendVisualSelection<CR>", desc = "Run visual selection", mode = "v" },
+    {
+        "<space>t",
+        function()
+            terminal.send_visual(vim.v.count1)
+        end,
+        desc = "Run visual selection",
+        mode = "v",
+    },
 })
 
 -- Debug 相关快捷键

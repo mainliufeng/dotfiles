@@ -40,6 +40,15 @@ require("lazy").setup({
             scroll = { enabled = false },
             statuscolumn = { enabled = true },
             words = { enabled = true },
+            terminal = {
+                win = {
+                    position = "float",
+                    relative = "editor",
+                    border = "rounded",
+                    width = 0.9,
+                    height = 0.9,
+                },
+            },
         },
     },
     -----------------------------------------
@@ -154,17 +163,8 @@ require("lazy").setup({
         config = function()
             require("mainliufeng.config.neotree")
         end
-
     },
     -- Terminal
-    {
-        'akinsho/toggleterm.nvim',
-        version = '*',
-        config = function()
-            require("toggleterm").setup()
-        end
-    },
-
     -- Treesitter
     { 'nvim-treesitter/nvim-treesitter', tag = "v0.9.2",             build = ':TSUpdate', event = "User FileOpened" },
     {

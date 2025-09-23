@@ -3,7 +3,7 @@ require('lualine').setup({
         theme = 'gruvbox',
         globalstatus = true
     },
-    extensions = { 'nvim-tree', 'nvim-dap-ui', 'fugitive', 'toggleterm' },
+    extensions = { 'nvim-tree', 'nvim-dap-ui', 'fugitive' },
     sections = {
         lualine_a = {
             {
