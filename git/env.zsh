@@ -11,6 +11,7 @@ compdef _glgd glgd
 
 # alias co="git-branches | dmenu -l 10 | xargs -I {} git checkout {}"
 alias co='git checkout $(git for-each-ref refs/heads/ --format="%(refname:short)" | fzf)'
+alias ghco='gh pr checkout'
 
 alias git-current-branch="git branch | grep \* | cut -d ' ' -f2"
 alias git-branches="git branch --sort=-committerdate | tr -d ' ' | tr -d '*' | tr -d '+'"
