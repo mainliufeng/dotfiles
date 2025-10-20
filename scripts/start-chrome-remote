@@ -7,7 +7,7 @@ set -euo pipefail
 
 CHROME_PATH="/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
 REMOTE_PORT="${REMOTE_DEBUG_PORT:-9222}"
-USER_DATA_DIR="$HOME/.cache/chrome-devtools-codex"
+USER_DATA_DIR="$HOME/.cache/chrome-devtools"
 
 if ! [ -f "$CHROME_PATH" ]; then
   echo "Chrome executable not found at: $CHROME_PATH" >&2
