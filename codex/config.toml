@@ -1,0 +1,14 @@
+windows_wsl_setup_acknowledged = true
+
+[projects."/home/liufeng/Code/personal/mobius"]
+trust_level = "trusted"
+
+[projects."/home/liufeng"]
+trust_level = "trusted"
+
+[mcp_servers.chrome-devtools]
+command = "npx"
+args = [
+    "chrome-devtools-mcp@latest",
+    "--browser-url=http://wsl.localhost:9222"
+]
