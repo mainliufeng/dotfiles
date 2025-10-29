@@ -1,6 +1,9 @@
 // Zellij 默认配置
 // 通过 `zellij setup --dump-config` 生成
 
+// 禁用自动布局重排，防止关闭 pane 后其他 pane 位置变化
+auto_layout false
+
 // If you'd like to override the default keybindings completely, be sure to change "keybinds" to "keybinds clear-defaults=true"
 keybinds {
     normal {
