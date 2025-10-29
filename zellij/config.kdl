@@ -186,6 +186,7 @@ keybinds {
         bind "Alt l" "Alt Right" { MoveFocusOrTab "Right"; }
         bind "Alt j" "Alt Down" { FocusNextPane; }
         bind "Alt k" "Alt Up" { FocusPreviousPane; }
+        bind "Alt m" { ToggleFocusFullscreen; }
         bind "Alt 1" { GoToTab 1; }
         bind "Alt 2" { GoToTab 2; }
         bind "Alt 3" { GoToTab 3; }
@@ -200,7 +201,6 @@ keybinds {
         bind "Ctrl g" { SwitchToMode "Locked"; }
         bind "Ctrl q" { Quit; }
         bind "Alt f" { ToggleFloatingPanes; }
-        bind "Alt m" { ToggleFocusFullscreen; }
         bind "Alt n" { NewPane; }
         bind "Alt i" { MoveTab "Left"; }
         bind "Alt o" { MoveTab "Right"; }
