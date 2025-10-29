@@ -44,6 +44,10 @@ execute "yay -S nerd-fonts-hack"
 execute "sh zsh/setup.sh"
 execute "sh zsh/link.sh"
 
+# zellij
+execute "sh zellij/setup.sh"
+execute "sh zellij/link.sh"
+
 # git
 execute "sh git/setup.sh"
 execute "sh git/link.sh"
