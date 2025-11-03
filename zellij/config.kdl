@@ -4,6 +4,9 @@
 // 禁用自动布局重排，防止关闭 pane 后其他 pane 位置变化
 auto_layout false
 
+// 禁用高级鼠标功能，防止 Alt+点击触发 pane selection 框
+advanced_mouse_actions false
+
 // If you'd like to override the default keybindings completely, be sure to change "keybinds" to "keybinds clear-defaults=true"
 keybinds {
     normal {
