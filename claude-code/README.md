@@ -19,6 +19,50 @@ npm install -g @anthropic-ai/claude-code
 claude auth login  # 登录Anthropic账户
 ```
 
+## Hooks 配置
+
+### 完成通知 Hook
+配置了 Stop hook，在 Claude Code 执行完成后自动发送 Windows 通知。
+
+**功能特性：**
+- ✅ WSL2 环境下发送 Windows Toast 通知
+- ✅ 显示项目名称和会话 ID
+- ✅ 可选：播放系统提示音
+- ✅ 自动记录执行日志到 `~/.claude/hooks.log`
+
+**配置位置：**
+```
+~/.claude/hooks/notify-complete.sh    # 通知脚本
+~/.claude/settings.json                # Hook 配置
+```
+
+**依赖要求：**
+- `jq` - JSON 解析工具（必需）
+- `paplay` - 音频播放（可选）
+
+安装依赖：
+```bash
+sudo pacman -S jq pulseaudio
+```
+
+### Hook 配置示例
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/liufeng/.claude/hooks/notify-complete.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
 ## 状态栏配置
 
 ### 当前状态栏显示内容
