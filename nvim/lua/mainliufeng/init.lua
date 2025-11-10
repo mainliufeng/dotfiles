@@ -37,9 +37,18 @@ require("lazy").setup({
             },
             quickfile = { enabled = true },
             scope = { enabled = true },
-            scroll = { enabled = true },
+            scroll = { enabled = false },
             statuscolumn = { enabled = true },
             words = { enabled = true },
+            terminal = {
+                win = {
+                    position = "float",
+                    relative = "editor",
+                    border = "rounded",
+                    width = 0.9,
+                    height = 0.9,
+                },
+            },
         },
     },
     -----------------------------------------
@@ -50,13 +59,13 @@ require("lazy").setup({
     -- Which key
     "folke/which-key.nvim",
     -- mark
-    {
-        "robitx/gp.nvim",
-        dir = "~/dotfiles/code/gp.nvim",
-        config = function()
-            require('mainliufeng.config.gp')
-        end,
-    },
+    --{
+    --    "robitx/gp.nvim",
+    --    dir = "~/dotfiles/code/gp.nvim",
+    --    config = function()
+    --        require('mainliufeng.config.gp')
+    --    end,
+    --},
     {
         "ThePrimeagen/harpoon",
         branch = "harpoon2",
@@ -104,11 +113,12 @@ require("lazy").setup({
     },
     {
         "kwkarlwang/bufresize.nvim",
+        event = "VimResized",  -- 只在窗口调整大小时加载
         config = function()
             require("bufresize").setup({
                 register = {
                     keys = {},
-                    trigger_events = { "BufWinEnter", "WinEnter" },
+                    trigger_events = { "BufWinEnter" },  -- 减少触发事件
                 },
                 resize = {
                     keys = {},
@@ -153,17 +163,8 @@ require("lazy").setup({
         config = function()
             require("mainliufeng.config.neotree")
         end
-
     },
     -- Terminal
-    {
-        'akinsho/toggleterm.nvim',
-        version = '*',
-        config = function()
-            require("toggleterm").setup()
-        end
-    },
-
     -- Treesitter
     { 'nvim-treesitter/nvim-treesitter', tag = "v0.9.2",             build = ':TSUpdate', event = "User FileOpened" },
     {
@@ -189,58 +190,62 @@ require("lazy").setup({
         }
     },
 
+    -- Completion
+    {
+        'saghen/blink.cmp',
+        lazy = false,
+        dependencies = 'rafamadriz/friendly-snippets',
+        version = 'v0.*',
+        opts = {
+            keymap = {
+                preset = 'none',
+                ['<C-j>'] = { 'select_next', 'fallback' },
+                ['<C-k>'] = { 'select_prev', 'fallback' },
+                ['<CR>'] = { 'accept', 'fallback' },
+                ['<C-Space>'] = { 'show', 'hide' },
+                ['<Tab>'] = { 'snippet_forward', 'fallback' },
+                ['<S-Tab>'] = { 'snippet_backward', 'fallback' },
+                ['<C-b>'] = { 'scroll_documentation_up', 'fallback' },
+                ['<C-f>'] = { 'scroll_documentation_down', 'fallback' },
+                ['<C-e>'] = { 'hide', 'fallback' },
+            },
+            appearance = {
+                use_nvim_cmp_as_default = true,
+                nerd_font_variant = 'mono'
+            },
+            sources = {
+                default = { 'lsp', 'path', 'snippets', 'buffer' },
+            },
+            completion = {
+                accept = {
+                    auto_brackets = {
+                        enabled = true,
+                    },
+                },
+                menu = {
+                    draw = {
+                        treesitter = { 'lsp' }
+                    }
+                },
+                documentation = {
+                    auto_show = true,
+                    auto_show_delay_ms = 500,  -- 增加延迟减少频繁更新
+                },
+            },
+            signature = {
+                enabled = true,
+            },
+            cmdline = {
+                enabled = false,
+            },
+        },
+        opts_extend = { "sources.default" }
+    },
     -- Lsp
     {
-        "neovim/nvim-lspconfig", -- REQUIRED: for native Neovim LSP integration
-        lazy = false,            -- REQUIRED: tell lazy.nvim to start this plugin at startup
-        dependencies = {
-            -- main one
-            { "ms-jpq/coq_nvim",       branch = "coq" },
-
-            -- 9000+ Snippets
-            { "ms-jpq/coq.artifacts",  branch = "artifacts" },
-
-            -- lua & third party sources -- See https://github.com/ms-jpq/coq.thirdparty
-            -- Need to **configure separately**
-            { 'ms-jpq/coq.thirdparty', branch = "3p" }
-            -- - shell repl
-            -- - nvim lua api
-            -- - scientific calculator
-            -- - comment banner
-            -- - etc
-        },
-        init = function()
-            vim.g.coq_settings = {
-                auto_start = true, -- if you want to start COQ at startup
-                -- Your COQ settings here
-                keymap = {
-                    recommended = false,
-                    pre_select = false,
-                    jump_to_mark = "<tab>",
-                    manual_complete = "<c-space>",
-                    bigger_preview = "<c-b>",
-                },
-            }
-
-            -- Keybindings
-            vim.api.nvim_set_keymap('i', '<Esc>', [[pumvisible() ? "\<C-e><Esc>" : "\<Esc>"]],
-                { expr = true, silent = true })
-            vim.api.nvim_set_keymap('i', '<C-c>', [[pumvisible() ? "\<C-e><C-c>" : "\<C-c>"]],
-                { expr = true, silent = true })
-            vim.api.nvim_set_keymap('i', '<BS>', [[pumvisible() ? "\<C-e><BS>" : "\<BS>"]],
-                { expr = true, silent = true })
-            vim.api.nvim_set_keymap(
-                "i",
-                "<CR>",
-                [[pumvisible() ? (complete_info().selected == -1 ? "\<C-e><CR>" : "\<C-y>") : "\<CR>"]],
-                { expr = true, silent = true }
-            )
-            vim.api.nvim_set_keymap('i', '<C-j>', [[pumvisible() ? "\<C-n>" : "\<C-space>"]],
-                { expr = true, silent = true })
-            vim.api.nvim_set_keymap('i', '<C-k>', [[pumvisible() ? "\<C-p>" : "\<C-k>"]], { expr = true, silent = true })
-        end,
+        "neovim/nvim-lspconfig",
+        lazy = false,
         config = function()
-            -- Your LSP settings here
             require('mainliufeng.config.lsp')
         end,
     },
@@ -286,7 +291,70 @@ require("lazy").setup({
             "nvim-treesitter/nvim-treesitter",
         },
         config = function()
-            require("go").setup()
+            -- 读取并应用 .env（简化，无需 mtime 缓存），支持清理已删除变量
+            local function read_env_file()
+                local env_file = vim.fn.findfile('.env', '.;')
+                if env_file == '' then
+                    return nil, {}
+                end
+
+                local vars = {}
+                local file = io.open(env_file, 'r')
+                if file then
+                    for line in file:lines() do
+                        if not line:match('^%s*$') and not line:match('^%s*#') then
+                            local key, value = line:match('^%s*([^=]+)%s*=%s*(.*)$')
+                            if key and value then
+                                value = value:gsub('^["\'](.*)["\']$', '%1')
+                                vars[key] = value
+                            end
+                        end
+                    end
+                    file:close()
+                end
+                return env_file, vars
+            end
+
+            local last_env_keys = {}
+
+            local function apply_env_from_dotenv()
+                local _, vars = read_env_file()
+                -- 清理上次设置但这次不存在的变量，避免脏值
+                for key, _ in pairs(last_env_keys) do
+                    if vars[key] == nil then
+                        vim.env[key] = nil
+                    end
+                end
+                -- 应用新变量
+                for key, value in pairs(vars) do
+                    vim.env[key] = value
+                end
+                last_env_keys = {}
+                for key, _ in pairs(vars) do
+                    last_env_keys[key] = true
+                end
+            end
+
+            -- 启动时应用一次
+            apply_env_from_dotenv()
+
+            require("go").setup({
+                test_runner = 'go',
+                run_in_floaterm = false,
+                floaterm = {
+                    position = 'auto',
+                    width = 0.45,
+                    height = 0.98,
+                },
+            })
+
+            -- .env 保存或删除时刷新环境变量
+            vim.api.nvim_create_autocmd({"BufWritePost", "BufDelete"}, {
+                pattern = {".env"},
+                callback = function()
+                    apply_env_from_dotenv()
+                end
+            })
         end,
         event = { "CmdlineEnter" },
         ft = { "go", 'gomod' },
@@ -325,6 +393,8 @@ require("lazy").setup({
         "leoluz/nvim-dap-go",
         config = function()
             require('dap-go').setup()
+            -- 设置交互式调试配置
+            require('mainliufeng.config.go-debug').setup_quick_debug_presets()
         end
     },
     {

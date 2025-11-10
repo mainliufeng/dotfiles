@@ -8,6 +8,8 @@ local function keymap(m, k, c)
     return vim.keymap.set(m, k, c, opts)
 end
 
+local terminal = require("mainliufeng.config.terminal")
+
 -- 跳-word
 keymap("n", "s", cmd "HopWord")
 
@@ -41,8 +43,16 @@ keymap({ "n", "v" }, "ga", "<cmd>Lspsaga code_action<CR>")
 keymap("n", "<space>rn", "<cmd>lua vim.lsp.buf.rename()<CR>")
 
 -- terminal
-keymap("n", "<C-\\>", cmd 'exe v:count1 . "ToggleTerm direction=float"')
-keymap("i", "<C-\\>", '<Esc><Cmd>exe v:count1 . "ToggleTerm direction=float"<CR>')
+keymap("n", "<C-\\>", function()
+    terminal.toggle(vim.v.count1)
+end)
+keymap("i", "<C-\\>", function()
+    local count = vim.v.count1
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", true)
+    vim.schedule(function()
+        terminal.toggle(count)
+    end)
+end)
 keymap("n", "<leader>x", "<cmd>:read !sh %<cr>")
 
 -- debug
@@ -50,23 +60,40 @@ keymap("n", "<F3>", cmd "Neotree reveal=true position=left toggle")
 keymap("n", "<C-e>", cmd "Neotree reveal=true toggle")
 keymap("n", "<F4>", cmd "lua require'dapui'.toggle()")
 keymap("n", "<F5>", cmd "lua require'dap'.continue()")
+keymap("n", "<F6>", cmd "lua require'mainliufeng.config.go-debug'.setup_debug_with_ui()")
 keymap("n", "<F10>", cmd "lua require'dap'.step_over()")
 keymap("n", "<F11>", cmd "lua require'dap'.step_into()")
 keymap("n", "<F12>", cmd "lua require'dap'.step_out()")
 
-require "which-key".register({
-    ["<space>"] = {
-        p = { "<cmd>Telescope project<CR>", "Projects" },
-        g = { "<cmd>Telescope live_grep<cr>", "Live grep" },
-        b = { "<cmd>Telescope git_branches<cr>", "Checkout branch" },
-        e = { function()
-            local harpoon = require("harpoon")
-            harpoon.ui:toggle_quick_menu(harpoon:list())
-        end, "Harpoon" },
+require "which-key".add({
+    { "<space>p", "<cmd>Telescope project<CR>", desc = "Projects" },
+    { "<space>g", "<cmd>Telescope live_grep<cr>", desc = "Live grep" },
+    { "<space>b", "<cmd>Telescope git_branches<cr>", desc = "Checkout branch" },
+    { "<space>e", function()
+        local harpoon = require("harpoon")
+        harpoon.ui:toggle_quick_menu(harpoon:list())
+    end, desc = "Harpoon" },
+})
+require "which-key".add({
+    {
+        "<space>t",
+        function()
+            terminal.send_visual(vim.v.count1)
+        end,
+        desc = "Run visual selection",
+        mode = "v",
     },
 })
-require "which-key".register({
-    ["<space>"] = {
-        t = { "<cmd>'<,'>ToggleTermSendVisualSelection<CR>", "Run visual selection" },
-    },
-}, { mode = "v" })
+
+-- Debug 相关快捷键
+require "which-key".add({
+    { "<space>d", group = "Debug" },
+    { "<space>dc", "<cmd>lua require'dap'.continue()<cr>", desc = "Continue" },
+    { "<space>du", "<cmd>lua require'dapui'.toggle()<cr>", desc = "Toggle UI" },
+    { "<space>di", "<cmd>lua require'mainliufeng.config.go-debug'.setup_debug_with_ui()<cr>", desc = "Interactive Debug" },
+    { "<space>db", "<cmd>lua require'dap'.toggle_breakpoint()<cr>", desc = "Toggle Breakpoint" },
+    { "<space>dB", "<cmd>lua require'dap'.set_breakpoint(vim.fn.input('Breakpoint condition: '))<cr>", desc = "Conditional Breakpoint" },
+    { "<space>ds", "<cmd>Telescope dap configurations<cr>", desc = "Debug Configurations" },
+    { "<space>dr", "<cmd>lua require'dap'.run_last()<cr>", desc = "Run Last" },
+    { "<space>dt", "<cmd>lua require'dap'.terminate()<cr>", desc = "Terminate" },
+})
