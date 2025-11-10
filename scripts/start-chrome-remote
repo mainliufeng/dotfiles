@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+# Launch Chrome/Chromium with a remote debugging port that chrome-devtools-mcp can attach to.
+# Usage: start-chrome-remote [optional URL]
+
+set -euo pipefail
+
+REMOTE_PORT="${REMOTE_DEBUG_PORT:-9222}"
+USER_DATA_DIR="${CHROME_REMOTE_PROFILE:-$HOME/.cache/chrome-devtools}"
+CHROME_PATH=""
+
+detect_windows_chrome() {
+  local path="/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
+  if [[ -f "$path" ]]; then
+    CHROME_PATH="$path"
+  fi
+}
+
+detect_linux_chrome() {
+  for candidate in google-chrome-stable google-chrome chromium chromium-browser; do
+    if command -v "$candidate" >/dev/null 2>&1; then
+      CHROME_PATH="$candidate"
+      return
+    fi
+  done
+}
+
+if [[ -z "${CHROME_TARGET:-}" ]]; then
+  detect_windows_chrome
+  if [[ -z "$CHROME_PATH" ]]; then
+    detect_linux_chrome
+  fi
+else
+  CHROME_PATH="$CHROME_TARGET"
+fi
+
+if [[ -z "$CHROME_PATH" ]]; then
+  echo "Unable to find Chrome/Chromium executable. Set CHROME_TARGET to the desired binary." >&2
+  exit 1
+fi
+
+mkdir -p "$USER_DATA_DIR"
+
+if [[ "$CHROME_PATH" == /mnt/c/* ]]; then
+  # Running in WSL with Windows Chrome
+  WIN_USER_DATA_DIR=$(wslpath -w "$USER_DATA_DIR")
+  nohup "$CHROME_PATH" \
+    --remote-debugging-port="$REMOTE_PORT" \
+    --remote-debugging-address="0.0.0.0" \
+    --remote-allow-origins="*" \
+    --user-data-dir="$WIN_USER_DATA_DIR" \
+    --no-first-run \
+    --no-default-browser-check \
+    "$@" >/dev/null 2>&1 &
+  echo "Windows Chrome launched on port $REMOTE_PORT (profile: $WIN_USER_DATA_DIR)"
+else
+  nohup "$CHROME_PATH" \
+    --remote-debugging-port="$REMOTE_PORT" \
+    --remote-debugging-address="127.0.0.1" \
+    --remote-allow-origins="*" \
+    --user-data-dir="$USER_DATA_DIR" \
+    --no-first-run \
+    --no-default-browser-check \
+    "$@" >/dev/null 2>&1 &
+  echo "Chrome launched on port $REMOTE_PORT (profile: $USER_DATA_DIR)"
+fi
+
+echo "Close the browser window to stop it."

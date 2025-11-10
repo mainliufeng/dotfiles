@@ -1,0 +1,15 @@
+[projects."/home/liufeng/Code/personal/mobius"]
+trust_level = "trusted"
+
+[projects."/home/liufeng"]
+trust_level = "trusted"
+
+[mcp_servers.chrome-devtools]
+command = "npx"
+args = [
+    "chrome-devtools-mcp@latest",
+    "--browser-url=http://localhost:9222"
+]
+
+[launchers]
+chrome_remote = "~/dotfiles/scripts/start-chrome-remote"
