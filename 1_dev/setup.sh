@@ -35,9 +35,6 @@ execute() {
     fi
 }
 
-# ssh key
-execute "ssh-keygen -t rsa -b 4096 -C \"mainliufeng@gmail.com\""
-
 # base
 execute "sh pacman/link.sh"
 execute "sudo pacman -S yay"
@@ -64,6 +61,10 @@ execute "yay -S fcitx5-pinyin-zhwiki rime-ice-git fcitx5-rime"
 # zsh
 execute "sh zsh/setup.sh"
 execute "sh zsh/link.sh"
+
+# zellij
+execute "sh zellij/setup.sh"
+execute "sh zellij/link.sh"
 
 # git
 execute "sh git/setup.sh"
@@ -92,6 +93,9 @@ execute "sh python/link.sh"
 execute "sh docker/setup.sh"
 execute "sh docker/link.sh"
 
+# redis
+execute "sh redis/setup.sh"
+
 # k8s
 execute "sh kube/setup.sh"
 
@@ -113,4 +117,3 @@ execute "sh kube/after.sh"
 execute "sh scripts/dotfiles-setup-scripts"
 
 echo "所有步骤完成。"
-
