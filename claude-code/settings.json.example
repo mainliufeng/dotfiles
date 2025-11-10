@@ -1,0 +1,21 @@
+{
+  "statusLine": {
+    "type": "command",
+    "command": "bash /home/liufeng/.claude/statusline.sh"
+  },
+  "outputStyle": "default",
+  "autoSave": true,
+  "maxTokens": 4000,
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/liufeng/.claude/hooks/notify-complete.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
