@@ -36,7 +36,7 @@ execute() {
 }
 
 # base
-execute "sh pacman/link.sh"
+#execute "sh pacman/link.sh"
 execute "sudo pacman -S yay"
 execute "sudo pacman -S base-devel patch yay gcc make automake pkg-config fasd the_silver_searcher dmenu fasd htop alsa-utils vulkan-intel feh ripgrep xclip downgrade libinput-gestures xdotool wmctrl the_silver_searcher ripgrep fzf kitty openssh google-chrome"
 #execute "sudo pacman -S acpilight pass browserpass"
@@ -100,7 +100,8 @@ execute "sh redis/setup.sh"
 execute "sh kube/setup.sh"
 
 # application
-execute "sudo pacman -S volumeicon blueman libinput-gestures network-manager-applet flameshot xautolock slock nitrogen"
+execute "sudo pacman -S volumeicon blueman libinput-gestures network-manager-applet flameshot slock"
+execute "yay -S xautolock nitrogen"
 execute "yay -S google-chrome"
 
 # dingtalk
