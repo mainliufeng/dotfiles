@@ -1,5 +1,10 @@
 [ActivityManager][Global Shortcuts]
+switch-to-activity-12840b67-86b3-48ad-ae8a-67d0ec5432a0=
 switch-to-activity-580f164a-6edc-45f4-9e07-cfb559e65d93=
+
+[Custom Commands][net.local.kitt.desktop]
+Exec=kitt
+Name=shell
 
 [KDE Keyboard Layout Switcher][Global Shortcuts]
 Switch to Last-Used Keyboard Layout=Meta+Alt+L
@@ -8,8 +13,8 @@ Switch to Next Keyboard Layout=Meta+Alt+K
 [StandardShortcuts]
 AboutApp=
 AboutKDE=
-Activate Next Tab=Ctrl+PgDown; Ctrl+]
-Activate Previous Tab=Ctrl+PgUp; Ctrl+[
+Activate Next Tab=Ctrl+]; Ctrl+PgDown
+Activate Previous Tab=Ctrl+[; Ctrl+PgUp
 ActualSize=Ctrl+0
 AddBookmark=Ctrl+B
 Back=Alt+Left; Back
@@ -39,7 +44,7 @@ FindPrev=Shift+F3
 FitToHeight=
 FitToPage=
 FitToWidth=
-Forward=Alt+Right; Forward
+Forward=Forward; Alt+Right
 ForwardWord=Ctrl+Right
 FullScreen=Ctrl+Shift+F
 Goto=
@@ -57,7 +62,7 @@ Open=Ctrl+O
 OpenContextMenu=Shift+F10; Menu
 OpenMainMenu=F10
 OpenRecent=
-Paste=Ctrl+V; Shift+Ins
+Paste=Shift+Ins; Ctrl+V
 Paste Selection=Ctrl+Shift+Ins
 Preferences=Ctrl+Shift+,
 PrevCompletion=Ctrl+Up
@@ -88,7 +93,7 @@ Undo=Ctrl+Z
 Up=Alt+Up
 WhatsThis=Shift+F1
 Zoom=
-ZoomIn=Ctrl+=; Ctrl++
+ZoomIn=Ctrl++; Ctrl+=
 ZoomOut=Ctrl+-
 
 [kaccess][Global Shortcuts]
@@ -139,6 +144,7 @@ Grid View=Meta+G
 Increase Opacity=
 Kill Window=Meta+Ctrl+Esc
 KrohnkiteBTreeLayout=
+KrohnkiteColumnsLayout=
 KrohnkiteDecrease=Meta+D
 KrohnkiteFloatAll=Meta+Shift+F
 KrohnkiteFloatingLayout=
@@ -150,10 +156,13 @@ KrohnkiteFocusRight=
 KrohnkiteFocusUp=
 KrohnkiteGrowHeight=
 KrohnkiteIncrease=Meta+I
-KrohnkiteMonocleLayout=
+KrohnkiteLowerSurfaceCapacity=
+KrohnkiteMeta=
+KrohnkiteMonocleLayout=Meta+Shift+M
 KrohnkiteNextLayout=Meta+Space
 KrohnkitePreviousLayout=
 KrohnkiteQuarterLayout=
+KrohnkiteRaiseSurfaceCapacity=
 KrohnkiteRotate=
 KrohnkiteRotatePart=
 KrohnkiteSetMaster=Meta+Return
@@ -171,6 +180,7 @@ KrohnkiteTileLayout=
 KrohnkiteToggleFloat=Meta+F
 KrohnkiteTreeColumnLayout=
 KrohnkitegrowWidth=Meta+L
+KrohnkitetoggleDock=
 Move Tablet to Next Output=
 MoveMouseToCenter=Meta+F6
 MoveMouseToFocus=Meta+F5
@@ -229,7 +239,7 @@ Switch to Screen to the Right=
 Switch to last used desktop=Alt+Tab
 Toggle Night Color=
 Toggle Window Raise/Lower=
-Walk Through Windows=
+Walk Through Windows=Alt+Tab
 Walk Through Windows (Reverse)=
 Walk Through Windows Alternative=
 Walk Through Windows Alternative (Reverse)=
@@ -240,6 +250,10 @@ Walk Through Windows of Current Application Alternative (Reverse)=
 Window Above Other Windows=
 Window Below Other Windows=
 Window Close=Meta+Q
+Window Custom Quick Tile Bottom=
+Window Custom Quick Tile Left=
+Window Custom Quick Tile Right=
+Window Custom Quick Tile Top=
 Window Fullscreen=
 Window Grow Horizontal=
 Window Grow Vertical=
@@ -310,6 +324,7 @@ Window to Screen 4=
 Window to Screen 5=
 Window to Screen 6=
 Window to Screen 7=
+disableInputCapture=Meta+Shift+Esc
 view_actual_size=Meta+0
 view_zoom_in=Meta+=
 view_zoom_out=Meta+_
@@ -324,6 +339,9 @@ playpausemedia=Media Play
 previousmedia=Media Previous
 stopmedia=Media Stop
 
+[net.local.kitt.desktop][Global Shortcuts]
+_launch=Meta+Shift+Return
+
 [org.kde.dolphin.desktop][Global Shortcuts]
 _launch=Meta+E
 
@@ -334,13 +352,18 @@ _launch=Ctrl+Alt+T
 
 [org.kde.krunner.desktop][Global Shortcuts]
 RunClipboard=Alt+Shift+F2
-_launch=Alt+F2; Meta+R; Search; Alt+Space
+_launch=Search; Meta+R; Alt+Space; Alt+F2
 
 [org.kde.kscreen.desktop][Global Shortcuts]
 ShowOSD=Display; Meta+P
 
 [org.kde.plasma.emojier.desktop][Global Shortcuts]
-_launch=Meta+.; Meta+Ctrl+Alt+Shift+Space
+_launch=Meta+Ctrl+Alt+Shift+Space; Meta+.
+
+[org.kde.touchpadshortcuts.desktop][Global Shortcuts]
+DisableTouchpad=Touchpad Off
+EnableTouchpad=Touchpad On
+ToggleTouchpad=Meta+Ctrl+Touchpad Toggle; Meta+Ctrl+Zenkaku Hankaku; Touchpad Toggle
 
 [org_kde_powerdevil][Global Shortcuts]
 Decrease Keyboard Brightness=Keyboard Brightness Down
@@ -355,9 +378,10 @@ PowerOff=Power Off
 Sleep=Sleep
 Toggle Keyboard Backlight=Keyboard Light On/Off
 Turn Off Screen=
-powerProfile=Battery; Meta+B
+powerProfile=Meta+B; Battery
 
 [plasmashell][Global Shortcuts]
+Slideshow Wallpaper Next Image=
 activate application launcher=Meta
 activate task manager entry 1=
 activate task manager entry 10=
@@ -375,6 +399,7 @@ clipboard_action=Meta+Ctrl+X
 cycle-panels=Meta+Alt+P
 cycleNextAction=
 cyclePrevAction=
+edit_clipboard=
 manage activities=
 next activity=Meta+A
 previous activity=Meta+Shift+A
