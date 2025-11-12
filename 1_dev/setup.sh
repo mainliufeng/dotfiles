@@ -40,7 +40,7 @@ execute() {
 execute "sudo pacman -S yay"
 execute "sudo pacman -S base-devel patch yay gcc make automake pkg-config fasd the_silver_searcher dmenu fasd htop alsa-utils vulkan-intel feh ripgrep xclip downgrade libinput-gestures xdotool wmctrl the_silver_searcher ripgrep fzf kitty openssh google-chrome"
 #execute "sudo pacman -S acpilight pass browserpass"
-execute "yay -S clash-verge batterymon-clone"
+execute "yay -S clash-verge-rev-bin batterymon-clone"
 execute "yay -S nerd-fonts-hack"
 execute "sh libinput/link.sh"
 execute "sh locale/link.sh"

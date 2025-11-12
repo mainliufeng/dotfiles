@@ -1,1 +1,1 @@
-yay -S clash-verge
+yay -S clash-verge-rev-bin
