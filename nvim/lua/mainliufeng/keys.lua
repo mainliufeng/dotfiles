@@ -8,6 +8,17 @@ local function keymap(m, k, c)
     return vim.keymap.set(m, k, c, opts)
 end
 
+local function copy_file_path()
+    local path = vim.api.nvim_buf_get_name(0)
+    if path == "" then
+        vim.notify("No file path for current buffer", vim.log.levels.WARN, { title = "Copy file path" })
+        return
+    end
+    vim.fn.setreg("+", path)
+    vim.fn.setreg("*", path)
+    vim.notify(("Copied file path: %s"):format(path), vim.log.levels.INFO, { title = "Copy file path" })
+end
+
 local terminal = require("mainliufeng.config.terminal")
 
 -- 跳-word
@@ -41,6 +52,7 @@ keymap("n", "<C-p>", "<cmd>lua require('telescope.builtin').lsp_document_symbols
 keymap("n", "<C-s>", "<cmd>lua require('telescope.builtin').lsp_dynamic_workspace_symbols()<CR>")
 keymap({ "n", "v" }, "ga", "<cmd>Lspsaga code_action<CR>")
 keymap("n", "<space>rn", "<cmd>lua vim.lsp.buf.rename()<CR>")
+vim.keymap.set("n", "<leader>cp", copy_file_path, vim.tbl_extend("force", opts, { desc = "Copy file path" }))
 
 -- terminal
 keymap("n", "<C-\\>", function()
