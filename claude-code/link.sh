@@ -25,13 +25,8 @@ fi
 claude mcp add context7 "npx -y @upstash/context7-mcp" 2>/dev/null || true
 claude mcp add chrome-devtools npx chrome-devtools-mcp@latest -s user
 
-claude plugin marketplace add anthropics/claude-code
-claude plugin install commit-commands
-
 claude plugin marketplace add anthropics/skills
-
-claude plugin marketplace add ChromeDevTools/chrome-devtools-mcp
-claude plugin install chrome-devtools-mcp
+claude plugin install document-skills
 
 echo ""
 echo "✓ Claude Code hooks 配置完成"
