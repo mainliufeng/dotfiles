@@ -33,6 +33,12 @@ Or with options:
 5. Analyzes the diff to determine if multiple distinct logical changes are present
 6. If multiple distinct changes are detected, suggests breaking the commit into multiple smaller commits
 7. For each commit (or the single commit if not split), creates a commit message using emoji conventional commit format
+8. Appends AI model information at the end of each commit message in the following format:
+   ```
+   🤖 Generated with Claude Code (Model: <model-name>)
+   ```
+   - The model name should be extracted from the current session context
+   - This attribution should be added automatically without user intervention
 
 ## Best Practices for Commits
 
