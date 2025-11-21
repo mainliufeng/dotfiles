@@ -114,3 +114,7 @@ export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 export PATH="$PATH:/home/liufeng/.lmstudio/bin"
 # End of LM Studio CLI section
 
+
+# Android SDK
+export ANDROID_HOME=/opt/android-sdk
+export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin

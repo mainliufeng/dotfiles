@@ -4,58 +4,29 @@ category: version-control-git
 allowed-tools: Bash, Read, Glob
 ---
 
-# Claude Command: Commit
+# Codex Command: Commit
 
-This command helps you create well-formatted commits with conventional commit messages and emoji.
+用于生成符合规范的 git 提交信息（带 emoji 的 conventional commit），格式要求：
 
-## Usage
+1) 标题行：`<emoji> <type>: <summary>`，72 字以内，type 取 `feat|fix|docs|style|refactor|perf|test|chore`。
+2) 空行分隔。
+3) 正文：按照项列出本次变更的要点，使用 `- ` 开头的列表。
+4) 附加信息（可选）：如 Model/Co-authored-by
 
-To create a commit, just type:
+建议流程：
+- 先确保代码通过必要的 lint/格式化/构建检查。
+- 提交应保持单一目的，拆分多逻辑改动。
+- 如需跳过检查，可在命令中加 `--no-verify`。
+
+示例：
 ```
-/commit
+✨ feat: 并发限流改为租约模式（ZSET+2m TTL）
+
+- reqcount:v3 采用 ZSET 保存 lease_id/chat_id，score=joined_at，窗口(now-2m,+inf)过滤并发
+- 租约 TTL 2 分钟自动回收，无续租；key 设双倍 TTL 防止遗留
+- /internal/v1/concurrency 返回明细（chat_id、joined_at/expire_at 可读时间）
+- 更新 NewConcurrencyLimiter 签名及示例，模型调用路径不变
+
+Model: gpt-5.1-codex-max medium
+Co-authored-by: Codex <codex@openai.com>
 ```
-
-Or with options:
-```
-/commit --no-verify
-```
-
-## What This Command Does
-
-1. Unless specified with `--no-verify`, automatically runs pre-commit checks:
-   - Detect package manager (npm, pnpm, yarn, bun) and run appropriate commands
-   - Run lint/format checks if available
-   - Run build verification if build script exists
-   - Update documentation if generation script exists
-2. Checks which files are staged with `git status`
-3. If 0 files are staged, automatically adds all modified and new files with `git add`
-4. Performs a `git diff` to understand what changes are being committed
-5. Analyzes the diff to determine if multiple distinct logical changes are present
-6. If multiple distinct changes are detected, suggests breaking the commit into multiple smaller commits
-7. For each commit (or the single commit if not split), creates a commit message using emoji conventional commit format
-
-## Best Practices for Commits
-
-- **Verify before committing**: Ensure code is linted, builds correctly, and documentation is updated
-- **Atomic commits**: Each commit should contain related changes that serve a single purpose
-- **Split large changes**: If changes touch multiple concerns, split them into separate commits
-- **Conventional commit format**: Use the format `<type>: <description>` where type is one of:
-  - `feat`: A new feature
-  - `fix`: A bug fix
-  - `docs`: Documentation changes
-  - `style`: Code style changes (formatting, etc)
-  - `refactor`: Code changes that neither fix bugs nor add features
-  - `perf`: Performance improvements
-  - `test`: Adding or fixing tests
-  - `chore`: Changes to the build process, tools, etc.
-- **Present tense, imperative mood**: Write commit messages as commands (e.g., "add feature" not "added feature")
-- **Concise first line**: Keep the first line under 72 characters
-- **Emoji**: Each commit type is paired with an appropriate emoji:
-  - ✨ `feat`: New feature
-  - 🐛 `fix`: Bug fix
-  - 📚 `docs`: Documentation
-  - 💎 `style`: Formatting/style
-  - 📦 `refactor`: Code refactoring
-  - 🚀 `perf`: Performance
-  - 🚨 `test`: Testing
-  - 🔧 `chore`: Maintenance
