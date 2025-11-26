@@ -1,0 +1,795 @@
+#!/usr/bin/env python
+import yaml
+import sys
+import re
+from collections import defaultdict
+
+def extract_country_code(node_name):
+    """从节点名称提取国家代码"""
+    name = node_name.upper()
+
+    # 国旗表情符号 + 国家代码格式
+    flag_pattern = r'[🇦-🇿]{2}([A-Z]{2})'
+    match = re.search(flag_pattern, name)
+    if match:
+        return match.group(1)
+
+    # 特殊符号 + 国家代码格式
+    symbol_pattern = r'[►▶︎•·]([A-Z]{2})[| ]'
+    match = re.search(symbol_pattern, name)
+    if match:
+        return match.group(1)
+
+    # 国家名称关键词匹配
+    country_keywords = {
+        '香港': 'HK', 'HONGKONG': 'HK', 'HONG_KONG': 'HK',
+        '台湾': 'TW', 'TAIWAN': 'TW', '台北': 'TW', 'TAIPEI': 'TW',
+        '澳门': 'MO', 'MACAU': 'MO', 'MACAO': 'MO',
+        '日本': 'JP', 'JAPAN': 'JP', '东京': 'JP', 'TOKYO': 'JP',
+        '韩国': 'KR', 'KOREA': 'KR', '首尔': 'KR', 'SEOUL': 'KR', '仁川': 'KR', 'INCHEON': 'KR',
+        '新加坡': 'SG', 'SINGAPORE': 'SG',
+        '美国': 'US', 'USA': 'US', 'AMERICA': 'US', 'LOS_ANGELES': 'US', 'CHICAGO': 'US', 'NEW_YORK': 'US',
+        '英国': 'UK', 'BRITAIN': 'UK', 'LONDON': 'UK',
+        '德国': 'DE', 'GERMANY': 'DE', 'FRANKFURT': 'DE',
+        '法国': 'FR', 'FRANCE': 'FR', 'PARIS': 'FR',
+        '荷兰': 'NL', 'NETHERLANDS': 'NL', 'AMSTERDAM': 'NL',
+        '加拿大': 'CA', 'CANADA': 'CA',
+        '澳洲': 'AU', 'AUSTRALIA': 'AU', 'SYDNEY': 'AU',
+        '印度': 'IN', 'INDIA': 'IN', 'MUMBAI': 'IN',
+        '泰国': 'TH', 'THAILAND': 'TH', 'BANGKOK': 'TH',
+        '马来西亚': 'MY', 'MALAYSIA': 'MY', 'KUALA_LUMPUR': 'MY',
+        '菲律宾': 'PH', 'PHILIPPINES': 'PH', 'MANILA': 'PH',
+        '越南': 'VN', 'VIETNAM': 'VN', 'HANOI': 'VN', 'HO_CHI_MINH': 'VN',
+        '印尼': 'ID', 'INDONESIA': 'ID', 'JAKARTA': 'ID',
+        '土耳其': 'TR', 'TURKEY': 'TR', 'ISTANBUL': 'TR'
+    }
+
+    name_upper = name.upper()
+    for keyword, code in country_keywords.items():
+        if keyword in name_upper:
+            return code
+
+    return 'OTHER'
+
+def extract_source_name(file_path):
+    """从文件路径提取来源名称"""
+    import os
+    basename = os.path.basename(file_path)
+    # 从 clash.xxx.yaml 提取 xxx 作为来源名
+    if basename.startswith('clash.') and basename.endswith('.yaml'):
+        return basename[6:-5]  # 去掉 "clash." 和 ".yaml"
+    return basename.replace('.yaml', '').replace('.yml', '')
+
+def extract_nodes_from_file(file_path):
+    """从配置文件中提取节点"""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f)
+            return config.get('proxies', [])
+    except Exception as e:
+        print(f"警告: 读取文件 {file_path} 失败: {e}", file=sys.stderr)
+        return []
+
+def merge_configs(input_files):
+    """合并所有输入文件的节点，并记录来源"""
+    all_nodes = []
+    node_sources = {}  # 记录每个节点的来源
+    seen_nodes = set()  # 用于去重 (name, server) 组合
+
+    for file_path in input_files:
+        source_name = extract_source_name(file_path)
+        nodes = extract_nodes_from_file(file_path)
+        for node in nodes:
+            name = node.get('name', '')
+            server = node.get('server', '')
+
+            # 去重：名称+服务器地址组合判断重复
+            node_key = (name, server)
+            if node_key not in seen_nodes and name and server:
+                seen_nodes.add(node_key)
+                all_nodes.append(node)
+                node_sources[name] = source_name  # 记录节点来源
+
+    return all_nodes, node_sources
+
+def generate_proxy_groups(nodes, node_sources):
+    """生成多维度分组代理组 - 支持节点多分组归属和来源细分"""
+
+    # 1. 按国家代码分类（每个国家一个分组）
+    country_nodes = defaultdict(list)
+    # 1.1 按国家+来源分类（每个国家的每个来源一个分组）
+    country_source_nodes = defaultdict(lambda: defaultdict(list))
+    # 2. 大洲分组
+    special_groups = {
+        '日韩新': [],     # 日本、韩国、新加坡（不含中国）
+        'asia': [],       # 亚洲（不含中国）
+        'europe': [],     # 欧洲
+        'africa': [],     # 非洲
+        'north_america': [],  # 北美洲
+        'south_america': [],  # 南美洲
+        'oceania': [],    # 大洋洲
+        'all': []         # 全部
+    }
+    # 2.1 大洲分组按来源分类
+    special_source_groups = defaultdict(lambda: defaultdict(list))
+
+    # 只为这5个国家生成国家分组
+    major_countries = {'CN', 'JP', 'KR', 'SG', 'US'}
+
+    # 国家代码到中文名称的映射
+    country_names = {
+        'CN': '中国', 'HK': '中国香港', 'MO': '中国澳门', 'TW': '中国台湾',
+        'JP': '日本', 'KR': '韩国', 'SG': '新加坡', 'MY': '马来西亚',
+        'TH': '泰国', 'PH': '菲律宾', 'VN': '越南', 'ID': '印度尼西亚',
+        'IN': '印度', 'US': '美国', 'CA': '加拿大', 'UK': '英国',
+        'DE': '德国', 'FR': '法国', 'NL': '荷兰', 'IT': '意大利',
+        'ES': '西班牙', 'AT': '奥地利', 'CH': '瑞士', 'BE': '比利时',
+        'DK': '丹麦', 'SE': '瑞典', 'NO': '挪威', 'FI': '芬兰',
+        'TR': '土耳其', 'AU': '澳大利亚', 'RU': '俄罗斯', 'MX': '墨西哥',
+        'AE': '阿联酋', 'AR': '阿根廷', 'AZ': '阿塞拜疆', 'BD': '孟加拉国',
+        'BG': '保加利亚', 'BIH': '波黑', 'BR': '巴西', 'CA': '加拿大',
+        'CL': '智利', 'CY': '塞浦路斯', 'CZ': '捷克', 'EG': '埃及',
+        'FI': '芬兰', 'FJ': '斐济', 'GF': '法属圭亚那', 'HU': '匈牙利',
+        'ID': '印度尼西亚', 'IL': '以色列', 'IQ': '伊拉克', 'IT': '意大利',
+        'JO': '约旦', 'KE': '肯尼亚', 'KHM': '柬埔寨', 'KZ': '哈萨克斯坦',
+        'LG': '吉尔吉斯斯坦', 'LT': '立陶宛', 'LVA': '拉脱维亚', 'MD': '摩尔多瓦',
+        'MK': '北马其顿', 'MM': '缅甸', 'MO': '中国澳门', 'MX': '墨西哥',
+        'MY': '马来西亚', 'NG': '尼日利亚', 'NL': '荷兰', 'NO': '挪威',
+        'NZ': '新西兰', 'PE': '秘鲁', 'PH': '菲律宾', 'PK': '巴基斯坦',
+        'PL': '波兰', 'RO': '罗马尼亚', 'RS': '塞尔维亚', 'RU': '俄罗斯',
+        'SE': '瑞典', 'SG': '新加坡', 'SI': '斯洛文尼亚', 'TH': '泰国',
+        'TR': '土耳其', 'TW': '中国台湾', 'UA': '乌克兰', 'UK': '英国',
+        'US': '美国', 'UY': '乌拉圭', 'VN': '越南', 'ZA': '南非'
+    }
+
+    all_node_names = []
+
+    for node in nodes:
+        name = node.get('name', '')
+        server = node.get('server', '')
+        if name and server:
+            # 提取国家代码
+            country_code = extract_country_code(name)
+            source = node_sources.get(name, 'unknown')
+
+            # 添加到国家分组 - 港澳台都归入中国
+            if country_code in ['HK', 'MO', 'TW']:
+                country_nodes['CN'].append(name)  # 港澳台都归中国
+                country_source_nodes['CN'][source].append(name)  # 按来源细分
+            else:
+                country_nodes[country_code].append(name)
+                country_source_nodes[country_code][source].append(name)  # 按来源细分
+            all_node_names.append(name)
+
+            # 添加到大洲分组
+            # 日韩新分组（不含中国）
+            if country_code in ['JP', 'KR', 'SG']:
+                special_groups['日韩新'].append(name)
+                special_source_groups['日韩新'][source].append(name)
+
+            # 亚洲（不含中国港澳台）
+            if country_code in ['JP', 'KR', 'SG', 'MY', 'TH', 'PH', 'VN', 'ID', 'IN', 'BD', 'PK', 'LK', 'MM', 'KHM', 'LA', 'BN', 'MN']:
+                special_groups['asia'].append(name)
+                special_source_groups['asia'][source].append(name)
+            # 欧洲
+            elif country_code in ['UK', 'DE', 'FR', 'NL', 'IT', 'ES', 'AT', 'CH', 'BE', 'DK', 'SE', 'NO', 'FI',
+                                   'PL', 'RO', 'CZ', 'HU', 'BG', 'RS', 'HR', 'SI', 'SK', 'LT', 'LVA', 'EE',
+                                   'IE', 'PT', 'GR', 'AL', 'MK', 'BA', 'MD', 'UA', 'BY', 'RU']:
+                special_groups['europe'].append(name)
+                special_source_groups['europe'][source].append(name)
+            # 非洲
+            elif country_code in ['ZA', 'EG', 'NG', 'KE', 'MA', 'TN', 'GH', 'ET', 'UG', 'TZ', 'DZ', 'SD',
+                                   'AO', 'MZ', 'CM', 'CI', 'ZM', 'ZW', 'SN', 'ML', 'RW', 'SO', 'BF']:
+                special_groups['africa'].append(name)
+                special_source_groups['africa'][source].append(name)
+            # 北美洲
+            elif country_code in ['US', 'CA', 'MX', 'GT', 'HN', 'SV', 'NI', 'CR', 'PA', 'CU', 'DO', 'JM',
+                                   'HT', 'BS', 'BB', 'TT', 'BZ']:
+                special_groups['north_america'].append(name)
+                special_source_groups['north_america'][source].append(name)
+            # 南美洲
+            elif country_code in ['BR', 'AR', 'CL', 'CO', 'PE', 'VE', 'EC', 'BO', 'PY', 'UY', 'GY', 'SR',
+                                   'GF', 'FK']:
+                special_groups['south_america'].append(name)
+                special_source_groups['south_america'][source].append(name)
+            # 大洋洲
+            elif country_code in ['AU', 'NZ', 'FJ', 'PG', 'NC', 'PF', 'GU', 'AS', 'MP', 'WS', 'TO', 'VU',
+                                   'SB', 'KI', 'FM', 'MH', 'PW', 'TV', 'NR']:
+                special_groups['oceania'].append(name)
+                special_source_groups['oceania'][source].append(name)
+
+    # 构建代理组
+    proxy_groups = []
+
+    # 主选择组（默认选择中国，包含所有国家选项）
+    # 构建国家分组列表（按节点数量排序，热门的放前面）
+    country_proxy_list = []
+    country_node_counts = {}
+
+    # 统一的国旗映射（与后续代理组生成保持一致）
+    flag_emoji_map = {
+        'CN': '🇨🇳', 'JP': '🇯🇵', 'KR': '🇰🇷', 'SG': '🇸🇬', 'MY': '🇲🇾',
+        'TH': '🇹🇭', 'PH': '🇵🇭', 'VN': '🇻🇳', 'ID': '🇮🇩', 'IN': '🇮🇳',
+        'US': '🇺🇸', 'CA': '🇨🇦', 'UK': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷',
+        'NL': '🇳🇱', 'IT': '🇮🇹', 'ES': '🇪🇸', 'AT': '🇦🇹', 'CH': '🇨🇭',
+        'BE': '🇧🇪', 'DK': '🇩🇰', 'SE': '🇸🇪', 'NO': '🇳🇴', 'FI': '🇫🇮',
+        'TR': '🇹🇷', 'AU': '🇦🇺', 'RU': '🇷🇺', 'MX': '🇲🇽',
+        'HK': '🇭🇰', 'TW': '🇹🇼'
+    }
+
+    # 记录每个国家实际生成的代理组名称
+    country_proxy_names = {}  # country_code -> [实际生成的代理组名称列表]
+
+    for country_code in sorted(country_nodes.keys()):
+        if country_code != 'OTHER' and country_code not in ['HK', 'MO', 'TW']:  # 跳过港澳台
+            nodes = country_nodes[country_code]
+            if nodes:
+                country_name = country_names.get(country_code, country_code)
+                flag_emoji = flag_emoji_map.get(country_code, '🌍')
+                country_node_counts[country_code] = len(nodes)
+
+                # 根据来源数量决定实际生成的代理组名称
+                source_groups = country_source_nodes.get(country_code, {})
+                if len(source_groups) == 1:
+                    # 单一来源
+                    source_name = list(source_groups.keys())[0]
+                    country_proxy_names[country_code] = [f'{flag_emoji} {country_name}-{source_name}']
+                else:
+                    # 多个来源
+                    names = [f'{flag_emoji} {country_name}']
+                    for source_name in sorted(source_groups.keys()):
+                        names.append(f'{flag_emoji} {country_name}-{source_name}')
+                    country_proxy_names[country_code] = names
+
+    # 构建主选择组：5个主要国家 + 大洲分组 + 功能分组
+    main_proxies = []
+
+    # 添加5个主要国家及其所有代理组
+    priority_country_codes = ['CN', 'JP', 'KR', 'SG', 'US']
+    for country_code in priority_country_codes:
+        if country_code in country_proxy_names:
+            main_proxies.extend(country_proxy_names[country_code])
+
+    # 添加大洲分组（根据来源数量决定名称）
+    for region_key, region_name in [
+        ('日韩新', '日韩新'),
+        ('asia', '亚洲'),
+        ('europe', '欧洲'),
+        ('africa', '非洲'),
+        ('north_america', '北美洲'),
+        ('south_america', '南美洲'),
+        ('oceania', '大洋洲')
+    ]:
+        if special_groups[region_key]:
+            region_source_groups = special_source_groups.get(region_key, {})
+            if len(region_source_groups) == 1:
+                source_name = list(region_source_groups.keys())[0]
+                main_proxies.append(f'{region_name}-{source_name}')
+            else:
+                main_proxies.append(region_name)
+                for source_name in sorted(region_source_groups.keys()):
+                    main_proxies.append(f'{region_name}-{source_name}')
+
+    # 添加功能分组
+    main_proxies.extend(['全部节点', '♻️ 自动选择', 'DIRECT'])
+
+    proxy_groups.append({
+        'name': '🚀 节点选择',
+        'type': 'select',
+        'proxies': main_proxies
+    })
+
+    # 1. 只为主要5国生成国家分组：中国、日本、韩国、新加坡、美国
+    for country_code in sorted(country_nodes.keys()):
+        nodes = country_nodes[country_code]
+        if nodes and country_code != 'OTHER':
+            # 跳过港澳台，这些地区都归到中国分组
+            if country_code in ['HK', 'MO', 'TW']:
+                continue
+
+            # 只为主要国家生成分组
+            if country_code not in major_countries:
+                continue
+
+            # 获取中文国家名称
+            country_name = country_names.get(country_code, country_code)
+
+            # 使用统一的国旗映射
+            flag_emoji = flag_emoji_map.get(country_code, '🌍')
+
+            # 国家总分组 - 根据来源数量决定命名和结构
+            source_groups = country_source_nodes.get(country_code, {})
+
+            if len(source_groups) == 1:
+                # 单一来源：直接命名为 "🇨🇳 中国-bywave"
+                source_name = list(source_groups.keys())[0]
+                proxy_groups.append({
+                    'name': f'{flag_emoji} {country_name}-{source_name}',
+                    'type': 'url-test',
+                    'url': 'http://www.gstatic.com/generate_204',
+                    'interval': 300,
+                    'tolerance': 50,
+                    'proxies': nodes
+                })
+            else:
+                # 多个来源：创建总分组 + 子分组
+                country_proxies = []
+
+                # 先添加来源子分组的引用
+                for source_name in sorted(source_groups.keys()):
+                    country_proxies.append(f'{flag_emoji} {country_name}-{source_name}')
+
+                # 添加所有节点
+                country_proxies.extend(nodes)
+
+                # 创建国家总分组
+                proxy_groups.append({
+                    'name': f'{flag_emoji} {country_name}',
+                    'type': 'url-test',
+                    'url': 'http://www.gstatic.com/generate_204',
+                    'interval': 300,
+                    'tolerance': 50,
+                    'proxies': country_proxies
+                })
+
+                # 创建来源子分组
+                for source_name in sorted(source_groups.keys()):
+                    source_nodes = source_groups[source_name]
+                    if source_nodes:
+                        proxy_groups.append({
+                            'name': f'{flag_emoji} {country_name}-{source_name}',
+                            'type': 'url-test',
+                            'url': 'http://www.gstatic.com/generate_204',
+                            'interval': 300,
+                            'tolerance': 50,
+                            'proxies': source_nodes
+                        })
+
+    # 2. 大洲分组（支持按来源细分）
+    region_name_map = {
+        '日韩新': '日韩新',
+        'asia': '亚洲',
+        'europe': '欧洲',
+        'africa': '非洲',
+        'north_america': '北美洲',
+        'south_america': '南美洲',
+        'oceania': '大洋洲'
+    }
+
+    for region_key, region_name in [
+        ('日韩新', '日韩新'),
+        ('asia', '亚洲'),
+        ('europe', '欧洲'),
+        ('africa', '非洲'),
+        ('north_america', '北美洲'),
+        ('south_america', '南美洲'),
+        ('oceania', '大洋洲')
+    ]:
+        if special_groups[region_key]:
+            region_source_groups = special_source_groups.get(region_key, {})
+
+            if len(region_source_groups) == 1:
+                # 单一来源：直接命名
+                source_name = list(region_source_groups.keys())[0]
+                proxy_groups.append({
+                    'name': f'{region_name}-{source_name}',
+                    'type': 'url-test',
+                    'url': 'http://www.gstatic.com/generate_204',
+                    'interval': 300,
+                    'tolerance': 50,
+                    'proxies': special_groups[region_key]
+                })
+            else:
+                # 多个来源：创建总分组 + 子分组
+                region_proxies = []
+
+                # 先添加来源子分组的引用
+                for source_name in sorted(region_source_groups.keys()):
+                    region_proxies.append(f'{region_name}-{source_name}')
+
+                # 添加所有节点
+                region_proxies.extend(special_groups[region_key])
+
+                # 创建地区总分组
+                proxy_groups.append({
+                    'name': region_name,
+                    'type': 'url-test',
+                    'url': 'http://www.gstatic.com/generate_204',
+                    'interval': 300,
+                    'tolerance': 50,
+                    'proxies': region_proxies
+                })
+
+                # 创建来源子分组
+                for source_name in sorted(region_source_groups.keys()):
+                    source_nodes = region_source_groups[source_name]
+                    if source_nodes:
+                        proxy_groups.append({
+                            'name': f'{region_name}-{source_name}',
+                            'type': 'url-test',
+                            'url': 'http://www.gstatic.com/generate_204',
+                            'interval': 300,
+                            'tolerance': 50,
+                            'proxies': source_nodes
+                        })
+
+    # 4. 全部节点组
+    if all_node_names:
+        proxy_groups.append({
+            'name': '全部节点',
+            'type': 'url-test',
+            'url': 'http://www.gstatic.com/generate_204',
+            'interval': 300,
+            'tolerance': 50,
+            'proxies': all_node_names
+        })
+
+    # 5. 自动选择组
+    if all_node_names:
+        proxy_groups.append({
+            'name': '♻️ 自动选择',
+            'type': 'url-test',
+            'url': 'http://www.gstatic.com/generate_204',
+            'interval': 300,
+            'tolerance': 50,
+            'proxies': all_node_names
+        })
+
+    # 应用专用组（更新为包含5个主要国家+大洲分组的结构）
+    # 构建国家分组引用列表（只包含5个主要国家）
+    country_refs = []
+    for country_code in ['CN', 'JP', 'KR', 'SG', 'US']:
+        if country_code in country_proxy_names:
+            # 只添加主代理组名称（总分组或单一来源名）
+            country_refs.append(country_proxy_names[country_code][0])
+
+    # 添加大洲分组（根据实际生成的名称）
+    region_refs = []
+    for region_key, region_name in [
+        ('日韩新', '日韩新'),
+        ('asia', '亚洲'),
+        ('europe', '欧洲'),
+        ('africa', '非洲'),
+        ('north_america', '北美洲'),
+        ('south_america', '南美洲'),
+        ('oceania', '大洋洲')
+    ]:
+        if special_groups[region_key]:
+            region_source_groups = special_source_groups.get(region_key, {})
+            if len(region_source_groups) == 1:
+                source_name = list(region_source_groups.keys())[0]
+                region_refs.append(f'{region_name}-{source_name}')
+            else:
+                region_refs.append(region_name)
+
+    # 获取特定国家的实际代理组名
+    def get_country_name(code):
+        return country_proxy_names.get(code, [])[0] if code in country_proxy_names else None
+
+    us_name = get_country_name('US')
+    cn_name = get_country_name('CN')
+    jp_name = get_country_name('JP')
+    kr_name = get_country_name('KR')
+    sg_name = get_country_name('SG')
+
+    # 构建Netflix/OpenAI优先列表（美国优先）
+    netflix_openai_priority = ['🚀 节点选择']
+    if us_name:
+        netflix_openai_priority.append(us_name)
+
+    # 构建游戏平台/国内网站优先列表（直连优先，中日韩次之）
+    game_domestic_priority = ['DIRECT', '🚀 节点选择']
+    if cn_name:
+        game_domestic_priority.append(cn_name)
+    if jp_name:
+        game_domestic_priority.append(jp_name)
+    if kr_name:
+        game_domestic_priority.append(kr_name)
+
+    app_groups = [
+        {'name': '🔎 Google', 'type': 'select', 'proxies': ['🚀 节点选择'] + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
+        {'name': '🎬 YouTube', 'type': 'select', 'proxies': ['🚀 节点选择'] + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
+        {'name': '🎬 Netflix', 'type': 'select', 'proxies': netflix_openai_priority + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
+        {'name': '🧲 OpenAI', 'type': 'select', 'proxies': netflix_openai_priority + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
+        {'name': '📲 聊天软件', 'type': 'select', 'proxies': ['🚀 节点选择'] + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
+        {'name': '🎮 游戏平台', 'type': 'select', 'proxies': game_domestic_priority + ['♻️ 自动选择']},
+        {'name': '🌏 国外网站', 'type': 'select', 'proxies': ['🚀 节点选择'] + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
+        {'name': '🌏 国内网站', 'type': 'select', 'proxies': game_domestic_priority + ['♻️ 自动选择']},
+        {'name': '🛑 广告拦截', 'type': 'select', 'proxies': ['REJECT', '🚀 节点选择', 'DIRECT']},
+        {'name': '🐟 漏网之鱼', 'type': 'select', 'proxies': ['🚀 节点选择'] + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']}
+    ]
+
+    proxy_groups.extend(app_groups)
+    return proxy_groups
+
+def main():
+    if len(sys.argv) < 2:
+        print("用法: python clash-merger.py <配置文件1> [配置文件2] ...", file=sys.stderr)
+        sys.exit(1)
+
+    input_files = sys.argv[1:]
+
+    # 提取并合并所有节点
+    all_nodes, node_sources = merge_configs(input_files)
+
+    if not all_nodes:
+        print("警告: 没有提取到任何有效节点", file=sys.stderr)
+        sys.exit(1)
+
+    # 生成代理组
+    proxy_groups = generate_proxy_groups(all_nodes, node_sources)
+
+    # 构建最终配置
+    final_config = {
+        'port': 7890,
+        'socks-port': 7891,
+        'redir-port': 7892,
+        'mixed-port': 7893,
+        'allow-lan': False,
+        'unified-delay': True,
+        'mode': 'Rule',
+        'log-level': 'info',
+        'external-controller': ':9990',
+        'clash-for-android': {'append-system-dns': False},
+        'dns': {
+            'enabled': True,
+            'ipv6': True,
+            'listen': '127.0.0.1:53',
+            'enhanced-mode': 'fake-ip',
+            'fake-ip-range': '198.18.0.1/16',
+            'use-hosts': True,
+            'nameserver-policy': {
+                'in.byw.lol': '223.5.5.5',
+                '*.google.com': '8.8.8.8',
+                '*.tw': '1.1.1.1',
+                'testflight.apple.com': '8.8.8.8',
+                '*.tmall.com': '223.5.5.5',
+                '*.taobao.com': '223.5.5.5',
+                '*.alicdn.com': '223.5.5.5',
+                '*.aliyun.com': '223.5.5.5',
+                '*.alipay*.com': '223.5.5.5',
+                '*.alibaba*.com': '223.5.5.5',
+                '*.alimama*.com': '223.5.5.5',
+                '*.qq.com': '223.5.5.5',
+                '*.tencent.com': '223.5.5.5',
+                '*.weixin.com': '223.5.5.5',
+                '*.qpic.cn': '223.5.5.5',
+                '*.jd.com': '223.5.5.5',
+                '*.bilibili.com': '223.5.5.5',
+                'hdslb.com': '223.5.5.5',
+                '*.163.com': '119.29.29.29',
+                '*.126.com': '119.29.29.29',
+                '*.126.net': '223.5.5.5',
+                '*.127.net': '223.5.5.5',
+                '*.netease.com': '223.5.5.5',
+                '*.10010.com': '223.5.5.5',
+                '*.unicompayment.com': '223.5.5.5',
+                '*.ximalaya.com': '223.5.5.5',
+                '*.baidu.com': '223.5.5.5',
+                '*.bdstatic.com': '223.5.5.5'
+            },
+            'nameserver': ['223.5.5.5', '119.29.29.29'],
+            'fallback': ['1.1.1.1', '8.8.8.8'],
+            'fallback-filter': {'geoip': True, 'ipcidr': ['240.0.0.0/4', '0.0.0.0/32']}
+        },
+        'proxies': all_nodes,
+        'proxy-groups': proxy_groups,
+        'rules': [
+            'DOMAIN-SUFFIX,clarity.ms,🛑 广告拦截',
+            'DOMAIN-SUFFIX,histats.com,🛑 广告拦截',
+            'DOMAIN,api.gfwclash.cloud,🛑 广告拦截',
+            'DOMAIN,api.gfwclash.site,DIRECT',
+            'DOMAIN-SUFFIX,googleapis.cn,🔎 Google',
+            'DOMAIN-SUFFIX,google.cn,🔎 Google',
+            'DOMAIN,developer.apple.com,🔎 Google',
+            'DOMAIN-SUFFIX,digicert.com,🔎 Google',
+            'DOMAIN,ocsp.apple.com,🔎 Google',
+            'DOMAIN,ocsp.comodoca.com,🔎 Google',
+            'DOMAIN,ocsp.usertrust.com,🔎 Google',
+            'DOMAIN,ocsp.sectigo.com,🔎 Google',
+            'DOMAIN,ocsp.verisign.net,🔎 Google',
+            'DOMAIN-SUFFIX,apple-dns.net,🔎 Google',
+            'DOMAIN,testflight.apple.com,🔎 Google',
+            'DOMAIN,sandbox.itunes.apple.com,🔎 Google',
+            'DOMAIN,itunes.apple.com,🔎 Google',
+            'DOMAIN-SUFFIX,apps.apple.com,🔎 Google',
+            'DOMAIN-SUFFIX,blobstore.apple.com,🔎 Google',
+            'DOMAIN,cvws.icloud-content.com,🔎 Google',
+            'DOMAIN-SUFFIX,mzstatic.com,DIRECT',
+            'DOMAIN-SUFFIX,itunes.apple.com,DIRECT',
+            'DOMAIN-SUFFIX,icloud.com,DIRECT',
+            'DOMAIN-SUFFIX,icloud-content.com,DIRECT',
+            'DOMAIN-SUFFIX,me.com,DIRECT',
+            'DOMAIN-SUFFIX,aaplimg.com,DIRECT',
+            'DOMAIN-SUFFIX,cdn20.com,DIRECT',
+            'DOMAIN-SUFFIX,cdn-apple.com,DIRECT',
+            'DOMAIN-SUFFIX,akadns.net,DIRECT',
+            'DOMAIN-SUFFIX,akamaiedge.net,DIRECT',
+            'DOMAIN-SUFFIX,edgekey.net,DIRECT',
+            'DOMAIN-SUFFIX,mwcloudcdn.com,DIRECT',
+            'DOMAIN-SUFFIX,mwcname.com,DIRECT',
+            'DOMAIN-SUFFIX,apple.com,DIRECT',
+            'DOMAIN-SUFFIX,apple-cloudkit.com,DIRECT',
+            'DOMAIN-SUFFIX,apple-mapkit.com,DIRECT',
+            'DOMAIN-SUFFIX,126.com,DIRECT',
+            'DOMAIN-SUFFIX,126.net,DIRECT',
+            'DOMAIN-SUFFIX,127.net,DIRECT',
+            'DOMAIN-SUFFIX,163.com,DIRECT',
+            'DOMAIN-SUFFIX,360buyimg.com,DIRECT',
+            'DOMAIN-SUFFIX,36kr.com,DIRECT',
+            'DOMAIN-SUFFIX,acfun.tv,DIRECT',
+            'DOMAIN-SUFFIX,air-matters.com,DIRECT',
+            'DOMAIN-SUFFIX,aixifan.com,DIRECT',
+            'DOMAIN-KEYWORD,alicdn,DIRECT',
+            'DOMAIN-KEYWORD,alipay,DIRECT',
+            'DOMAIN-KEYWORD,taobao,DIRECT',
+            'DOMAIN-SUFFIX,amap.com,DIRECT',
+            'DOMAIN-SUFFIX,autonavi.com,DIRECT',
+            'DOMAIN-KEYWORD,baidu,DIRECT',
+            'DOMAIN-SUFFIX,bdimg.com,DIRECT',
+            'DOMAIN-SUFFIX,bdstatic.com,DIRECT',
+            'DOMAIN-SUFFIX,bilibili.com,DIRECT',
+            'DOMAIN-SUFFIX,bilivideo.com,DIRECT',
+            'DOMAIN-SUFFIX,caiyunapp.com,DIRECT',
+            'DOMAIN-SUFFIX,clouddn.com,DIRECT',
+            'DOMAIN-SUFFIX,cnbeta.com,DIRECT',
+            'DOMAIN-SUFFIX,cnbetacdn.com,DIRECT',
+            'DOMAIN-SUFFIX,cootekservice.com,DIRECT',
+            'DOMAIN-SUFFIX,csdn.net,DIRECT',
+            'DOMAIN-SUFFIX,ctrip.com,DIRECT',
+            'DOMAIN-SUFFIX,dgtle.com,DIRECT',
+            'DOMAIN-SUFFIX,dianping.com,DIRECT',
+            'DOMAIN-SUFFIX,douban.com,DIRECT',
+            'DOMAIN-SUFFIX,doubanio.com,DIRECT',
+            'DOMAIN-SUFFIX,duokan.com,DIRECT',
+            'DOMAIN-SUFFIX,easou.com,DIRECT',
+            'DOMAIN-SUFFIX,ele.me,DIRECT',
+            'DOMAIN-SUFFIX,feng.com,DIRECT',
+            'DOMAIN-SUFFIX,fir.im,DIRECT',
+            'DOMAIN-SUFFIX,frdic.com,DIRECT',
+            'DOMAIN-SUFFIX,g-cores.com,DIRECT',
+            'DOMAIN-SUFFIX,godic.net,DIRECT',
+            'DOMAIN-SUFFIX,gtimg.com,DIRECT',
+            'DOMAIN,cdn.hockeyapp.net,DIRECT',
+            'DOMAIN-SUFFIX,hongxiu.com,DIRECT',
+            'DOMAIN-SUFFIX,hxcdn.net,DIRECT',
+            'DOMAIN-SUFFIX,iciba.com,DIRECT',
+            'DOMAIN-SUFFIX,ifeng.com,DIRECT',
+            'DOMAIN-SUFFIX,ifengimg.com,DIRECT',
+            'DOMAIN-SUFFIX,ipip.net,DIRECT',
+            'DOMAIN-SUFFIX,iqiyi.com,DIRECT',
+            'DOMAIN-SUFFIX,jd.com,DIRECT',
+            'DOMAIN-SUFFIX,jianshu.com,DIRECT',
+            'DOMAIN-SUFFIX,knewone.com,DIRECT',
+            'DOMAIN-SUFFIX,le.com,DIRECT',
+            'DOMAIN-SUFFIX,lecloud.com,DIRECT',
+            'DOMAIN-SUFFIX,lemicp.com,DIRECT',
+            'DOMAIN-SUFFIX,licdn.com,DIRECT',
+            'DOMAIN-SUFFIX,luoo.net,DIRECT',
+            'DOMAIN-SUFFIX,meituan.com,DIRECT',
+            'DOMAIN-SUFFIX,meituan.net,DIRECT',
+            'DOMAIN-SUFFIX,mi.com,DIRECT',
+            'DOMAIN-SUFFIX,miaopai.com,DIRECT',
+            'DOMAIN-SUFFIX,microsoft.com,DIRECT',
+            'DOMAIN-SUFFIX,microsoftonline.com,DIRECT',
+            'DOMAIN-SUFFIX,msftauth.net,DIRECT',
+            'DOMAIN-SUFFIX,msftauthimages.net,DIRECT',
+            'DOMAIN-SUFFIX,msftidentity.com,DIRECT',
+            'DOMAIN-SUFFIX,msn.com,DIRECT',
+            'DOMAIN-SUFFIX,msn.cn,DIRECT',
+            'DOMAIN-SUFFIX,office.com,DIRECT',
+            'DOMAIN-SUFFIX,office365.com,DIRECT',
+            'DOMAIN-SUFFIX,onedrive.com,DIRECT',
+            'DOMAIN-SUFFIX,sharepoint.com,DIRECT',
+            'DOMAIN-SUFFIX,skype.com,DIRECT',
+            'DOMAIN-SUFFIX,skypeassets.com,DIRECT',
+            'DOMAIN-SUFFIX,windows.com,DIRECT',
+            'DOMAIN-SUFFIX,windows.net,DIRECT',
+            'DOMAIN-SUFFIX,windowsazure.com,DIRECT',
+            'DOMAIN-SUFFIX,xbox.com,DIRECT',
+            'DOMAIN-SUFFIX,xboxlive.com,DIRECT',
+            'DOMAIN-SUFFIX,visualstudio.com,DIRECT',
+            'DOMAIN-SUFFIX,mozilla.org,DIRECT',
+            'DOMAIN-SUFFIX,mozilla.net,DIRECT',
+            'DOMAIN-SUFFIX,firefox.com,DIRECT',
+            'DOMAIN-SUFFIX,openwrt.org,DIRECT',
+            'DOMAIN-SUFFIX,leigod.com,DIRECT',
+            'DOMAIN-SUFFIX,paoluz.com,DIRECT',
+            'DOMAIN-SUFFIX,paoluz.link,DIRECT',
+            'DOMAIN-SUFFIX,bywave.net,DIRECT',
+            'DOMAIN-SUFFIX,byw.lol,DIRECT',
+            'DOMAIN-SUFFIX,byw.ltd,DIRECT',
+            'DOMAIN-SUFFIX,ikuai8.com,DIRECT',
+            'DOMAIN-SUFFIX,iqiyi.com,DIRECT',
+            'DOMAIN-SUFFIX,qy.net,DIRECT',
+            'DOMAIN-SUFFIX,71.am,DIRECT',
+            'DOMAIN-SUFFIX,jpopsuki.tv,DIRECT',
+            'DOMAIN-SUFFIX,kaaass.net,DIRECT',
+            'DOMAIN,api.gfwclash.cloud,DIRECT',
+            'DOMAIN,api.gfwclash.site,DIRECT',
+            'DOMAIN-SUFFIX,qq.com,DIRECT',
+            'DOMAIN-SUFFIX,qpic.cn,DIRECT',
+            'DOMAIN-SUFFIX,qcloud.com,DIRECT',
+            'DOMAIN-SUFFIX,gtimg.com,DIRECT',
+            'DOMAIN-SUFFIX,wechat.com,DIRECT',
+            'DOMAIN-SUFFIX,weixin.com,DIRECT',
+            'DOMAIN-SUFFIX,wx.qq.com,DIRECT',
+            'DOMAIN-SUFFIX,tencent.com,DIRECT',
+            'DOMAIN-SUFFIX,tenpay.com,DIRECT',
+            'DOMAIN-SUFFIX,weiyun.com,DIRECT',
+            'DOMAIN-SUFFIX,ex.qq.com,DIRECT',
+            'DOMAIN-SUFFIX,tencentmind.com,DIRECT',
+            'DOMAIN-SUFFIX,ctobsnssdk.com,DIRECT',
+            'DOMAIN-SUFFIX,bytedance.com,DIRECT',
+            'DOMAIN-SUFFIX,feiliao.com,DIRECT',
+            'DOMAIN-SUFFIX,ixigua.com,DIRECT',
+            'DOMAIN-SUFFIX,pstatp.com,DIRECT',
+            'DOMAIN-SUFFIX,snssdk.com,DIRECT',
+            'DOMAIN-SUFFIX,toutiao.com,DIRECT',
+            'DOMAIN-SUFFIX,wukong.com,DIRECT',
+            'DOMAIN-SUFFIX,zijieapi.com,DIRECT',
+            'DOMAIN-SUFFIX,amemv.com,DIRECT',
+            'DOMAIN-SUFFIX,bdxiguaimg.com,DIRECT',
+            'DOMAIN-SUFFIX,bdxiguastatic.com,DIRECT',
+            'DOMAIN-SUFFIX,ixiguavideo.com,DIRECT',
+            'DOMAIN-SUFFIX,ys7.com,DIRECT',
+            'DOMAIN-SUFFIX,hikvision.com,DIRECT',
+            'DOMAIN-SUFFIX,hik-cloud.com,DIRECT',
+            'DOMAIN-SUFFIX,cszlks.com,DIRECT',
+            'DOMAIN-SUFFIX,baidu.com,DIRECT',
+            'DOMAIN-SUFFIX,baidubcr.com,DIRECT',
+            'DOMAIN-SUFFIX,baidupcs.com,DIRECT',
+            'DOMAIN-SUFFIX,baidustatic.com,DIRECT',
+            'DOMAIN-SUFFIX,bcebos.com,DIRECT',
+            'DOMAIN-SUFFIX,baidubce.com,DIRECT',
+            'DOMAIN-SUFFIX,baiducontent.com,DIRECT',
+            'DOMAIN-SUFFIX,baiduhui.com,DIRECT',
+            'DOMAIN-SUFFIX,baidustatic.com,DIRECT',
+            'DOMAIN-SUFFIX,baifubao.com,DIRECT',
+            'DOMAIN-SUFFIX,bcy.net,DIRECT',
+            'DOMAIN-SUFFIX,dueros.baidu.com,DIRECT',
+            'DOMAIN-SUFFIX,duer.baidu.com,DIRECT',
+            'DOMAIN-SUFFIX,hao123.com,DIRECT',
+            'DOMAIN-SUFFIX,hao123img.com,DIRECT',
+            'DOMAIN-SUFFIX,im.baidu.com,DIRECT',
+            'DOMAIN-SUFFIX,jomodns.com,DIRECT',
+            'DOMAIN-SUFFIX,quyaoya.com,DIRECT',
+            'DOMAIN-SUFFIX,smartapps.cn,DIRECT',
+            'DOMAIN-SUFFIX,smartapps.com.cn,DIRECT',
+            'DOMAIN-SUFFIX,tbcdn.com,DIRECT',
+            'DOMAIN-SUFFIX, tieba.com,DIRECT',
+            'DOMAIN-SUFFIX, tiebaimg.com,DIRECT',
+            'DOMAIN-SUFFIX, xiaodutv.com,DIRECT',
+            'DOMAIN-SUFFIX, xiaokaxiu.com,DIRECT',
+            'DOMAIN-SUFFIX, zhidao.baidu.com,DIRECT',
+            'DOMAIN-SUFFIX, zhushou.360.cn,DIRECT',
+            'DOMAIN-SUFFIX, 360doc.com,DIRECT',
+            'DOMAIN-SUFFIX, 360safe.com,DIRECT',
+            'DOMAIN-SUFFIX, dhrest.com,DIRECT',
+            'DOMAIN-SUFFIX, qhimg.com,DIRECT',
+            'DOMAIN-SUFFIX, qhmsg.com,DIRECT',
+            'DOMAIN-SUFFIX, qhimgs4.com,DIRECT',
+            'DOMAIN-SUFFIX, qihucdn.com,DIRECT',
+            'DOMAIN-SUFFIX, 360tpcdn.com,DIRECT',
+            'DOMAIN-SUFFIX, naixuecha.com,DIRECT',
+            'DOMAIN-SUFFIX, shein.com,DIRECT',
+            'DOMAIN-SUFFIX, cnblogs.com,DIRECT',
+            'DOMAIN-SUFFIX, cnblogimg.com,DIRECT',
+            'DOMAIN-SUFFIX, cnblogs.com,DIRECT',
+            'DOMAIN-SUFFIX, cnblogse.com,DIRECT',
+            'DOMAIN-SUFFIX, cnblogs.com,DIRECT',
+            'DOMAIN-SUFFIX, cnblogs.com,DIRECT',
+            'DOMAIN-SUFFIX, cnblogs.com,DIRECT',
+            'DOMAIN-SUFFIX, cnblogs.com,DIRECT',
+            'DOMAIN-SUFFIX, cnblogs.com,DIRECT',
+            'DOMAIN-SUFFIX, cnblogs.com,DIRECT',
+            'GEOIP,CN,DIRECT',
+            'MATCH,🐟 漏网之鱼'
+        ]
+    }
+
+    # 输出到 stdout
+    yaml.dump(final_config, sys.stdout, allow_unicode=True, sort_keys=False, width=1000)
+
+if __name__ == '__main__':
+    main()
