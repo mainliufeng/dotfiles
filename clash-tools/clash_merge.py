@@ -573,11 +573,21 @@ def generate_proxy_groups(nodes, node_sources):
     proxy_groups.extend(app_groups)
     return proxy_groups
 
+def parse_alias_and_value(raw: str):
+    if "=" in raw:
+        alias, value = raw.split("=", 1)
+        alias = alias.strip()
+        value = value.strip()
+        if alias and value:
+            return alias, value
+    return None, raw
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="合并 Clash 配置文件或订阅（支持 URL 和本地文件）"
+        description="合并 Clash 配置文件或订阅（支持 URL、本地文件，或 别名=来源）"
     )
-    parser.add_argument("inputs", nargs="+", help="配置文件或订阅 URL，可多个")
+    parser.add_argument("inputs", nargs="+", help="配置文件或订阅 URL，可多个；支持 别名=URL/文件")
     parser.add_argument(
         "--user-agent",
         default=DEFAULT_UA,
@@ -591,7 +601,8 @@ def main():
 
     temp_files = []
     input_items = []
-    for src in args.inputs:
+    for raw in args.inputs:
+        alias, src = parse_alias_and_value(raw)
         if is_url(src):
             try:
                 tmp_path = fetch_subscription_to_file(src, args.user_agent)
@@ -599,9 +610,10 @@ def main():
                 print(str(exc), file=sys.stderr)
                 sys.exit(1)
             temp_files.append(tmp_path)
-            input_items.append((tmp_path, source_name_from_url(src)))
+            source_name = alias or source_name_from_url(src)
+            input_items.append((tmp_path, source_name))
         else:
-            input_items.append((src, None))
+            input_items.append((src, alias or None))
 
     # 提取并合并所有节点
     all_nodes, node_sources = merge_configs(input_items)
