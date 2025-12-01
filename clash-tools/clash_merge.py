@@ -1,8 +1,79 @@
-#!/usr/bin/env python
-import yaml
-import sys
+#!/usr/bin/env python3
+import argparse
+import os
 import re
+import sys
+import tempfile
 from collections import defaultdict
+from urllib.parse import urlparse
+
+import requests
+import yaml
+
+from clash_fetch_subscription import (
+    looks_like_share_links,
+    maybe_base64_decode,
+    share_links_to_clash_yaml,
+    try_parse_yaml,
+)
+
+DEFAULT_UA = "clash-verge/v2.0.0"
+
+
+def is_url(value):
+    return value.startswith(("http://", "https://"))
+
+
+def normalize_subscription_text(text):
+    # 去掉 UTF-8 BOM
+    cleaned = text.lstrip("\ufeff")
+
+    data = try_parse_yaml(cleaned)
+    if data is not None:
+        return cleaned
+
+    decoded = maybe_base64_decode(cleaned)
+    if decoded:
+        data = try_parse_yaml(decoded)
+        if data is not None:
+            return decoded
+        if looks_like_share_links(decoded):
+            converted = share_links_to_clash_yaml(decoded)
+            if converted:
+                return converted
+            return decoded
+
+    if looks_like_share_links(cleaned):
+        converted = share_links_to_clash_yaml(cleaned)
+        if converted:
+            return converted
+
+    return None
+
+
+def fetch_subscription_to_file(url, user_agent):
+    headers = {"User-Agent": user_agent} if user_agent else {}
+    try:
+        resp = requests.get(url, timeout=30, headers=headers)
+        resp.raise_for_status()
+    except Exception as exc:
+        raise RuntimeError(f"订阅下载失败: {exc}") from exc
+
+    normalized = normalize_subscription_text(resp.text)
+    if not normalized:
+        raise RuntimeError("订阅无法解析为 Clash YAML，也未检测到可转换的节点")
+
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".yaml")
+    with tmp:
+        tmp.write(normalized.encode("utf-8"))
+    return tmp.name
+
+
+def source_name_from_url(url):
+    parsed = urlparse(url)
+    host = parsed.hostname or "subscription"
+    tail = parsed.path.rstrip("/").split("/")[-1] or ""
+    return f"{host}-{tail}" if tail else host
 
 def extract_country_code(node_name):
     """从节点名称提取国家代码"""
@@ -70,14 +141,14 @@ def extract_nodes_from_file(file_path):
         print(f"警告: 读取文件 {file_path} 失败: {e}", file=sys.stderr)
         return []
 
-def merge_configs(input_files):
+def merge_configs(input_items):
     """合并所有输入文件的节点，并记录来源"""
     all_nodes = []
     node_sources = {}  # 记录每个节点的来源
     seen_nodes = set()  # 用于去重 (name, server) 组合
 
-    for file_path in input_files:
-        source_name = extract_source_name(file_path)
+    for file_path, source_name in input_items:
+        source_name = source_name or extract_source_name(file_path)
         nodes = extract_nodes_from_file(file_path)
         for node in nodes:
             name = node.get('name', '')
@@ -502,15 +573,38 @@ def generate_proxy_groups(nodes, node_sources):
     proxy_groups.extend(app_groups)
     return proxy_groups
 
-def main():
-    if len(sys.argv) < 2:
-        print("用法: python clash-merger.py <配置文件1> [配置文件2] ...", file=sys.stderr)
-        sys.exit(1)
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="合并 Clash 配置文件或订阅（支持 URL 和本地文件）"
+    )
+    parser.add_argument("inputs", nargs="+", help="配置文件或订阅 URL，可多个")
+    parser.add_argument(
+        "--user-agent",
+        default=DEFAULT_UA,
+        help=f"订阅请求 User-Agent（默认 {DEFAULT_UA}）",
+    )
+    return parser.parse_args()
 
-    input_files = sys.argv[1:]
+
+def main():
+    args = parse_args()
+
+    temp_files = []
+    input_items = []
+    for src in args.inputs:
+        if is_url(src):
+            try:
+                tmp_path = fetch_subscription_to_file(src, args.user_agent)
+            except Exception as exc:
+                print(str(exc), file=sys.stderr)
+                sys.exit(1)
+            temp_files.append(tmp_path)
+            input_items.append((tmp_path, source_name_from_url(src)))
+        else:
+            input_items.append((src, None))
 
     # 提取并合并所有节点
-    all_nodes, node_sources = merge_configs(input_files)
+    all_nodes, node_sources = merge_configs(input_items)
 
     if not all_nodes:
         print("警告: 没有提取到任何有效节点", file=sys.stderr)
@@ -789,7 +883,20 @@ def main():
     }
 
     # 输出到 stdout
-    yaml.dump(final_config, sys.stdout, allow_unicode=True, sort_keys=False, width=1000)
+    try:
+        yaml.dump(final_config, sys.stdout, allow_unicode=True, sort_keys=False, width=1000)
+    except BrokenPipeError:
+        try:
+            sys.stdout.close()
+        except Exception:
+            pass
+        sys.exit(0)
+
+    for path in temp_files:
+        try:
+            os.remove(path)
+        except OSError:
+            pass
 
 if __name__ == '__main__':
     main()
