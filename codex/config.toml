@@ -1,15 +1,30 @@
-[projects."/home/liufeng/Code/personal/mobius"]
-trust_level = "trusted"
+model = "gpt-5.1-codex-max"
+model_reasoning_effort = "high"
 
 [projects."/home/liufeng"]
+trust_level = "trusted"
+
+[projects."/home/liufeng/dotfiles"]
+trust_level = "trusted"
+
+[projects."/home/liufeng/Code/self/mobius"]
 trust_level = "trusted"
 
 [mcp_servers.chrome-devtools]
 command = "npx"
 args = [
+    "-y",
     "chrome-devtools-mcp@latest",
-    "--browser-url=http://localhost:9222"
+    "--browser-url=http://127.0.0.1:9222"
 ]
+env = {}
+startup_timeout_ms = 20_000
 
 [launchers]
 chrome_remote = "~/dotfiles/scripts/start-chrome-remote"
+
+[notice]
+"hide_gpt-5.1-codex-max_migration_prompt" = true
+hide_rate_limit_model_nudge = true
+
+
