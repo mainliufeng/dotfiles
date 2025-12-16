@@ -1,6 +1,28 @@
 ## https://wiki.archlinux.org/title/Lenovo_Yoga_14s_2021
 yay -S cpupower-gui
 
+## 屏幕闪烁
+1. 编辑 GRUB 配置文件
+使用您喜欢的文本编辑器（例如 nano 或 vim）以 root 权限打开 /etc/default/grub 文件。
+在打开的文件中，找到名为 GRUB_CMDLINE_LINUX_DEFAULT 的行。
+
+原始行可能类似于：
+GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet"
+您需要将内核参数 i915.enable_psr=0 添加到双引号内。
+
+修改后的行应该类似于：
+GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet i915.enable_psr=0"
+
+2. 更新 GRUB 配置
+修改完 /etc/default/grub 后，您必须运行以下命令来生成新的 GRUB 引导配置文件，使其生效：
+
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+执行后，您应该会看到类似 "Generating grub configuration file ..." 的输出。
+
+3. 重启系统
+配置更新完毕后，请重启您的笔记本电脑，新的内核参数就会生效：
+重启后，请观察屏幕闪烁问题是否得到解决。
+
 ## 睡眠无法唤醒
 联想yoga pro 14s，archlinux系统，有时睡眠无法唤醒，怎么解决
 
