@@ -1,0 +1,23 @@
+[Desktop Entry]
+Version=1.0
+Name=Google Chrome
+GenericName=Web Browser
+Comment=Access the Internet
+StartupWMClass=Google-chrome
+Exec=/bin/sh -c 'extra=""; if [ "${XDG_SESSION_TYPE:-}" = "wayland" ] && { [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] || case "${XDG_CURRENT_DESKTOP:-}" in *Hyprland*|*hyprland*) true;; *) false;; esac; }; then extra="--force-device-scale-factor=1.0"; fi; exec /usr/bin/google-chrome-stable $extra "$@"' sh %U
+StartupNotify=true
+Terminal=false
+Icon=google-chrome
+Type=Application
+Categories=Network;WebBrowser;
+MimeType=application/pdf;application/rdf+xml;application/rss+xml;application/xhtml+xml;application/xhtml_xml;application/xml;image/gif;image/jpeg;image/png;image/webp;text/html;text/xml;x-scheme-handler/http;x-scheme-handler/https;
+Actions=new-window;new-private-window;
+
+[Desktop Action new-window]
+Name=New Window
+Exec=/bin/sh -c 'extra=""; if [ "${XDG_SESSION_TYPE:-}" = "wayland" ] && { [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] || case "${XDG_CURRENT_DESKTOP:-}" in *Hyprland*|*hyprland*) true;; *) false;; esac; }; then extra="--force-device-scale-factor=1.0"; fi; exec /usr/bin/google-chrome-stable $extra --new-window "$@"' sh %U
+
+[Desktop Action new-private-window]
+Name=New Incognito Window
+Exec=/bin/sh -c 'extra=""; if [ "${XDG_SESSION_TYPE:-}" = "wayland" ] && { [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] || case "${XDG_CURRENT_DESKTOP:-}" in *Hyprland*|*hyprland*) true;; *) false;; esac; }; then extra="--force-device-scale-factor=1.0"; fi; exec /usr/bin/google-chrome-stable $extra --incognito "$@"' sh %U
+
