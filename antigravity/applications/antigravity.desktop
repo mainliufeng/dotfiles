@@ -3,7 +3,7 @@ Type=Application
 Name=Antigravity
 GenericName=Code Editor
 Comment=Agentic development platform
-Exec=env ELECTRON_FORCE_DEVICE_SCALE_FACTOR=2 /usr/bin/antigravity --force-device-scale-factor=2 %F
+Exec=/bin/sh -c 'extra=""; if [ "${XDG_SESSION_TYPE:-}" = "wayland" ] && { [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] || case "${XDG_CURRENT_DESKTOP:-}" in *Hyprland*|*hyprland*) true;; *) false;; esac; }; then export ELECTRON_FORCE_DEVICE_SCALE_FACTOR=2; extra="--force-device-scale-factor=2"; fi; exec /usr/bin/antigravity $extra "$@"' sh %F
 TryExec=/usr/bin/antigravity
 Icon=antigravity
 Terminal=false
@@ -16,5 +16,5 @@ Actions=new-empty-window;
 
 [Desktop Action new-empty-window]
 Name=New Empty Window
-Exec=env ELECTRON_FORCE_DEVICE_SCALE_FACTOR=2 /usr/bin/antigravity --force-device-scale-factor=2 --new-window %F
+Exec=/bin/sh -c 'extra=""; if [ "${XDG_SESSION_TYPE:-}" = "wayland" ] && { [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] || case "${XDG_CURRENT_DESKTOP:-}" in *Hyprland*|*hyprland*) true;; *) false;; esac; }; then export ELECTRON_FORCE_DEVICE_SCALE_FACTOR=2; extra="--force-device-scale-factor=2"; fi; exec /usr/bin/antigravity $extra "$@"' sh --new-window %F
 Icon=antigravity

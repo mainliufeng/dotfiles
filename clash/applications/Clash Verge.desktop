@@ -2,7 +2,7 @@
 Categories=Development;
 Comment=Clash Verge Rev
 TryExec=/usr/bin/clash-verge
-Exec=/usr/bin/env GDK_SCALE=1 GDK_DPI_SCALE=0.5 /usr/bin/clash-verge %u
+Exec=/bin/sh -c 'if [ "${XDG_SESSION_TYPE:-}" = "wayland" ] && { [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] || case "${XDG_CURRENT_DESKTOP:-}" in *Hyprland*|*hyprland*) true;; *) false;; esac; }; then export GDK_SCALE=1; export GDK_DPI_SCALE=0.5; fi; exec /usr/bin/clash-verge "$@"' sh %u
 StartupWMClass=clash-verge
 Icon=clash-verge
 Name=Clash Verge

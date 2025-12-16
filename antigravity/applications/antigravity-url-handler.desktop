@@ -2,7 +2,7 @@
 Type=Application
 Name=Antigravity - URL Handler
 Comment=Handle antigravity:// URLs
-Exec=env ELECTRON_FORCE_DEVICE_SCALE_FACTOR=2 /usr/bin/antigravity --force-device-scale-factor=2 --open-url %U
+Exec=/bin/sh -c 'extra=""; if [ "${XDG_SESSION_TYPE:-}" = "wayland" ] && { [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] || case "${XDG_CURRENT_DESKTOP:-}" in *Hyprland*|*hyprland*) true;; *) false;; esac; }; then export ELECTRON_FORCE_DEVICE_SCALE_FACTOR=2; extra="--force-device-scale-factor=2"; fi; exec /usr/bin/antigravity $extra "$@"' sh --open-url %U
 Icon=antigravity
 Terminal=false
 NoDisplay=true
