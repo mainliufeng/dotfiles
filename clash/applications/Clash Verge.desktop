@@ -1,0 +1,11 @@
+[Desktop Entry]
+Categories=Development;
+Comment=Clash Verge Rev
+TryExec=/usr/bin/clash-verge
+Exec=/usr/bin/env GDK_SCALE=1 GDK_DPI_SCALE=0.5 /usr/bin/clash-verge %u
+StartupWMClass=clash-verge
+Icon=clash-verge
+Name=Clash Verge
+Terminal=false
+Type=Application
+MimeType=x-scheme-handler/clash;

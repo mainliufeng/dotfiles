@@ -1,0 +1,20 @@
+[Desktop Entry]
+Type=Application
+Name=Antigravity
+GenericName=Code Editor
+Comment=Agentic development platform
+Exec=env ELECTRON_FORCE_DEVICE_SCALE_FACTOR=2 /usr/bin/antigravity --force-device-scale-factor=2 %F
+TryExec=/usr/bin/antigravity
+Icon=antigravity
+Terminal=false
+Categories=Development;IDE;TextEditor;
+Keywords=vscode;ide;editor;
+StartupNotify=true
+StartupWMClass=Antigravity
+MimeType=application/x-antigravity-workspace;
+Actions=new-empty-window;
+
+[Desktop Action new-empty-window]
+Name=New Empty Window
+Exec=env ELECTRON_FORCE_DEVICE_SCALE_FACTOR=2 /usr/bin/antigravity --force-device-scale-factor=2 --new-window %F
+Icon=antigravity

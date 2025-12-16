@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Antigravity - URL Handler
+Comment=Handle antigravity:// URLs
+Exec=env ELECTRON_FORCE_DEVICE_SCALE_FACTOR=2 /usr/bin/antigravity --force-device-scale-factor=2 --open-url %U
+Icon=antigravity
+Terminal=false
+NoDisplay=true
+Categories=Development;
+MimeType=x-scheme-handler/antigravity;
+StartupNotify=true
