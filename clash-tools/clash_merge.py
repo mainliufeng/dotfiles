@@ -506,78 +506,89 @@ def generate_proxy_groups(nodes, node_sources):
             'proxies': all_node_names
         })
 
-    # 应用专用组（更新为包含5个主要国家+大洲分组的结构）
-    # 构建国家分组引用列表（只包含5个主要国家）
-    country_refs = []
-    for country_code in ['CN', 'JP', 'KR', 'SG', 'US']:
-        if country_code in country_proxy_names:
-            # 只添加主代理组名称（总分组或单一来源名）
-            country_refs.append(country_proxy_names[country_code][0])
-
-    # 添加大洲分组（根据实际生成的名称）
-    region_refs = []
-    for region_key, region_name in [
-        ('日韩新', '日韩新'),
-        ('asia', '亚洲'),
-        ('europe', '欧洲'),
-        ('africa', '非洲'),
-        ('north_america', '北美洲'),
-        ('south_america', '南美洲'),
-        ('oceania', '大洋洲')
-    ]:
-        if special_groups[region_key]:
-            region_source_groups = special_source_groups.get(region_key, {})
-            if len(region_source_groups) == 1:
-                source_name = list(region_source_groups.keys())[0]
-                region_refs.append(f'{region_name}-{source_name}')
-            else:
-                region_refs.append(region_name)
-
-    # 获取特定国家的实际代理组名
-    def get_country_name(code):
-        return country_proxy_names.get(code, [])[0] if code in country_proxy_names else None
-
-    us_name = get_country_name('US')
-    cn_name = get_country_name('CN')
-    jp_name = get_country_name('JP')
-    kr_name = get_country_name('KR')
-    sg_name = get_country_name('SG')
-
-    # 构建Netflix/OpenAI优先列表（美国优先）
-    netflix_openai_priority = ['🚀 节点选择']
-    if us_name:
-        netflix_openai_priority.append(us_name)
-
-    # 构建游戏平台/国内网站优先列表（直连优先，中日韩次之）
-    game_domestic_priority = ['DIRECT', '🚀 节点选择']
-    if cn_name:
-        game_domestic_priority.append(cn_name)
-    if jp_name:
-        game_domestic_priority.append(jp_name)
-    if kr_name:
-        game_domestic_priority.append(kr_name)
+    # 应用专用组：统一使用“节点选择 + main_proxies”，避免与“🚀 节点选择”可选项不一致
+    app_group_proxies = ['🚀 节点选择'] + main_proxies
 
     app_groups = [
-        {'name': '🔎 Google', 'type': 'select', 'proxies': ['🚀 节点选择'] + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
-        {'name': '🎬 YouTube', 'type': 'select', 'proxies': ['🚀 节点选择'] + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
-        {'name': '🐱 GitHub', 'type': 'select', 'proxies': ['🚀 节点选择'] + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
-        {'name': '🎬 Netflix', 'type': 'select', 'proxies': netflix_openai_priority + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
-        {'name': '🧲 OpenAI', 'type': 'select', 'proxies': netflix_openai_priority + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
-        {'name': '🔖 OneDrive', 'type': 'select', 'proxies': ['🚀 节点选择'] + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
-        {'name': '🗺 Speedtest', 'type': 'select', 'proxies': ['🚀 节点选择'] + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
-        {'name': '🎙 Discord', 'type': 'select', 'proxies': ['🚀 节点选择'] + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
-        {'name': '📪 邮件服务', 'type': 'select', 'proxies': ['🚀 节点选择'] + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
-        {'name': '📲 聊天软件', 'type': 'select', 'proxies': ['🚀 节点选择'] + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
-        {'name': '🎮 游戏平台', 'type': 'select', 'proxies': game_domestic_priority + ['♻️ 自动选择']},
-        {'name': '🎮 游戏下载', 'type': 'select', 'proxies': game_domestic_priority + ['♻️ 自动选择']},
-        {'name': '🌏 国外网站', 'type': 'select', 'proxies': ['🚀 节点选择'] + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']},
-        {'name': '🌏 国内网站', 'type': 'select', 'proxies': game_domestic_priority + ['♻️ 自动选择']},
-        {'name': '🛑 广告拦截', 'type': 'select', 'proxies': ['REJECT', '🚀 节点选择', 'DIRECT']},
-        {'name': '🐟 漏网之鱼', 'type': 'select', 'proxies': ['🚀 节点选择'] + country_refs + region_refs + ['♻️ 自动选择', 'DIRECT']}
+        {'name': '🔎 Google', 'type': 'select', 'proxies': app_group_proxies},
+        {'name': '🎬 YouTube', 'type': 'select', 'proxies': app_group_proxies},
+        {'name': '🐱 GitHub', 'type': 'select', 'proxies': app_group_proxies},
+        {'name': '🎬 Netflix', 'type': 'select', 'proxies': app_group_proxies},
+        {'name': '🧲 OpenAI', 'type': 'select', 'proxies': app_group_proxies},
+        {'name': '🔖 OneDrive', 'type': 'select', 'proxies': app_group_proxies},
+        {'name': '🗺 Speedtest', 'type': 'select', 'proxies': app_group_proxies},
+        {'name': '🎙 Discord', 'type': 'select', 'proxies': app_group_proxies},
+        {'name': '📪 邮件服务', 'type': 'select', 'proxies': app_group_proxies},
+        {'name': '📲 聊天软件', 'type': 'select', 'proxies': app_group_proxies},
+        {'name': '🎮 游戏平台', 'type': 'select', 'proxies': app_group_proxies},
+        {'name': '🎮 游戏下载', 'type': 'select', 'proxies': app_group_proxies},
+        {'name': '🌏 国外网站', 'type': 'select', 'proxies': app_group_proxies},
+        {'name': '🌏 国内网站', 'type': 'select', 'proxies': app_group_proxies},
+        {'name': '🛑 广告拦截', 'type': 'select', 'proxies': ['REJECT'] + app_group_proxies},
+        {'name': '🐟 漏网之鱼', 'type': 'select', 'proxies': app_group_proxies}
     ]
 
     proxy_groups.extend(app_groups)
     return proxy_groups
+
+
+BUILTIN_POLICY_TARGETS = {"DIRECT", "REJECT", "PASS"}
+
+
+def extract_rule_target(rule: str):
+    parts = [p.strip() for p in str(rule).split(",") if p.strip()]
+    if len(parts) < 2:
+        return None
+    if parts[-1].lower() == "no-resolve" and len(parts) >= 3:
+        return parts[-2]
+    return parts[-1]
+
+
+def collect_rule_targets(rules):
+    targets = set()
+    for rule in rules or []:
+        target = extract_rule_target(rule)
+        if not target or target in BUILTIN_POLICY_TARGETS:
+            continue
+        targets.add(target)
+    return targets
+
+
+def proxy_group_name_set(proxy_groups):
+    names = set()
+    for group in proxy_groups or []:
+        if isinstance(group, dict) and group.get("name"):
+            names.add(group["name"])
+    return names
+
+
+def build_fallback_proxy_group(name: str):
+    name = str(name).strip()
+    proxies = ["🚀 节点选择", "♻️ 自动选择", "DIRECT"]
+
+    if name.startswith("🛑") or ("广告" in name) or ("拦截" in name):
+        proxies = ["REJECT", "DIRECT", "🚀 节点选择"]
+    elif "国内" in name:
+        proxies = ["DIRECT", "🚀 节点选择", "♻️ 自动选择"]
+
+    return {"name": name, "type": "select", "proxies": proxies}
+
+
+def ensure_proxy_groups_for_rules(final_config: dict):
+    proxy_groups = final_config.get("proxy-groups") or []
+    rules = final_config.get("rules") or []
+
+    existing = proxy_group_name_set(proxy_groups)
+    required = collect_rule_targets(rules)
+    missing = sorted(required - existing)
+
+    if missing:
+        for name in missing:
+            proxy_groups.append(build_fallback_proxy_group(name))
+        final_config["proxy-groups"] = proxy_groups
+
+    return missing
+
 
 def parse_alias_and_value(raw: str):
     if "=" in raw:
@@ -31504,6 +31515,13 @@ def main():
             'MATCH,🐟 漏网之鱼'        
         ]
     }
+
+    missing_groups = ensure_proxy_groups_for_rules(final_config)
+    if missing_groups:
+        print(
+            "补齐缺失策略组: " + ", ".join(missing_groups),
+            file=sys.stderr,
+        )
 
     # 输出到 stdout
     try:
