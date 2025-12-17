@@ -1,1 +1,1 @@
-yay -S hyprland waybar hyprpaper cliphist wofi swaylock-effects swayidle xdg-desktop-portal-hyprland grim slurp grimblast-git gimp hyprprop cliphist wireplumber hyprcursor
+yay -S --needed hyprland waybar hyprpaper wofi swaylock-effects swayidle xdg-desktop-portal-hyprland grim slurp grimblast-git gimp hyprprop wireplumber hyprcursor cliphist wl-clipboard networkmanager network-manager-applet pavucontrol polkit-gnome kitty light
