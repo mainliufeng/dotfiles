@@ -135,8 +135,8 @@
         "format": "{percent}% {icon}",
         "format-icons": ["", "", "", "", "", "", "", "", ""],
         "device": "intel_backlight",
-        "on-scroll-up": "~/.config/hypr/scripts/brightness.sh up 5",
-        "on-scroll-down": "~/.config/hypr/scripts/brightness.sh down 5"
+        "on-scroll-up": "~/.config/hypr/scripts/brightness.sh down 1",
+        "on-scroll-down": "~/.config/hypr/scripts/brightness.sh up 1"
     },
     "battery": {
         "states": {
@@ -158,15 +158,14 @@
     "network": {
         // "interface": "wlp2*", // (Optional) To force the use of this interface
         "format-wifi": "{essid} ({signalStrength}%) ",
-        "format-ethernet": "{ipaddr}/{cidr} ",
-        "tooltip-format": "{ifname} via {gwaddr} ",
+        "format-ethernet": "{ifname} ",
+        "tooltip-format": "{ifname} ",
         "format-linked": "{ifname} (No IP) ",
         "format-disconnected": "Disconnected ⚠",
-        "format-alt": "{ifname}: {ipaddr}/{cidr}",
+        "format-alt": "{ifname}",
         "on-click": "kitty -e nmtui"
     },
     "pulseaudio": {
-        "scroll-step": 5, // %, can be a float
         "format": "{volume}% {icon} {format_source}",
         "format-bluetooth": "{volume}% {icon} {format_source}",
         "format-bluetooth-muted": " {icon} {format_source}",
@@ -182,7 +181,10 @@
             "car": "",
             "default": ["", "", ""]
         },
-        "on-click": "pavucontrol"
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "on-click-right": "sh -c 'command -v pwvucontrol >/dev/null 2>&1 && exec pwvucontrol; exec pavucontrol'",
+        "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%-",
+        "on-scroll-down": "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 1%+"
     },
     "custom/media": {
         "format": "{icon} {}",
