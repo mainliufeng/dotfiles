@@ -34,8 +34,9 @@ local mappings = {
     ["ot"] = "",
 }
 require("neo-tree").setup({
+    close_if_last_window = true,
     window = {
-        position = "current",
+        position = "left",
         mapping_options = {
             noremap = true,
             nowait = true,
