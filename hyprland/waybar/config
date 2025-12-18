@@ -7,7 +7,7 @@
     // Choose the order of the modules
     "modules-left": ["hyprland/workspaces", "sway/mode", "sway/scratchpad", "custom/media"],
     "modules-center": ["hyprland/window"],
-    "modules-right": ["mpd", "idle_inhibitor", "pulseaudio#sink", "wireplumber#mic", "backlight", "network", "cpu", "memory", "temperature", "battery", "battery#bat2", "clock", "tray"],
+    "modules-right": ["mpd", "idle_inhibitor", "group/av", "group/system", "battery#bat2", "clock", "tray"],
     "wlr/taskbar": {
         "format": "{icon}",
         "icon-size": 28,
@@ -129,6 +129,24 @@
         // "format-critical": "{temperatureC}°C {icon}",
         "format": "{temperatureC}°C {icon}",
         "format-icons": ["", "", "", "", ""]
+    },
+    "group/system": {
+        "orientation": "inherit",
+        "modules": ["battery", "network", "cpu", "memory", "temperature"],
+        "drawer": {
+            "transition-duration": 300,
+            "transition-left-to-right": false,
+            "children-class": "system-drawer-child"
+        }
+    },
+    "group/av": {
+        "orientation": "inherit",
+        "modules": ["pulseaudio#sink", "wireplumber#mic", "backlight"],
+        "drawer": {
+            "transition-duration": 300,
+            "transition-left-to-right": false,
+            "children-class": "av-drawer-child"
+        }
     },
     "backlight": {
         // "device": "acpi_video1",
