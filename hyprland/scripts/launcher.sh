@@ -269,6 +269,7 @@ for w in sorted(items, key=key):
 collect_commands() {
   cat <<'EOF'
 CMD	reload	  Reload config
+CMD	wallpaper	🖼  Random wallpaper
 CMD	lock	󰍁  Lock
 CMD	exit	⏻  Exit Hyprland
 CMD	togglespecial	  Toggle special workspace
@@ -360,6 +361,7 @@ main() {
 
   case "$data" in
     reload) hypr reload ;;
+    wallpaper) ~/.config/hypr/scripts/wallpaper-random.sh ;;
     lock) swaylock ;;
     exit) hypr dispatch exit ;;
     togglespecial) hypr dispatch togglespecialworkspace ;;
