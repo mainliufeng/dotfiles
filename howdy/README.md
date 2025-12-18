@@ -171,3 +171,17 @@ xhost -SI:localuser:root
 ```sh
 sudo --preserve-env=WAYLAND_DISPLAY,XDG_RUNTIME_DIR env QT_QPA_PLATFORM=wayland howdy test
 ```
+
+### 2) SDDM 登录立刻失败（`ConfigParser` 报错）
+
+如果你在日志里看到类似错误：
+
+`ModuleNotFoundError: No module named 'ConfigParser'`
+
+说明 howdy 的 `pam.py` 还是按 Python2 写法在跑，但你系统用的是 `pam_python3.so`。重新执行一次：
+
+```sh
+./howdy/enable-sddm.sh enable
+```
+
+脚本会自动给 `/lib/security/howdy/pam.py` 打补丁（并留 `.bak.<timestamp>` 备份）。

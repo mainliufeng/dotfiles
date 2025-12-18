@@ -51,6 +51,45 @@ create_snapshot() {
   echo "[howdy][enable-sddm] Snapshot created: ${backup_root}/${timestamp}"
 }
 
+patch_pam_py_for_python3_if_needed() {
+  local pam_py="$1"
+
+  if [[ ! -f "${pam_py}" ]]; then
+    return 0
+  fi
+
+  if ! grep -qE '^[[:space:]]*import[[:space:]]+ConfigParser[[:space:]]*$' "${pam_py}"; then
+    return 0
+  fi
+
+  if grep -qE 'configparser[[:space:]]+as[[:space:]]+ConfigParser' "${pam_py}"; then
+    return 0
+  fi
+
+  local backup="${pam_py}.bak.${timestamp}"
+  cp -a "${pam_py}" "${backup}"
+
+  local tmp
+  tmp="$(mktemp)"
+  awk '
+    BEGIN { patched=0 }
+    /^[[:space:]]*import[[:space:]]+ConfigParser[[:space:]]*$/ && patched==0 {
+      print "try:"
+      print "    import configparser as ConfigParser"
+      print "except ImportError:"
+      print "    import ConfigParser"
+      patched=1
+      next
+    }
+    { print }
+  ' "${pam_py}" >"${tmp}"
+
+  install -m 0644 "${tmp}" "${pam_py}"
+  rm -f "${tmp}"
+
+  echo "[howdy][enable-sddm] Patched for python3: ${pam_py} (backup: ${backup})"
+}
+
 if [[ ! -f "${pam_file}" ]]; then
   echo "[howdy][enable-sddm] Error: ${pam_file} not found" >&2
   echo "[howdy][enable-sddm] Hint: list available PAM services: ls /etc/pam.d | rg '^sddm'" >&2
@@ -81,6 +120,7 @@ elif [[ -f "/usr/lib/security/howdy/pam.py" ]]; then
 fi
 
 line=""
+using_pam_python3="0"
 if [[ -f "/usr/lib/security/pam_howdy.so" || -f "/lib/security/pam_howdy.so" ]]; then
   line='auth sufficient pam_howdy.so'
 elif [[ -f "/usr/lib/security/pam_python3.so" || -f "/lib/security/pam_python3.so" ]]; then
@@ -89,6 +129,7 @@ elif [[ -f "/usr/lib/security/pam_python3.so" || -f "/lib/security/pam_python3.s
     exit 1
   fi
   line="auth sufficient pam_python3.so ${howdy_pam_py}"
+  using_pam_python3="1"
 elif [[ -f "/usr/lib/security/pam_python.so" || -f "/lib/security/pam_python.so" ]]; then
   if [[ -z "${howdy_pam_py}" ]]; then
     echo "[howdy][enable-sddm] Error: howdy pam.py not found under /lib/security/howdy/ or /usr/lib/security/howdy/" >&2
@@ -103,13 +144,24 @@ fi
 
 marker='added-by-howdy-dotfiles'
 
+already_enabled="0"
 if grep -qE '^[[:space:]]*auth[[:space:]]+sufficient[[:space:]]+pam_howdy\.so([[:space:]]|$)' "${pam_file}" \
   || grep -qE '^[[:space:]]*auth[[:space:]]+sufficient[[:space:]]+pam_python(3)?\.so[[:space:]]+.*howdy/pam\.py([[:space:]]|$)' "${pam_file}"; then
+  already_enabled="1"
+fi
+
+require_root "${action}"
+
+if [[ "${using_pam_python3}" == "1" ]]; then
+  patch_pam_py_for_python3_if_needed "/lib/security/howdy/pam.py"
+  patch_pam_py_for_python3_if_needed "/usr/lib/security/howdy/pam.py"
+fi
+
+if [[ "${already_enabled}" == "1" ]]; then
   echo "[howdy][enable-sddm] Already enabled in ${pam_file}"
   exit 0
 fi
 
-require_root "${action}"
 create_snapshot
 
 tmp="$(mktemp)"
@@ -128,4 +180,3 @@ rm -f "${tmp}"
 
 echo "[howdy][enable-sddm] Enabled howdy for SDDM in ${pam_file}"
 echo "[howdy][enable-sddm] Next: restart SDDM: systemctl restart sddm"
-
