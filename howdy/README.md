@@ -12,66 +12,24 @@ Arch 说明：这里走 AUR，所以需要先安装 `yay` 或 `paru`。
 
 ## 配置 / 录入
 
-### 1) 打开配置文件（使用 nvim）
+### 1) 应用配置（执行脚本）
 
-howdy 默认会尝试用 `nano` 打开配置；如果你没有装 nano，可以用 nvim：
-
-```sh
-sudo EDITOR=nvim howdy config
-```
-
-它打开的是 howdy 的配置文件：`/usr/lib/security/howdy/config.ini`。
-
-### 2) 必配项：设置摄像头设备
-
-先找出摄像头对应的 `/dev/video*`：
+把本仓库里的 `howdy/config.ini` 覆盖到系统 howdy 配置位置（脚本会自动备份原配置）：
 
 ```sh
-v4l2-ctl --list-devices
-ls -l /dev/video*
+./apply-config.sh
 ```
 
-然后在 `config.ini` 的 `[video]` 段把 `device_path` 改成你的摄像头（示例）：
+需要调整摄像头设备（例如 `/dev/video2` 红外）就直接改 `howdy/config.ini` 里的 `device_path`，再重新执行一次脚本即可。
 
-```ini
-device_path = /dev/video0
-```
-
-本仓库也提供了一个“按你这台机器生成的参考配置”（Integrated RGB Camera）：`howdy/config.ini.liufeng`。
-
-如果你想直接套用它（会覆盖系统配置，建议先备份）：
+### 2) 录入 / 测试
 
 ```sh
-sudo cp -a /usr/lib/security/howdy/config.ini /usr/lib/security/howdy/config.ini.bak.$(date +%Y%m%d_%H%M%S)
-sudo cp -a ./config.ini.liufeng /usr/lib/security/howdy/config.ini
-```
-
-关于 `/dev/video2`：很多笔记本会同时暴露 RGB/IR 等多个节点。如果 `/dev/video2` 是红外画面，你可以在 `config.ini` 里把 `device_path` 改成 `/dev/video2` 试用哪个更稳定。
-
-你也可以先快速验证摄像头能否出画面（可选，但推荐）：
-
-```sh
-mpv av://v4l2:/dev/video0
-```
-
-### 3) 常用参数（按需调整）
-
-- `[video].certainty`：匹配阈值；越低越严格（更安全但可能更容易失败），不建议调到 5 以上。
-- `[video].timeout`：识别超时时间（秒）；镜头启动慢可适当加大。
-- `[video].recording_plugin`：默认 `opencv`；如果遇到灰度/画面异常可尝试 `ffmpeg`。
-- `[video].force_mjpeg`：如果你的摄像头输出是 `MJPG`，且遇到黑屏/花屏，可改成 `true` 试试。
-- `[core].ignore_ssh`：默认 `true`，建议保留（远程 shell 禁用 howdy）。
-- `[snapshots].capture_*`：登录成功/失败都抓拍留档；不需要可改为 `false`。
-
-### 4) 录入 / 测试
-
-```sh
-sudo EDITOR=nvim howdy config
 sudo howdy add
-sudo howdy test
+./test.sh
 ```
 
-#### `sudo howdy test` 里红圈是什么意思？
+#### `./test.sh` 里红圈是什么意思？
 
 在 howdy `2.6.1` 里，`howdy test` 主要用于检查“摄像头画面 + 人脸检测”是否工作：
 
@@ -105,25 +63,71 @@ sudo howdy test
 在 `/etc/pam.d/*` 里启用 howdy 时务必谨慎：配置错误可能导致你无法登录（lock you out）。
 测试期间请务必保留另一条可用的登录方式（例如 root TTY / SSH）。
 
-## 回滚（如果被锁在门外）
+## 备份 / 回滚（修改 PAM 前先做）
 
-本仓库提供一个“急救”回滚脚本：它会把 PAM 配置里与 howdy 相关的行注释掉，并在修改前把 `/etc/pam.d` 备份到 `/var/backups/howdy-dotfiles/pam.d/` 下的一个时间戳目录。
+建议顺序：先留后路（TTY）→ 先备份 `/etc/pam.d` → 再改 SDDM/PAM。
 
-在 root TTY / SSH 会话中执行：
-
-```sh
-sudo ./pam-rollback.sh --disable --apply
-```
-
-如果你之前已经用该脚本创建过快照，也可以从“最新的快照”恢复 `/etc/pam.d`：
+### 1) 手动备份（推荐，最稳）
 
 ```sh
-sudo ./pam-rollback.sh --restore --apply
+sudo install -d -m 0700 /var/backups/howdy-dotfiles/pam.d
+sudo cp -a /etc/pam.d "/var/backups/howdy-dotfiles/pam.d/manual.$(date +%Y%m%d_%H%M%S)"
 ```
+
+### 2) 快速回滚：禁用 howdy（优先）
+
+如果你已经被锁在登录界面外（SDDM/TTY 都进不去），请先切到 root TTY / SSH 会话再执行：
+
+```sh
+sudo ./howdy/pam-rollback.sh --disable --apply
+```
+
+### 3) 从快照恢复 `/etc/pam.d`
+
+如果你之前运行过 `./howdy/enable-sddm.sh`（它会自动创建快照），就可以恢复到最新快照：
+
+```sh
+./howdy/enable-sddm.sh restore
+```
+
+## 启用 SDDM 登录（Hyprland + KDE SDDM）
+
+目标：让 SDDM 登录界面在输入密码前尝试 howdy；失败时仍可用密码登录（不至于直接锁死）。
+
+### 步骤 0：手动准备（务必做）
+
+1) 先开一个 TTY（例如 `Ctrl+Alt+F3`）登录进去别关；万一 SDDM 登录坏了还能回滚。
+2) 先做一次手动备份（见上面“备份 / 回滚”）。
+3) 确认 howdy 已录入：`sudo howdy list -U $USER`
+
+### 步骤 1：执行脚本（在这一步跑）
+
+在本仓库根目录执行：
+
+```sh
+./howdy/enable-sddm.sh
+```
+
+脚本会：
+- 在 `/etc/pam.d/sddm` 里加入 howdy 的 PAM 行（已做幂等处理）
+- 在 `/var/backups/howdy-dotfiles/pam.d/<timestamp>/` 创建一份 `/etc/pam.d` 快照
+
+### 步骤 2：重启 SDDM 生效（手动执行）
+
+```sh
+sudo systemctl restart sddm
+```
+
+### 回滚（手动执行）
+
+如果 SDDM 登录异常，切到 TTY 后执行：
+
+- 禁用 howdy 行（推荐先做）：`./howdy/enable-sddm.sh disable`
+- 或从快照恢复：`./howdy/enable-sddm.sh restore`
 
 ## 常见问题
 
-### 1) `sudo howdy test` 无法打开窗口（Wayland / Hyprland）
+### 1) `./test.sh` 无法打开窗口（Wayland / Hyprland）
 
 现象通常类似：
 
@@ -148,7 +152,7 @@ Please run this command as root:
     sudo howdy test
 ```
 
-那就按下面 C/D 的方式在 root 下跑（避免“root 连不上显示”的问题）。
+那就按下面 C/D 的方式在 root 下跑（避免“root 连不上显示”的问题）。`./test.sh` 已经把这些封装好了，优先用脚本。
 
 **C. 如果你必须用 sudo 打开窗口（XWayland）**
 

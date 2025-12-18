@@ -45,7 +45,7 @@ Next steps (manual, recommended):
 1) Discover camera:
    - v4l2: `v4l2-ctl --list-devices`
    - devices: `ls -l /dev/video*`
-2) Configure: `sudo EDITOR=nvim howdy config` (set `device_path`, tune `certainty`, etc.)
+2) Configure: `./apply-config.sh` (edit `howdy/config.ini` then apply to system)
 3) Enroll: `sudo howdy add`
 4) Test (GUI):
    - Some versions require root: `sudo howdy test`
