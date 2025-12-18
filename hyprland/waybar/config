@@ -7,7 +7,7 @@
     // Choose the order of the modules
     "modules-left": ["hyprland/workspaces", "sway/mode", "sway/scratchpad", "custom/media"],
     "modules-center": ["hyprland/window"],
-    "modules-right": ["mpd", "idle_inhibitor", "pulseaudio", "backlight", "network", "cpu", "memory", "temperature", "battery", "battery#bat2", "clock", "tray"],
+    "modules-right": ["mpd", "idle_inhibitor", "pulseaudio#sink", "wireplumber#mic", "backlight", "network", "cpu", "memory", "temperature", "battery", "battery#bat2", "clock", "tray"],
     "wlr/taskbar": {
         "format": "{icon}",
         "icon-size": 28,
@@ -166,13 +166,11 @@
         "format-alt": "{ifname}",
         "on-click": "kitty -e nmtui"
     },
-    "pulseaudio": {
-        "format": "{icon} {volume}% {format_source}",
-        "format-bluetooth": "{icon} {volume}% {format_source}",
-        "format-bluetooth-muted": "󰖁 {volume}% {format_source}",
-        "format-muted": "󰖁 {volume}% {format_source}",
-        "format-source": " {volume}%",
-        "format-source-muted": "",
+    "pulseaudio#sink": {
+        "format": "{volume}% {icon}",
+        "format-bluetooth": "{volume}% {icon}",
+        "format-bluetooth-muted": "{volume}% 󰖁",
+        "format-muted": "{volume}% 󰖁",
         "format-icons": {
             "headphone": "",
             "hands-free": "",
@@ -186,6 +184,14 @@
         "on-click-right": "sh -c 'command -v pwvucontrol >/dev/null 2>&1 && exec pwvucontrol; exec pavucontrol'",
         "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%-",
         "on-scroll-down": "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 1%+"
+    },
+    "wireplumber#mic": {
+        "node-type": "Audio/Source",
+        "format": "{volume}% 󰍬",
+        "format-muted": "{volume}% 󰍭",
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
+        "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 1%-",
+        "on-scroll-down": "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SOURCE@ 1%+"
     },
     "custom/media": {
         "format": "{icon} {}",
