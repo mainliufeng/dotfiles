@@ -1,0 +1,55 @@
+# Howdy config (generated for liufeng's machine)
+#
+# Detected camera (example): Integrated RGB Camera with MJPG 1920x1080 on /dev/video0
+# Optional: /dev/video2 may be IR; if you want to try it, change device_path.
+
+[core]
+detection_notice = false
+no_confirmation = false
+suppress_unknown = false
+ignore_ssh = true
+ignore_closed_lid = true
+disabled = false
+use_cnn = false
+
+[video]
+# Default: RGB camera node
+device_path = /dev/video0
+
+# If /dev/video2 is your IR feed, try:
+# device_path = /dev/video2
+
+# For MJPG cameras on OpenCV, this often improves stability.
+force_mjpeg = true
+
+# Security/UX balance: lower = stricter. Start from default; adjust only after PAM integration.
+certainty = 3.5
+
+# Camera warmup/recognition time (seconds)
+timeout = 6
+
+# Speed vs accuracy (keep default first)
+max_height = 320
+
+# Let OpenCV pick the best profile unless you must pin it
+frame_width = -1
+frame_height = -1
+
+# Ignore very dark frames (default 50)
+dark_threshold = 50
+
+# `howdy test` in 2.6.1 only supports opencv
+recording_plugin = opencv
+device_format = v4l2
+
+# Manual exposure (leave -1 to keep auto exposure)
+exposure = -1
+
+[snapshots]
+# Privacy note: snapshots contain your face.
+capture_failed = true
+capture_successful = false
+
+[debug]
+end_report = false
+
