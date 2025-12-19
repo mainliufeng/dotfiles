@@ -362,7 +362,7 @@ main() {
   case "$data" in
     reload) hypr reload ;;
     wallpaper) ~/.config/hypr/scripts/wallpaper-random.sh ;;
-    lock) swaylock ;;
+    lock) ~/.config/hypr/scripts/lock.sh ;;
     exit) hypr dispatch exit ;;
     togglespecial) hypr dispatch togglespecialworkspace ;;
     pin) hypr dispatch pin ;;

@@ -45,7 +45,7 @@ case "$selection" in
     hyprctl dispatch togglespecialworkspace
     ;;
   "🔒 System: Lock")
-    swaylock
+    ~/.config/hypr/scripts/lock.sh
     ;;
   "🚪 System: Exit Hyprland")
     hyprctl dispatch exit
@@ -54,4 +54,3 @@ case "$selection" in
     exit 0
     ;;
 esac
-

@@ -1,0 +1,6 @@
+# PAM configuration file for hyprlock
+# Based on /etc/pam.d/hyprlock (include login), with Howdy added.
+
+auth        sufficient  pam_python3.so /lib/security/howdy/pam.py
+auth        include     login
+
