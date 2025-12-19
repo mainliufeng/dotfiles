@@ -117,7 +117,7 @@ button:hover {
 }
 
 #clock {
-    background-color: #64727D;
+    background-color: #ff5f1f;
 }
 
 #battery {
@@ -165,7 +165,7 @@ label:focus {
 }
 
 #backlight {
-    background-color: #90b1b1;
+    background-color: #00eaff;
 }
 
 #network {
