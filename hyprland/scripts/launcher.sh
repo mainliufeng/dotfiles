@@ -361,7 +361,7 @@ main() {
 
   case "$data" in
     reload) hypr reload ;;
-    wallpaper) ~/.config/hypr/scripts/wallpaper-random.sh ;;
+    wallpaper) "${HOME}/dotfiles/swww/scripts/wallpaper-random.sh" ;;
     lock) ~/.config/hypr/scripts/lock.sh ;;
     exit) hypr dispatch exit ;;
     togglespecial) hypr dispatch togglespecialworkspace ;;
