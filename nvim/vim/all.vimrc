@@ -34,6 +34,9 @@ augroup END
 " always show status bar
 set ls=2
 
+" cmd height
+set cmdheight=1
+
 " incremental search
 set incsearch
 " highlighted search results
