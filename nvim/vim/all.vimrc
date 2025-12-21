@@ -32,7 +32,8 @@ augroup tab_length
 augroup END
 
 " always show status bar
-set ls=2
+set ls=3
+set noshowmode
 
 " cmd height
 set cmdheight=1
