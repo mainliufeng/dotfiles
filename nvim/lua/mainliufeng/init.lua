@@ -29,7 +29,7 @@ require("lazy").setup({
             dashboard = { enabled = true },
             explorer = { enabled = true },
             indent = { enabled = true },
-            input = { enabled = true },
+            input = { enabled = false },
             picker = { enabled = true },
             notifier = {
                 enabled = true,
@@ -305,7 +305,7 @@ require("lazy").setup({
                         if not line:match('^%s*$') and not line:match('^%s*#') then
                             local key, value = line:match('^%s*([^=]+)%s*=%s*(.*)$')
                             if key and value then
-                                value = value:gsub('^["\'](.*)["\']$', '%1')
+                                value = value:gsub('^["\"](.*)["\"]$', '%1')
                                 vars[key] = value
                             end
                         end
@@ -358,7 +358,7 @@ require("lazy").setup({
         end,
         event = { "CmdlineEnter" },
         ft = { "go", 'gomod' },
-        build = ':lua require("go.install").update_all_sync()' -- if you need to install/update all binaries
+        build = ':lua require("go.install").update_all_sync()'
     },
     { 'neoclide/jsonc.vim' },
     {
@@ -427,3 +427,17 @@ require("mainliufeng.plugins.highlight")
 
 -- 通用配置
 require("mainliufeng.keys")
+
+-- Fix layout issues
+vim.opt.cmdheight = 1
+vim.opt.laststatus = 3
+vim.api.nvim_create_autocmd({ "VimEnter", "BufEnter", "WinEnter" }, {
+    callback = function()
+        if vim.o.cmdheight ~= 1 then
+            vim.opt.cmdheight = 1
+        end
+        if vim.o.laststatus ~= 3 then
+            vim.opt.laststatus = 3
+        end
+    end,
+})
