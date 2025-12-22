@@ -1,0 +1,6 @@
+# Mako notification daemon config
+# Left click copies notification content to clipboard.
+max-history=50
+history=1
+on-button-left=exec sh -c "$HOME/dotfiles/mako/copy-notification.sh \"$id\""
+on-button-right=dismiss
