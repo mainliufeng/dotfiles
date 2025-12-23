@@ -13,6 +13,13 @@ if [[ ! -d $ZPLUG_HOME ]]; then
   source $ZPLUG_HOME/init.zsh && zplug update --self
 fi
 
+# completion
+fpath=("$DOTFILES_HOME/codex/agents_md" $fpath)
+if [[ -z "${_comps:-}" ]]; then
+  autoload -Uz compinit
+  compinit
+fi
+
 # Essential
 source $ZPLUG_HOME/init.zsh
 

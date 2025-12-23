@@ -15,4 +15,4 @@ else
 fi
 
 bash ~/dotfiles/codex/agents_md/install.sh
-node ~/dotfiles/codex/agents_md/agents-md.js --defaults base superpowers
+node ~/dotfiles/codex/agents_md/agents-md.js enable base superpowers

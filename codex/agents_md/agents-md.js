@@ -11,7 +11,11 @@ const enabledFile = path.join(codexDir, 'agents_md.enabled');
 const outputFile = path.join(codexDir, 'AGENTS.md');
 
 function usage() {
-  console.log(`Usage: agents-md [--defaults <name...>] [--build] [--list]`);
+  console.log(`Usage:
+  agents-md                      # open TUI
+  agents-md enable [name...]     # enable fragments
+  agents-md disable [name...]    # disable fragments
+  agents-md status [name...]     # show status`);
 }
 
 function ensureCodexDir() {
@@ -72,75 +76,15 @@ function buildAgents(names) {
   fs.renameSync(tmpPath, outputFile);
 }
 
-function parseArgs(argv) {
-  const args = [...argv];
-  const result = { defaults: null, build: false, list: false };
-
-  while (args.length > 0) {
-    const arg = args.shift();
-    if (arg === '--defaults') {
-      const names = [];
-      while (args.length > 0 && !args[0].startsWith('--')) {
-        names.push(args.shift());
-      }
-      result.defaults = names;
-      continue;
-    }
-    if (arg === '--build') {
-      result.build = true;
-      continue;
-    }
-    if (arg === '--list') {
-      result.list = true;
-      continue;
-    }
-    if (arg === '-h' || arg === '--help') {
-      result.help = true;
-      continue;
-    }
-    console.error(`Unknown argument: ${arg}`);
-    result.help = true;
-    break;
-  }
-
-  return result;
+function orderedEnabledList(available, enabledSet) {
+  return available.filter((name) => enabledSet.has(name));
 }
 
-async function main() {
-  const options = parseArgs(process.argv.slice(2));
-
-  if (options.help) {
-    usage();
-    process.exit(0);
-  }
-
-  if (options.list) {
-    readEnabledList().forEach((name) => console.log(name));
-    return;
-  }
-
-  if (options.defaults) {
-    const defaults = options.defaults;
-    defaults.forEach(requireFragment);
-    const enabled = readEnabledList();
-    if (enabled.length === 0) {
-      writeEnabledList(defaults);
-    }
-    buildAgents(readEnabledList());
-    return;
-  }
-
-  if (options.build) {
-    buildAgents(readEnabledList());
-    return;
-  }
-
-  const available = listFragmentNames();
-  const enabled = new Set(readEnabledList());
+async function runTui(available, enabledSet) {
   const choices = available.map((name) => ({
     title: name,
     value: name,
-    selected: enabled.has(name),
+    selected: enabledSet.has(name),
   }));
 
   const response = await prompts({
@@ -157,6 +101,69 @@ async function main() {
 
   writeEnabledList(response.selected);
   buildAgents(response.selected);
+}
+
+function commandEnableDisable(command, available, enabledSet, targets) {
+  const names = targets.length > 0 ? targets : available;
+  names.forEach(requireFragment);
+
+  if (command === 'enable') {
+    names.forEach((name) => enabledSet.add(name));
+  } else {
+    names.forEach((name) => enabledSet.delete(name));
+  }
+
+  const ordered = orderedEnabledList(available, enabledSet);
+  writeEnabledList(ordered);
+  buildAgents(ordered);
+}
+
+function commandStatus(available, enabledSet, targets) {
+  const names = targets.length > 0 ? targets : available;
+  names.forEach(requireFragment);
+
+  names.forEach((name) => {
+    const status = enabledSet.has(name) ? 'enabled' : 'disabled';
+    console.log(`${name}: ${status}`);
+  });
+}
+
+async function main() {
+  const available = listFragmentNames();
+  if (available.length === 0) {
+    console.error(`No fragments found in ${fragmentsDir}`);
+    process.exit(1);
+  }
+
+  const enabledSet = new Set(readEnabledList());
+  const args = process.argv.slice(2);
+
+  if (args.length === 0) {
+    await runTui(available, enabledSet);
+    return;
+  }
+
+  const command = args[0];
+  const targets = args.slice(1);
+
+  if (command === 'enable' || command === 'disable') {
+    commandEnableDisable(command, available, enabledSet, targets);
+    return;
+  }
+
+  if (command === 'status') {
+    commandStatus(available, enabledSet, targets);
+    return;
+  }
+
+  if (command === '-h' || command === '--help' || command === 'help') {
+    usage();
+    process.exit(0);
+  }
+
+  console.error(`Unknown command: ${command}`);
+  usage();
+  process.exit(1);
 }
 
 main().catch((error) => {
