@@ -10,3 +10,4 @@ nvim/.netrwhist
 .tasks
 git/.gitconfig
 *.luarc.json
+.worktrees/
