@@ -2,5 +2,6 @@
 # Left click copies notification content to clipboard.
 max-history=50
 history=1
+default-timeout=5000
 on-button-left=exec sh -c "$HOME/dotfiles/mako/copy-notification.sh \"$id\""
 on-button-right=dismiss
