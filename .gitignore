@@ -10,4 +10,5 @@ nvim/.netrwhist
 .tasks
 git/.gitconfig
 *.luarc.json
+codex/agents_md/node_modules/
 .worktrees/
