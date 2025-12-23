@@ -1,0 +1,12 @@
+{
+  "name": "agents-md",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "bin": {
+    "agents-md": "agents-md.js"
+  },
+  "dependencies": {
+    "prompts": "^2.4.2"
+  }
+}
