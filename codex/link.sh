@@ -24,3 +24,7 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
 python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
   --repo anthropics/skills \
   --path skills/frontend-design
+
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
+  --repo michalparkola/tapestry-skills-for-claude-code \
+  --path tapestry
