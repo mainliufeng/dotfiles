@@ -28,3 +28,6 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
 python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
   --repo michalparkola/tapestry-skills-for-claude-code \
   --path tapestry
+
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
+  --url https://github.com/ComposioHQ/awesome-claude-skills/tree/master/content-research-writer
