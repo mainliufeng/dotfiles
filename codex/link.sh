@@ -16,3 +16,11 @@ fi
 
 bash ~/dotfiles/codex/agents_md/install.sh
 node ~/dotfiles/codex/agents_md/agents-md.js enable base superpowers
+
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
+  --repo anthropics/skills \
+  --path skills/webapp-testing
+
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
+  --repo anthropics/skills \
+  --path skills/frontend-design
