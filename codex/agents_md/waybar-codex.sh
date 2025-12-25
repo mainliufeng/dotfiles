@@ -125,6 +125,10 @@ case "$command" in
     fi
     max_w="${AGENT_MD_MENU_MAX_WIDTH:-2458}"
     max_h="${AGENT_MD_MENU_MAX_HEIGHT:-1536}"
+    row_h="${AGENT_MD_MENU_ROW_HEIGHT:-44}"
+    base_h="${AGENT_MD_MENU_BASE_HEIGHT:-120}"
+    min_w="${AGENT_MD_MENU_MIN_WIDTH:-420}"
+    char_w="${AGENT_MD_MENU_CHAR_WIDTH:-10}"
     max_len=0
     for name in "${fragments[@]}"; do
       name_len=${#name}
@@ -132,15 +136,15 @@ case "$command" in
         max_len="$name_len"
       fi
     done
-    width=$((200 + max_len * 9))
-    if [ "$width" -lt 280 ]; then
-      width=280
+    width=$((200 + max_len * char_w))
+    if [ "$width" -lt "$min_w" ]; then
+      width="$min_w"
     fi
     if [ "$width" -gt "$max_w" ]; then
       width="$max_w"
     fi
     rows=${#fragments[@]}
-    height=$((44 + rows * 28 + 24))
+    height=$((base_h + rows * row_h))
     if [ "$height" -gt "$max_h" ]; then
       height="$max_h"
     fi
