@@ -1,6 +1,8 @@
 mkdir -p ~/.codex
 ln -svfn ~/dotfiles/codex/config.toml ~/.codex/config.toml
 ln -svfn ~/dotfiles/codex/prompts ~/.codex/prompts
+mkdir -p ~/.codex/skills
+rsync -a ~/dotfiles/codex/skills/ ~/.codex/skills/
 
 superpowers_dir="$HOME/.codex/superpowers"
 if [ -d "$superpowers_dir" ]; then
