@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export CODE_AGENTS_DEFAULT_PATH="$PWD"
+exec code-agents-config

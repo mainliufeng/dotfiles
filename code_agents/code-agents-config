@@ -1,0 +1,238 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+yad_cmd="${YAD_CMD:-yad}"
+if ! command -v "$yad_cmd" >/dev/null 2>&1; then
+  echo "yad not found in PATH" >&2
+  exit 1
+fi
+
+agents_dir="$script_dir/agents_md"
+skills_dir="$script_dir/skills"
+
+if [ ! -d "$agents_dir" ]; then
+  "$yad_cmd" --error --text="Missing agents directory: $agents_dir" >/dev/null 2>&1 || true
+  echo "Missing agents directory: $agents_dir" >&2
+  exit 1
+fi
+
+mapfile -t fragments < <(find "$agents_dir" -maxdepth 1 -type f -name '*.md' -printf '%f\n' \
+  | sed 's/\.md$//' \
+  | grep -v '^README$' \
+  | sort)
+
+mapfile -t skills < <(find "$skills_dir" -mindepth 2 -maxdepth 2 -type f -name 'SKILL.md' -printf '%h\n' 2>/dev/null \
+  | xargs -r -n1 basename \
+  | sort)
+
+if [ "${#fragments[@]}" -eq 0 ]; then
+  "$yad_cmd" --error --text="No AGENTS.md fragments found." >/dev/null 2>&1 || true
+  echo "No AGENTS.md fragments found." >&2
+  exit 1
+fi
+
+export CODE_AGENTS_DEFAULT_PATH="${CODE_AGENTS_DEFAULT_PATH:-$PWD}"
+
+user_agents_file="$HOME/.codex/AGENTS.md"
+if [ ! -f "$user_agents_file" ]; then
+  user_agents_file="$HOME/.claude/CLAUDE.md"
+fi
+
+selected_fragments=()
+if [ -f "$user_agents_file" ]; then
+  while IFS= read -r name; do
+    if [ -n "$name" ]; then
+      selected_fragments+=("$name")
+    fi
+  done < <(python3 - "$user_agents_file" "$agents_dir" "${fragments[@]}" <<'PY'
+import sys
+from pathlib import Path
+
+agents_file = Path(sys.argv[1])
+agents_dir = Path(sys.argv[2])
+all_names = sys.argv[3:]
+
+try:
+    agents_text = agents_file.read_text()
+except FileNotFoundError:
+    agents_text = ""
+
+selected = []
+for name in all_names:
+    fragment_path = agents_dir / f"{name}.md"
+    try:
+        fragment_text = fragment_path.read_text().rstrip()
+    except FileNotFoundError:
+        continue
+    if fragment_text and fragment_text in agents_text:
+        selected.append(name)
+
+print("\n".join(selected))
+PY
+)
+fi
+
+declare -A selected_fragment_map
+for name in "${selected_fragments[@]}"; do
+  selected_fragment_map["$name"]=1
+done
+
+declare -A selected_skill_map
+for name in "${skills[@]}"; do
+  if [ -d "$HOME/.codex/skills/$name" ] || [ -d "$HOME/.claude/skills/$name" ]; then
+    selected_skill_map["$name"]=1
+  fi
+done
+
+fields=()
+values=()
+fields+=("--field=User-level:SW")
+values+=("TRUE")
+fields+=("--field=Target path:DIR")
+values+=("@disabled@")
+fields+=("--field=AGENTS.md:LBL")
+values+=("")
+for name in "${fragments[@]}"; do
+  fields+=("--field=$name:CHK")
+  if [ -n "${selected_fragment_map[$name]:-}" ]; then
+    values+=("TRUE")
+  else
+    values+=("FALSE")
+  fi
+done
+fields+=("--field=Skills:LBL")
+values+=("")
+for name in "${skills[@]}"; do
+  fields+=("--field=$name:CHK")
+  if [ -n "${selected_skill_map[$name]:-}" ]; then
+    values+=("TRUE")
+  else
+    values+=("FALSE")
+  fi
+done
+
+form_cmd=(
+  --form
+  --title="Code Agents Config"
+  --width=900
+  --height=720
+  --align=left
+  --scroll
+  --separator=$'\n'
+  --bool-fmt=1
+  --button="Cancel:1"
+  --button="Apply:0"
+  --changed-action="$script_dir/code-agents-config-form-changed.sh"
+)
+
+output=$("$yad_cmd" "${form_cmd[@]}" "${fields[@]}" "${values[@]}") || exit 0
+
+mapfile -t results <<<"$output"
+expected_count=$((2 + 1 + ${#fragments[@]} + 1 + ${#skills[@]}))
+if [ "${#results[@]}" -lt "$expected_count" ]; then
+  "$yad_cmd" --error --text="Unexpected form output." >/dev/null 2>&1 || true
+  echo "Unexpected form output." >&2
+  exit 1
+fi
+
+user_level="${results[0]}"
+target_path="${results[1]}"
+
+fragments_start=3
+skills_label_index=$((fragments_start + ${#fragments[@]}))
+skills_start=$((skills_label_index + 1))
+
+selected_fragment_names=()
+for i in "${!fragments[@]}"; do
+  idx=$((fragments_start + i))
+  if [ "${results[$idx]}" = "1" ]; then
+    selected_fragment_names+=("${fragments[$i]}")
+  fi
+done
+
+selected_skill_names=()
+for i in "${!skills[@]}"; do
+  idx=$((skills_start + i))
+  if [ "${results[$idx]}" = "1" ]; then
+    selected_skill_names+=("${skills[$i]}")
+  fi
+done
+
+if [ "$user_level" = "1" ]; then
+  codex_agents="$HOME/.codex/AGENTS.md"
+  codex_skills="$HOME/.codex/skills"
+  claude_agents="$HOME/.claude/CLAUDE.md"
+  claude_skills="$HOME/.claude/skills"
+else
+  if [ -z "$target_path" ] || [ "$target_path" = "@disabled@" ]; then
+    "$yad_cmd" --error --text="Target path is required." >/dev/null 2>&1 || true
+    echo "Target path is required." >&2
+    exit 1
+  fi
+  if [ ! -d "$target_path" ]; then
+    "$yad_cmd" --error --text="Target path not found: $target_path" >/dev/null 2>&1 || true
+    echo "Target path not found: $target_path" >&2
+    exit 1
+  fi
+  codex_agents="$target_path/AGENTS.md"
+  codex_skills="$target_path/.codex/skills"
+  claude_agents="$target_path/CLAUDE.md"
+  claude_skills="$target_path/.claude/skills"
+fi
+
+write_agents_file() {
+  local dest="$1"
+  shift
+  python3 - "$agents_dir" "$dest" "$@" <<'PY'
+import sys
+from pathlib import Path
+
+agents_dir = Path(sys.argv[1])
+dest = Path(sys.argv[2])
+selected = sys.argv[3:]
+
+parts = []
+for name in selected:
+    fragment_path = agents_dir / f"{name}.md"
+    if not fragment_path.exists():
+        raise SystemExit(f"Missing fragment: {fragment_path}")
+    text = fragment_path.read_text().rstrip()
+    if text:
+        parts.append(text)
+
+content = "\n\n".join(parts)
+dest.parent.mkdir(parents=True, exist_ok=True)
+dest.write_text(content + ("\n" if content else ""))
+PY
+}
+
+sync_skills() {
+  local dest_root="$1"
+  shift
+  local -a selected=("$@")
+  mkdir -p "$dest_root"
+  declare -A selected_map
+  for name in "${selected[@]}"; do
+    selected_map["$name"]=1
+  done
+  for name in "${skills[@]}"; do
+    if [ -n "${selected_map[$name]:-}" ]; then
+      rm -rf "$dest_root/$name"
+      rsync -a "$skills_dir/$name" "$dest_root/"
+    else
+      if [ -d "$dest_root/$name" ]; then
+        rm -rf "$dest_root/$name"
+      fi
+    fi
+  done
+}
+
+write_agents_file "$codex_agents" "${selected_fragment_names[@]}"
+write_agents_file "$claude_agents" "${selected_fragment_names[@]}"
+
+sync_skills "$codex_skills" "${selected_skill_names[@]}"
+sync_skills "$claude_skills" "${selected_skill_names[@]}"
+
+"$yad_cmd" --info --text="Agents and skills updated." >/dev/null 2>&1 || true
