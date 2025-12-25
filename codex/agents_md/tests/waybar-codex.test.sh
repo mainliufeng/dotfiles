@@ -11,6 +11,48 @@ trap 'rm -rf "$tmp_home"' EXIT
 export HOME="$tmp_home"
 export FRAGMENTS_DIR="$fragments_dir"
 
+stub_dir="$tmp_home/bin"
+mkdir -p "$stub_dir"
+cat <<'SH' > "$stub_dir/agents-md"
+#!/usr/bin/env bash
+set -euo pipefail
+
+codex_dir="${CODEX_DIR:-$HOME/.codex}"
+enabled_file="$codex_dir/agents_md.enabled"
+
+mkdir -p "$codex_dir"
+
+cmd="${1:-}"
+shift || true
+
+case "$cmd" in
+  enable)
+    for name in "$@"; do
+      if ! grep -qx "$name" "$enabled_file" 2>/dev/null; then
+        printf '%s\n' "$name" >> "$enabled_file"
+      fi
+    done
+    ;;
+  disable)
+    if [ -f "$enabled_file" ]; then
+      tmp="$(mktemp)"
+      cp "$enabled_file" "$tmp"
+      for name in "$@"; do
+        grep -vx "$name" "$tmp" > "${tmp}.next" || true
+        mv "${tmp}.next" "$tmp"
+      done
+      mv "$tmp" "$enabled_file"
+    fi
+    ;;
+  *)
+    echo "unsupported command: $cmd" >&2
+    exit 1
+    ;;
+esac
+SH
+chmod +x "$stub_dir/agents-md"
+export PATH="$stub_dir:$PATH"
+
 mapfile -t fragments < <(find "$fragments_dir" -maxdepth 1 -type f -name '*.md' -printf '%f\n' \
   | sed 's/\.md$//' \
   | grep -v '^README$' \
@@ -22,10 +64,9 @@ if [ "${#fragments[@]}" -eq 0 ]; then
 fi
 
 output=$("$script" status)
-printf '%s' "$output" | python - <<'PY'
+OUTPUT="$output" python - <<'PY'
 import json
 import os
-import sys
 
 fragments_dir = os.environ["FRAGMENTS_DIR"]
 fragments = sorted(
@@ -34,7 +75,7 @@ fragments = sorted(
     if name.endswith(".md") and name != "README.md"
 )
 
-data = json.loads(sys.stdin.read())
+data = json.loads(os.environ["OUTPUT"])
 text = data.get("text", "")
 tooltip = data.get("tooltip", "")
 
