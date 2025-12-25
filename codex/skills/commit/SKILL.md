@@ -1,55 +1,60 @@
 ---
 name: commit
-description: Use when preparing or executing git commits in this repo and the commit message must follow the emoji conventional template in codex/prompts/commit.md, especially for auto-commit or "just commit" requests that might bypass the template.
+description: Use when preparing or executing git commits in this repo and the commit message must follow the emoji conventional template, especially for auto-commit or "just commit" requests that might bypass it.
 ---
 
 # Commit
 
 ## Overview
-Enforce the commit template in `codex/prompts/commit.md` for every git commit in this repo.
+Use the embedded commit message template whenever a git commit is required in this repo.
 
-## Required Workflow
-1. Read `codex/prompts/commit.md` before composing any commit message.
-2. Check staged changes with `git diff --staged --name-only`. If none, decide to `git add -A` or ask for confirmation.
-3. Compose the message using the required format:
-   - `<emoji> <type>: <summary>` (<= 72 chars)
-   - blank line
-   - `- ` bullet list body
-4. Use `git commit -F <file>` (or a heredoc) to preserve the multi-line message.
-5. If `--no-verify` is requested, include it explicitly.
-
-## Example
+## Template
 ```
-<emoji> feat: add commit skill sync
+<emoji> <type>: <summary>
 
-- add commit skill under codex/skills
-- sync local skills into ~/.codex/skills via rsync
+- <bullet>
 ```
+Title stays within 72 characters.
+
+## Example (Template Shape)
+```
+✨ feat: 并发限流改为租约模式（ZSET+2m TTL）
+
+- reqcount:v3 采用 ZSET 保存 lease_id/chat_id，score=joined_at，窗口(now-2m,+inf)过滤并发
+- 租约 TTL 2 分钟自动回收，无续租；key 设双倍 TTL 防止遗留
+- /internal/v1/concurrency 返回明细（chat_id、joined_at/expire_at 可读时间）
+- 更新 NewConcurrencyLimiter 签名及示例，模型调用路径不变
+```
+
+## Emoji Map
+- ✨ feat
+- 🐛 fix
+- 📚 docs
+- 💎 style
+- 📦 refactor
+- 🚀 perf
+- 🚨 test
+- 🔧 chore
 
 ## Quick Reference
-| Step | Action |
+| Rule | Action |
 | --- | --- |
-| 1 | Read `codex/prompts/commit.md` |
-| 2 | Check staged with `git diff --staged --name-only` |
-| 3 | Format message with emoji + type + summary + bullets |
-| 4 | Commit with `git commit -F` |
-
-Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`.
+| Commit needed | Use the template above |
+| Compose message | Emoji + type + summary + bullet body |
 
 ## Rationalizations to Reject
 | Excuse | Reality |
 | --- | --- |
-| "User said just commit" | Template is still required for compliance. |
-| "This is a small change" | Scope does not change format requirements. |
-| "`-m` is enough" | Single-line loses required body bullets. |
+| "User said just commit" | Template is still required. |
+| "Small change" | Template is still required. |
+| "I already know the format" | Always follow the embedded template. |
 
 ## Red Flags - STOP and Fix
-- Using single-line `git commit -m`
-- Skipping `codex/prompts/commit.md`
-- Missing emoji or type
-- Missing body bullet list
+- Skipping the embedded template
+- Writing a one-line message
+- Missing required sections from the template
 
 ## Common Mistakes
-- Title exceeds 72 characters
-- Type not in allowed list
-- Body lines do not start with `- `
+- Using a custom format
+- Omitting the bullet list body
+- Missing emoji or type (per template)
