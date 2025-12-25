@@ -7,7 +7,7 @@
     // Choose the order of the modules
     "modules-left": ["hyprland/workspaces", "sway/mode", "sway/scratchpad", "custom/media"],
     "modules-center": ["hyprland/window"],
-    "modules-right": ["mpd", "idle_inhibitor", "group/av", "group/system", "custom/codex", "battery#bat2", "clock", "tray"],
+    "modules-right": ["mpd", "idle_inhibitor", "group/av", "group/system", "group/llm", "battery#bat2", "clock", "tray"],
     "wlr/taskbar": {
         "format": "{icon}",
         "icon-size": 28,
@@ -148,6 +148,15 @@
             "children-class": "av-drawer-child"
         }
     },
+    "group/llm": {
+        "orientation": "inherit",
+        "modules": ["custom/llm", "custom/codex"],
+        "drawer": {
+            "transition-duration": 300,
+            "transition-left-to-right": false,
+            "children-class": "llm-drawer-child"
+        }
+    },
     "backlight": {
         // "device": "acpi_video1",
         "format": "{percent}% {icon}",
@@ -222,6 +231,10 @@
         "escape": true,
         "exec": "$HOME/.config/waybar/mediaplayer.py 2> /dev/null" // Script in resources folder
         // "exec": "$HOME/.config/waybar/mediaplayer.py --player spotify 2> /dev/null" // Filter player based on name
+    },
+    "custom/llm": {
+        "format": "🤖",
+        "tooltip": false
     },
     "custom/codex": {
         "return-type": "json",
