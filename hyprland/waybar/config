@@ -239,9 +239,7 @@
     "custom/codex": {
         "return-type": "json",
         "exec": "$HOME/dotfiles/codex/agents_md/waybar-codex.sh status",
-        "on-click": "$HOME/dotfiles/codex/agents_md/waybar-codex.sh toggle",
-        "on-scroll-up": "$HOME/dotfiles/codex/agents_md/waybar-codex.sh next",
-        "on-scroll-down": "$HOME/dotfiles/codex/agents_md/waybar-codex.sh prev",
+        "on-click": "$HOME/dotfiles/codex/agents_md/waybar-codex.sh menu",
         "interval": 2
     }
 }

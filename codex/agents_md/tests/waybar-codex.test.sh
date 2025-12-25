@@ -79,8 +79,8 @@ data = json.loads(os.environ["OUTPUT"])
 text = data.get("text", "")
 tooltip = data.get("tooltip", "")
 
-if "AGENTS.md:" not in text:
-    raise SystemExit("missing AGENTS.md label in text")
+if text.strip() != "AGENT.md":
+    raise SystemExit("text should be AGENT.md")
 
 lines = [line.strip() for line in tooltip.splitlines() if line.strip()]
 
@@ -99,7 +99,6 @@ mkdir -p "$HOME/.codex"
 
 current="${fragments[0]}"
 echo "$current" > "$HOME/.codex/agents_md.cursor"
-rm -f "$HOME/.codex/agents_md.scroll_state"
 
 output=$("$script" toggle)
 if [ -n "$output" ]; then
@@ -123,47 +122,13 @@ fi
 
 if [ "${#fragments[@]}" -gt 1 ]; then
   echo "${fragments[0]}" > "$HOME/.codex/agents_md.cursor"
-  rm -f "$HOME/.codex/agents_md.scroll_state"
-  for _ in 1 2 3 4; do
-    output=$("$script" next)
-    if [ -n "$output" ]; then
-      echo "next should be silent" >&2
-      exit 1
-    fi
-  done
-  if ! grep -qx "${fragments[0]}" "$HOME/.codex/agents_md.cursor"; then
-    echo "next moved cursor too early" >&2
-    exit 1
-  fi
   output=$("$script" next)
   if [ -n "$output" ]; then
     echo "next should be silent" >&2
     exit 1
   fi
-  if ! grep -qx "${fragments[1]}" "$HOME/.codex/agents_md.cursor"; then
-    echo "next did not advance cursor at threshold" >&2
-    exit 1
-  fi
-
-  rm -f "$HOME/.codex/agents_md.scroll_state"
-  for _ in 1 2 3 4; do
-    output=$("$script" prev)
-    if [ -n "$output" ]; then
-      echo "prev should be silent" >&2
-      exit 1
-    fi
-  done
-  if ! grep -qx "${fragments[1]}" "$HOME/.codex/agents_md.cursor"; then
-    echo "prev moved cursor too early" >&2
-    exit 1
-  fi
-  output=$("$script" prev)
-  if [ -n "$output" ]; then
-    echo "prev should be silent" >&2
-    exit 1
-  fi
   if ! grep -qx "${fragments[0]}" "$HOME/.codex/agents_md.cursor"; then
-    echo "prev did not move cursor back at threshold" >&2
+    echo "next should not move cursor" >&2
     exit 1
   fi
 fi

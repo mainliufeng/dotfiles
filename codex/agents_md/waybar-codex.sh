@@ -8,6 +8,7 @@ enabled_file="$codex_dir/agents_md.enabled"
 cursor_file="$codex_dir/agents_md.cursor"
 scroll_state_file="$codex_dir/agents_md.scroll_state"
 agents_md_cmd="${AGENTS_MD_CMD:-agents-md}"
+wofi_cmd="${WOFI_CMD:-wofi}"
 
 mapfile -t fragments < <(find "$script_dir" -maxdepth 1 -type f -name '*.md' -printf '%f\n' \
   | sed 's/\.md$//' \
@@ -113,6 +114,36 @@ case "$command" in
     fi
     exit 0
     ;;
+  menu)
+    if ! command -v "$wofi_cmd" >/dev/null 2>&1; then
+      echo "wofi not found in PATH" >&2
+      exit 1
+    fi
+    if ! command -v "$agents_md_cmd" >/dev/null 2>&1; then
+      echo "agents-md not found in PATH" >&2
+      exit 1
+    fi
+    menu_lines=()
+    for name in "${fragments[@]}"; do
+      if [ -n "${enabled[$name]:-}" ]; then
+        menu_lines+=("[x] $name")
+      else
+        menu_lines+=("[ ] $name")
+      fi
+    done
+    selection=$(printf '%s\n' "${menu_lines[@]}" | "$wofi_cmd" --show dmenu --prompt "AGENT.md" --insensitive || true)
+    selection=$(printf '%s' "$selection" | sed -E 's/^\[[ x]\] //')
+    if [ -z "$selection" ]; then
+      exit 0
+    fi
+    mkdir -p "$codex_dir"
+    if [ -n "${enabled[$selection]:-}" ]; then
+      "$agents_md_cmd" disable "$selection" >/dev/null
+    else
+      "$agents_md_cmd" enable "$selection" >/dev/null
+    fi
+    exit 0
+    ;;
   status)
     ;;
   *)
@@ -157,6 +188,6 @@ for name in "${fragments[@]}"; do
 done
 
 tooltip=$(printf '%s\n' "${tooltip_lines[@]}")
-text="AGENTS.md: $checkbox $current"
+text="AGENT.md"
 
 emit_json "$text" "$tooltip" "$class"
