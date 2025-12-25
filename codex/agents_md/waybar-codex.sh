@@ -3,14 +3,10 @@ set -euo pipefail
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-codex_dir="${CODEX_DIR:-${CODEX_HOME:-$HOME/.codex}}"
-enabled_file="$codex_dir/agents_md.enabled"
-cursor_file="$codex_dir/agents_md.cursor"
-scroll_state_file="$codex_dir/agents_md.scroll_state"
-agents_md_cmd="${AGENTS_MD_CMD:-agents-md}"
-zenity_cmd="${ZENITY_CMD:-zenity}"
+fragments_dir="${CODE_AGENTS_FRAGMENTS_DIR:-$HOME/dotfiles/code_agents/agents_md}"
+code_agents_cmd="${CODE_AGENTS_CMD:-code-agents-config}"
 
-mapfile -t fragments < <(find "$script_dir" -maxdepth 1 -type f -name '*.md' -printf '%f\n' \
+mapfile -t fragments < <(find "$fragments_dir" -maxdepth 1 -type f -name '*.md' -printf '%f\n' \
   | sed 's/\.md$//' \
   | grep -v '^README$' \
   | sort)
@@ -32,210 +28,66 @@ if [ "${#fragments[@]}" -eq 0 ]; then
   exit 0
 fi
 
-declare -A enabled
-if [ -f "$enabled_file" ]; then
-  while IFS= read -r line; do
-    if [ -n "$line" ]; then
-      enabled["$line"]=1
-    fi
-  done < "$enabled_file"
-fi
-
-current=""
-if [ -f "$cursor_file" ]; then
-  read -r current < "$cursor_file" || true
-fi
-
-found=0
-for name in "${fragments[@]}"; do
-  if [ "$name" = "$current" ]; then
-    found=1
-    break
+command="${1:-status}"
+if [ "$command" = "menu" ]; then
+  if ! command -v "$code_agents_cmd" >/dev/null 2>&1; then
+    echo "code-agents-config not found in PATH" >&2
+    exit 1
   fi
+  "$code_agents_cmd"
+  exit 0
+fi
+
+enabled_names=()
+user_agents_file="$HOME/.codex/AGENTS.md"
+if [ ! -f "$user_agents_file" ]; then
+  user_agents_file="$HOME/.claude/CLAUDE.md"
+fi
+
+if [ -f "$user_agents_file" ]; then
+  while IFS= read -r name; do
+    if [ -n "$name" ]; then
+      enabled_names+=("$name")
+    fi
+  done < <(python3 - "$user_agents_file" "$fragments_dir" "${fragments[@]}" <<'PY'
+import sys
+from pathlib import Path
+
+agents_file = Path(sys.argv[1])
+fragments_dir = Path(sys.argv[2])
+all_names = sys.argv[3:]
+
+try:
+    agents_text = agents_file.read_text()
+except FileNotFoundError:
+    agents_text = ""
+
+selected = []
+for name in all_names:
+    fragment_path = fragments_dir / f"{name}.md"
+    try:
+        fragment_text = fragment_path.read_text().rstrip()
+    except FileNotFoundError:
+        continue
+    if fragment_text and fragment_text in agents_text:
+        selected.append(name)
+
+print("\n".join(selected))
+PY
+)
+fi
+
+declare -A enabled
+for name in "${enabled_names[@]}"; do
+  enabled["$name"]=1
 done
 
-if [ "$found" -eq 0 ]; then
-  current="${fragments[0]}"
-fi
-
-command="${1:-status}"
-
-case "$command" in
-  next|prev)
-    if [ "${#fragments[@]}" -le 1 ]; then
-      exit 0
-    fi
-
-    scroll_step=5
-    last_dir=""
-    last_count=0
-    if [ -f "$scroll_state_file" ]; then
-      read -r last_dir last_count < "$scroll_state_file" || true
-    fi
-    if [ "$last_dir" = "$command" ]; then
-      count=$((last_count + 1))
-    else
-      count=1
-    fi
-    if [ "$count" -lt "$scroll_step" ]; then
-      mkdir -p "$codex_dir"
-      printf '%s %s\n' "$command" "$count" > "$scroll_state_file"
-      exit 0
-    fi
-
-    rm -f "$scroll_state_file"
-    index=0
-    for i in "${!fragments[@]}"; do
-      if [ "${fragments[$i]}" = "$current" ]; then
-        index="$i"
-        break
-      fi
-    done
-    if [ "$command" = "next" ]; then
-      index=$(( (index + 1) % ${#fragments[@]} ))
-    else
-      index=$(( (index - 1 + ${#fragments[@]}) % ${#fragments[@]} ))
-    fi
-    current="${fragments[$index]}"
-    mkdir -p "$codex_dir"
-    printf '%s\n' "$current" > "$cursor_file"
-    exit 0
-    ;;
-  toggle)
-    mkdir -p "$codex_dir"
-    if ! command -v "$agents_md_cmd" >/dev/null 2>&1; then
-      echo "agents-md not found in PATH" >&2
-      exit 1
-    fi
-    if [ -n "${enabled[$current]:-}" ]; then
-      "$agents_md_cmd" disable "$current" >/dev/null
-    else
-      "$agents_md_cmd" enable "$current" >/dev/null
-    fi
-    exit 0
-    ;;
-  menu)
-    if ! command -v "$zenity_cmd" >/dev/null 2>&1; then
-      echo "zenity not found in PATH" >&2
-      exit 1
-    fi
-    if ! command -v "$agents_md_cmd" >/dev/null 2>&1; then
-      echo "agents-md not found in PATH" >&2
-      exit 1
-    fi
-    max_w="${AGENT_MD_MENU_MAX_WIDTH:-2458}"
-    max_h="${AGENT_MD_MENU_MAX_HEIGHT:-1536}"
-    row_h="${AGENT_MD_MENU_ROW_HEIGHT:-64}"
-    base_h="${AGENT_MD_MENU_BASE_HEIGHT:-200}"
-    min_w="${AGENT_MD_MENU_MIN_WIDTH:-720}"
-    char_w="${AGENT_MD_MENU_CHAR_WIDTH:-14}"
-    max_len=0
-    for name in "${fragments[@]}"; do
-      name_len=${#name}
-      if [ "$name_len" -gt "$max_len" ]; then
-        max_len="$name_len"
-      fi
-    done
-    width=$((200 + max_len * char_w))
-    if [ "$width" -lt "$min_w" ]; then
-      width="$min_w"
-    fi
-    if [ "$width" -gt "$max_w" ]; then
-      width="$max_w"
-    fi
-    rows=${#fragments[@]}
-    height=$((base_h + rows * row_h))
-    if [ "$height" -gt "$max_h" ]; then
-      height="$max_h"
-    fi
-    zenity_args=(--list --checklist --title "AGENT.md" --column "On" --column "Fragment" --separator=$'\n' --width "$width" --height "$height")
-    for name in "${fragments[@]}"; do
-      if [ -n "${enabled[$name]:-}" ]; then
-        zenity_args+=("TRUE" "$name")
-      else
-        zenity_args+=("FALSE" "$name")
-      fi
-    done
-    selection=$("$zenity_cmd" "${zenity_args[@]}" 2>/dev/null)
-    zenity_status=$?
-    if [ "$zenity_status" -ne 0 ]; then
-      exit 0
-    fi
-    if [ -z "$selection" ]; then
-      selection_list=()
-    else
-      mapfile -t selection_list <<<"$selection"
-    fi
-    declare -A selected
-    for name in "${selection_list[@]}"; do
-      if [ -n "$name" ]; then
-        selected["$name"]=1
-      fi
-    done
-    to_enable=()
-    to_disable=()
-    for name in "${fragments[@]}"; do
-      if [ -n "${selected[$name]:-}" ]; then
-        if [ -z "${enabled[$name]:-}" ]; then
-          to_enable+=("$name")
-        fi
-      else
-        if [ -n "${enabled[$name]:-}" ]; then
-          to_disable+=("$name")
-        fi
-      fi
-    done
-    if [ "${#selection_list[@]}" -gt 0 ]; then
-      mkdir -p "$codex_dir"
-      printf '%s\n' "${selection_list[0]}" > "$cursor_file"
-    fi
-    mkdir -p "$codex_dir"
-    if [ "${#to_enable[@]}" -gt 0 ]; then
-      "$agents_md_cmd" enable "${to_enable[@]}" >/dev/null
-    fi
-    if [ "${#to_disable[@]}" -gt 0 ]; then
-      "$agents_md_cmd" disable "${to_disable[@]}" >/dev/null
-    fi
-    exit 0
-    ;;
-  status)
-    ;;
-  *)
-    emit_json "Codex [unknown]" "Unknown command: $command" "codex error"
-    exit 0
-    ;;
-esac
-
-unset enabled
-declare -A enabled
-if [ -f "$enabled_file" ]; then
-  while IFS= read -r line; do
-    if [ -n "$line" ]; then
-      enabled["$line"]=1
-    fi
-  done < "$enabled_file"
-fi
-
-if [ -f "$cursor_file" ]; then
-  read -r current < "$cursor_file" || true
-fi
-
-current_enabled=0
-if [ -n "${enabled[$current]:-}" ]; then
-  current_enabled=1
-fi
-
-checkbox="[ ]"
-class="codex disabled"
-if [ "$current_enabled" -eq 1 ]; then
-  checkbox="[x]"
-  class="codex enabled"
-fi
-
+enabled_count=0
 tooltip_lines=()
 for name in "${fragments[@]}"; do
   if [ -n "${enabled[$name]:-}" ]; then
     tooltip_lines+=("[x] $name")
+    enabled_count=$((enabled_count + 1))
   else
     tooltip_lines+=("[ ] $name")
   fi
@@ -243,5 +95,9 @@ done
 
 tooltip=$(printf '%s\n' "${tooltip_lines[@]}")
 text="AGENT.md"
+class="codex disabled"
+if [ "$enabled_count" -gt 0 ]; then
+  class="codex enabled"
+fi
 
 emit_json "$text" "$tooltip" "$class"
