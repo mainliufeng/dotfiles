@@ -219,6 +219,27 @@ label:focus {
     background-color: #ffa000;
 }
 
+#custom-codex {
+    padding: 0 10px;
+    background-color: #34495e;
+    color: #ffffff;
+}
+
+#custom-codex.enabled {
+    background-color: #2ecc71;
+    color: #000000;
+}
+
+#custom-codex.disabled {
+    background-color: #7f8c8d;
+    color: #ffffff;
+}
+
+#custom-codex.empty {
+    background-color: #555555;
+    color: #ffffff;
+}
+
 #temperature {
     background-color: #f0932b;
 }

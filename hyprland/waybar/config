@@ -7,7 +7,7 @@
     // Choose the order of the modules
     "modules-left": ["hyprland/workspaces", "sway/mode", "sway/scratchpad", "custom/media"],
     "modules-center": ["hyprland/window"],
-    "modules-right": ["mpd", "idle_inhibitor", "group/av", "group/system", "battery#bat2", "clock", "tray"],
+    "modules-right": ["mpd", "idle_inhibitor", "group/av", "group/system", "custom/codex", "battery#bat2", "clock", "tray"],
     "wlr/taskbar": {
         "format": "{icon}",
         "icon-size": 28,
@@ -222,5 +222,13 @@
         "escape": true,
         "exec": "$HOME/.config/waybar/mediaplayer.py 2> /dev/null" // Script in resources folder
         // "exec": "$HOME/.config/waybar/mediaplayer.py --player spotify 2> /dev/null" // Filter player based on name
+    },
+    "custom/codex": {
+        "return-type": "json",
+        "exec": "$HOME/dotfiles/codex/agents_md/waybar-codex.sh status",
+        "on-click": "$HOME/dotfiles/codex/agents_md/waybar-codex.sh toggle",
+        "on-scroll-up": "$HOME/dotfiles/codex/agents_md/waybar-codex.sh next",
+        "on-scroll-down": "$HOME/dotfiles/codex/agents_md/waybar-codex.sh prev",
+        "interval": 2
     }
 }
