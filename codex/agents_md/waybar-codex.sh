@@ -6,6 +6,7 @@ script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 codex_dir="${CODEX_DIR:-${CODEX_HOME:-$HOME/.codex}}"
 enabled_file="$codex_dir/agents_md.enabled"
 cursor_file="$codex_dir/agents_md.cursor"
+scroll_state_file="$codex_dir/agents_md.scroll_state"
 agents_md_cmd="${AGENTS_MD_CMD:-agents-md}"
 
 mapfile -t fragments < <(find "$script_dir" -maxdepth 1 -type f -name '*.md' -printf '%f\n' \
@@ -60,21 +61,41 @@ command="${1:-status}"
 
 case "$command" in
   next|prev)
-    if [ "${#fragments[@]}" -gt 1 ]; then
-      index=0
-      for i in "${!fragments[@]}"; do
-        if [ "${fragments[$i]}" = "$current" ]; then
-          index="$i"
-          break
-        fi
-      done
-      if [ "$command" = "next" ]; then
-        index=$(( (index + 1) % ${#fragments[@]} ))
-      else
-        index=$(( (index - 1 + ${#fragments[@]}) % ${#fragments[@]} ))
-      fi
-      current="${fragments[$index]}"
+    if [ "${#fragments[@]}" -le 1 ]; then
+      exit 0
     fi
+
+    scroll_step=5
+    last_dir=""
+    last_count=0
+    if [ -f "$scroll_state_file" ]; then
+      read -r last_dir last_count < "$scroll_state_file" || true
+    fi
+    if [ "$last_dir" = "$command" ]; then
+      count=$((last_count + 1))
+    else
+      count=1
+    fi
+    if [ "$count" -lt "$scroll_step" ]; then
+      mkdir -p "$codex_dir"
+      printf '%s %s\n' "$command" "$count" > "$scroll_state_file"
+      exit 0
+    fi
+
+    rm -f "$scroll_state_file"
+    index=0
+    for i in "${!fragments[@]}"; do
+      if [ "${fragments[$i]}" = "$current" ]; then
+        index="$i"
+        break
+      fi
+    done
+    if [ "$command" = "next" ]; then
+      index=$(( (index + 1) % ${#fragments[@]} ))
+    else
+      index=$(( (index - 1 + ${#fragments[@]}) % ${#fragments[@]} ))
+    fi
+    current="${fragments[$index]}"
     mkdir -p "$codex_dir"
     printf '%s\n' "$current" > "$cursor_file"
     exit 0
@@ -136,6 +157,6 @@ for name in "${fragments[@]}"; do
 done
 
 tooltip=$(printf '%s\n' "${tooltip_lines[@]}")
-text="Codex $checkbox $current"
+text="AGENTS.md: $checkbox $current"
 
 emit_json "$text" "$tooltip" "$class"
