@@ -100,13 +100,21 @@ mkdir -p "$HOME/.codex"
 current="${fragments[0]}"
 echo "$current" > "$HOME/.codex/agents_md.cursor"
 
-"$script" toggle
+output=$("$script" toggle)
+if [ -n "$output" ]; then
+  echo "toggle should be silent" >&2
+  exit 1
+fi
 if ! grep -qx "$current" "$HOME/.codex/agents_md.enabled"; then
   echo "toggle did not enable $current" >&2
   exit 1
 fi
 
-"$script" toggle
+output=$("$script" toggle)
+if [ -n "$output" ]; then
+  echo "toggle should be silent" >&2
+  exit 1
+fi
 if [ -s "$HOME/.codex/agents_md.enabled" ]; then
   echo "toggle did not disable $current" >&2
   exit 1
@@ -114,13 +122,21 @@ fi
 
 if [ "${#fragments[@]}" -gt 1 ]; then
   echo "${fragments[0]}" > "$HOME/.codex/agents_md.cursor"
-  "$script" next
+  output=$("$script" next)
+  if [ -n "$output" ]; then
+    echo "next should be silent" >&2
+    exit 1
+  fi
   if ! grep -qx "${fragments[1]}" "$HOME/.codex/agents_md.cursor"; then
     echo "next did not advance cursor" >&2
     exit 1
   fi
 
-  "$script" prev
+  output=$("$script" prev)
+  if [ -n "$output" ]; then
+    echo "prev should be silent" >&2
+    exit 1
+  fi
   if ! grep -qx "${fragments[0]}" "$HOME/.codex/agents_md.cursor"; then
     echo "prev did not move cursor back" >&2
     exit 1

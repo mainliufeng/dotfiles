@@ -77,6 +77,7 @@ case "$command" in
     fi
     mkdir -p "$codex_dir"
     printf '%s\n' "$current" > "$cursor_file"
+    exit 0
     ;;
   toggle)
     mkdir -p "$codex_dir"
@@ -89,6 +90,7 @@ case "$command" in
     else
       "$agents_md_cmd" enable "$current" >/dev/null
     fi
+    exit 0
     ;;
   status)
     ;;
