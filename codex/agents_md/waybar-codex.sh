@@ -125,10 +125,10 @@ case "$command" in
     fi
     max_w="${AGENT_MD_MENU_MAX_WIDTH:-2458}"
     max_h="${AGENT_MD_MENU_MAX_HEIGHT:-1536}"
-    row_h="${AGENT_MD_MENU_ROW_HEIGHT:-44}"
-    base_h="${AGENT_MD_MENU_BASE_HEIGHT:-120}"
-    min_w="${AGENT_MD_MENU_MIN_WIDTH:-420}"
-    char_w="${AGENT_MD_MENU_CHAR_WIDTH:-10}"
+    row_h="${AGENT_MD_MENU_ROW_HEIGHT:-64}"
+    base_h="${AGENT_MD_MENU_BASE_HEIGHT:-200}"
+    min_w="${AGENT_MD_MENU_MIN_WIDTH:-720}"
+    char_w="${AGENT_MD_MENU_CHAR_WIDTH:-14}"
     max_len=0
     for name in "${fragments[@]}"; do
       name_len=${#name}
