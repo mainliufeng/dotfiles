@@ -123,7 +123,28 @@ case "$command" in
       echo "agents-md not found in PATH" >&2
       exit 1
     fi
-    zenity_args=(--list --checklist --title "AGENT.md" --column "On" --column "Fragment" --separator=$'\n')
+    max_w="${AGENT_MD_MENU_MAX_WIDTH:-2458}"
+    max_h="${AGENT_MD_MENU_MAX_HEIGHT:-1536}"
+    max_len=0
+    for name in "${fragments[@]}"; do
+      name_len=${#name}
+      if [ "$name_len" -gt "$max_len" ]; then
+        max_len="$name_len"
+      fi
+    done
+    width=$((200 + max_len * 9))
+    if [ "$width" -lt 280 ]; then
+      width=280
+    fi
+    if [ "$width" -gt "$max_w" ]; then
+      width="$max_w"
+    fi
+    rows=${#fragments[@]}
+    height=$((44 + rows * 28 + 24))
+    if [ "$height" -gt "$max_h" ]; then
+      height="$max_h"
+    fi
+    zenity_args=(--list --checklist --title "AGENT.md" --column "On" --column "Fragment" --separator=$'\n' --width "$width" --height "$height")
     for name in "${fragments[@]}"; do
       if [ -n "${enabled[$name]:-}" ]; then
         zenity_args+=("TRUE" "$name")
