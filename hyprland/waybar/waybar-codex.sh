@@ -94,7 +94,7 @@ for name in "${fragments[@]}"; do
 done
 
 tooltip=$(printf '%s\n' "${tooltip_lines[@]}")
-text="AGENT.md"
+text="AGENTS"
 class="codex disabled"
 if [ "$enabled_count" -gt 0 ]; then
   class="codex enabled"

@@ -225,8 +225,8 @@
     },
     "custom/codex": {
         "return-type": "json",
-        "exec": "$HOME/dotfiles/codex/agents_md/waybar-codex.sh status",
-        "on-click": "$HOME/dotfiles/codex/agents_md/waybar-codex.sh menu",
+        "exec": "$HOME/dotfiles/hyprland/waybar/waybar-codex.sh status",
+        "on-click": "$HOME/dotfiles/hyprland/waybar/waybar-codex.sh menu",
         "interval": 2
     }
 }
