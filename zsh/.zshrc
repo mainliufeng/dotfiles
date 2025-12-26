@@ -86,6 +86,15 @@ for sh in $PRIVATE_DOTFILES_HOME/*/env.*sh; do source $sh; done
 
 [ -f ~/dotfiles/fzf/.fzf.zsh ] && source ~/dotfiles/fzf/.fzf.zsh
 
+code_agents_config_widget() {
+  code-agents-config-console
+  zle redisplay
+}
+zle -N code_agents_config_widget
+bindkey -M emacs '^A' code_agents_config_widget
+bindkey -M vicmd '^A' code_agents_config_widget
+bindkey -M viins '^A' code_agents_config_widget
+
 
 # JINA_CLI_BEGIN
 

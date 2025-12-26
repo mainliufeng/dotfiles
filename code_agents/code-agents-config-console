@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export CODE_AGENTS_DEFAULT_PATH="$PWD"
+project_root=""
+if git -C "$PWD" rev-parse --show-toplevel >/dev/null 2>&1; then
+  project_root="$(git -C "$PWD" rev-parse --show-toplevel)"
+fi
+export CODE_AGENTS_DEFAULT_PATH="${project_root:-$PWD}"
 exec code-agents-config
