@@ -126,3 +126,10 @@ export PATH="$PATH:/home/liufeng/.lmstudio/bin"
 # Android SDK
 export ANDROID_HOME=/opt/android-sdk
 export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin
+
+# bun completions
+[ -s "/home/liufeng/.bun/_bun" ] && source "/home/liufeng/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
