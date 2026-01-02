@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ALMA_VERSION="0.0.164"
+ALMA_VERSION="0.0.170"
 ALMA_URL="https://github.com/yetone/alma-releases/releases/download/v${ALMA_VERSION}/alma-${ALMA_VERSION}-linux-x86_64.AppImage"
 INSTALL_DIR="${HOME}/.local/bin"
 APPIMAGE_PATH="${INSTALL_DIR}/alma.AppImage"
