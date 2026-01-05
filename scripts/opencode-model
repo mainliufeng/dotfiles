@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# OpenCode 模型配置切换脚本
+
+CONFIG_DIR="$HOME/dotfiles/opencode"
+TARGET_CONFIG="$HOME/.config/opencode/oh-my-opencode.json"
+
+if [ -z "$1" ]; then
+    echo "用法: opencode-model [base|free|配置文件路径]"
+    echo ""
+    echo "示例："
+    echo "  opencode-model base        # 切换到默认配置"
+    echo "  opencode-model free        # 切换到 GLM-4.7 降级"
+    exit 1
+fi
+
+# 支持的配置文件
+SOURCE_CONFIG="$CONFIG_DIR/oh-my-opencode.$1.json"
+
+if [ ! -f "$SOURCE_CONFIG" ]; then
+    echo "❌ 错误: 找不到配置文件 $SOURCE_CONFIG"
+    exit 1
+fi
+
+echo "🔄 切换配置..."
+echo "  源: $SOURCE_CONFIG"
+echo "  目标: $TARGET_CONFIG"
+
+# 链接配置文件
+ln -svfn "$SOURCE_CONFIG" "$TARGET_CONFIG"
+
+echo "✅ 切换完成"
