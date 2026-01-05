@@ -3,25 +3,25 @@
   "google_auth": false,
   "agents": {
     "Sisyphus": {
-      "model": "zhipuai/glm-4.7"
+      "model": "glm-4.7"
     },
     "oracle": {
-      "model": "zhipuai/glm-4.7"
+      "model": "glm-4.7"
     },
     "librarian": {
-      "model": "zhipuai/glm-4.7"
+      "model": "glm-4.7"
     },
     "explore": {
-      "model": "zhipuai/glm-4.7"
+      "model": "glm-4.7"
     },
     "frontend-ui-ux-engineer": {
-      "model": "zhipuai/glm-4.7"
+      "model": "glm-4.7"
     },
     "document-writer": {
-      "model": "zhipuai/glm-4.7"
+      "model": "glm-4.7"
     },
     "multimodal-looker": {
-      "model": "zhipuai/glm-4.7"
+      "model": "glm-4.7"
     }
   }
 }
