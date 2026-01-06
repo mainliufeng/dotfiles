@@ -1,0 +1,13 @@
+font-family = "Hack Nerd Font"
+font-size = 12
+
+theme = "Builtin Solarized Dark"
+
+cursor-style = block
+cursor-style-blink = false
+
+background-opacity = 0.8
+window-padding-x = 6
+window-padding-y = 6
+
+scrollback-limit = 50000000
