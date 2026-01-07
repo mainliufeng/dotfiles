@@ -1,3 +1,6 @@
 {
-  "json.schemaDownload.enable": true
+  "json.schemaDownload.enable": true,
+  "agq.pinnedModels": [
+    "MODEL_PLACEHOLDER_M7"
+  ]
 }
