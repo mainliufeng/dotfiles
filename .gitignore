@@ -12,3 +12,5 @@ git/.gitconfig
 *.luarc.json
 codex/agents_md/node_modules/
 .worktrees/
+.cache/
+.tmp/
