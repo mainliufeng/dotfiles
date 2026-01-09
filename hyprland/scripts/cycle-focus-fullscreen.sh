@@ -5,6 +5,11 @@ direction="${1:-next}"
 if [[ "$direction" != "next" && "$direction" != "prev" ]]; then
   direction="next"
 fi
+mode="${2:-workspace}"
+if [[ "$mode" != "workspace" && "$mode" != "group" && "$mode" != "all" ]]; then
+  mode="workspace"
+fi
+cache_file="${XDG_RUNTIME_DIR:-/tmp}/hypr-cycle-group-${UID}.json"
 
 internal=0
 client=0
@@ -21,14 +26,93 @@ client=data.get("fullscreenClient",0)
 print(f"{internal} {client}")' <<<"$json"
   ) || true
 fi
+is_fullscreen=0
+if { [[ "$internal" != "0" ]] || [[ "$client" != "0" ]]; }; then
+  is_fullscreen=1
+fi
+
+if [[ "$mode" == "group" ]]; then
+  if [[ "$direction" == "prev" ]]; then
+    hyprctl dispatch changegroupactive b || true
+  else
+    hyprctl dispatch changegroupactive f || true
+  fi
+  CACHE_FILE="$cache_file" python3 - <<'PY' || true
+import json
+import os
+import subprocess
+
+cache_file = os.environ.get("CACHE_FILE")
+if not cache_file:
+    raise SystemExit(0)
+
+def hyprctl_json(*args):
+    out = subprocess.check_output(["hyprctl", "-j", *args], text=True)
+    return json.loads(out) if out else {}
+
+try:
+    clients = hyprctl_json("clients")
+    active = hyprctl_json("activewindow")
+except Exception:
+    raise SystemExit(0)
+
+addr_to_client = {c.get("address"): c for c in clients if c.get("address")}
+active_addr = active.get("address")
+if not active_addr or active_addr not in addr_to_client:
+    raise SystemExit(0)
+
+active_client = addr_to_client.get(active_addr) or {}
+grouped = active_client.get("grouped")
+if isinstance(grouped, list) and grouped:
+    members = [a for a in grouped if a in addr_to_client]
+    if not members:
+        members = [active_addr]
+else:
+    members = [active_addr]
+group_key = ",".join(sorted(members))
+
+cache = {}
+try:
+    with open(cache_file, "r", encoding="utf-8") as f:
+        cache = json.load(f) or {}
+except Exception:
+    cache = {}
+
+group_last = {}
+pos_cache = {}
+if isinstance(cache, dict) and ("group_last" in cache or "pos" in cache):
+    group_last = cache.get("group_last") or {}
+    pos_cache = cache.get("pos") or {}
+elif isinstance(cache, dict):
+    group_last = cache
+    pos_cache = {}
+cache = {"group_last": group_last, "pos": pos_cache}
+group_last[group_key] = active_addr
+try:
+    with open(cache_file, "w", encoding="utf-8") as f:
+        json.dump(cache, f)
+except Exception:
+    pass
+PY
+  if [[ "$internal" =~ ^[0-3]$ ]] && [[ "$client" =~ ^[0-3]$ ]] && { [[ "$internal" != "0" ]] || [[ "$client" != "0" ]]; }; then
+    hyprctl dispatch fullscreenstate "$internal" "$client" set
+  fi
+  exit 0
+fi
 
 target="$(
-  python3 - "$direction" <<'PY' || true
+  CACHE_FILE="$cache_file" FULLSCREEN="$is_fullscreen" python3 - "$direction" "$mode" <<'PY' || true
 import json
+import os
 import subprocess
 import sys
 
 direction = sys.argv[1] if len(sys.argv) > 1 else "next"
+mode = sys.argv[2] if len(sys.argv) > 2 else "workspace"
+if mode not in ("workspace", "all"):
+    mode = "workspace"
+cache_file = os.environ.get("CACHE_FILE")
+is_fullscreen = os.environ.get("FULLSCREEN") == "1"
 
 def hyprctl_json(*args):
     out = subprocess.check_output(["hyprctl", "-j", *args], text=True)
@@ -57,47 +141,155 @@ addr_set = set(addr_to_client)
 if not addr_set:
     sys.exit(0)
 
+cache = {}
+if cache_file:
+    try:
+        with open(cache_file, "r", encoding="utf-8") as f:
+            cache = json.load(f) or {}
+    except Exception:
+        cache = {}
+
+group_last = {}
+pos_cache = {}
+if isinstance(cache, dict) and ("group_last" in cache or "pos" in cache):
+    group_last = cache.get("group_last") or {}
+    pos_cache = cache.get("pos") or {}
+elif isinstance(cache, dict):
+    group_last = cache
+    pos_cache = {}
+
+parent = {addr: addr for addr in addr_set}
+
+def find(x):
+    while parent.get(x) != x:
+        parent[x] = parent.get(parent[x], parent[x])
+        x = parent.get(x, x)
+    return x
+
+def union(a, b):
+    ra = find(a)
+    rb = find(b)
+    if ra != rb:
+        parent[rb] = ra
+
 def pos(addr):
+    if is_fullscreen:
+        cached = pos_cache.get(addr)
+        if isinstance(cached, list) and len(cached) >= 2:
+            return (cached[0], cached[1])
     c = addr_to_client.get(addr) or {}
     at = c.get("at") or [0, 0]
     x = at[0] if len(at) > 0 else 0
     y = at[1] if len(at) > 1 else 0
     return (x, y)
 
-groups = {}
+group_order_candidates = {}
 for addr, c in addr_to_client.items():
     grouped = c.get("grouped")
     if isinstance(grouped, list) and grouped:
         members = [a for a in grouped if a in addr_set]
-        if not members:
-            members = [addr]
-        group_id = tuple(sorted(members))
-        if group_id not in groups:
-            groups[group_id] = members
-    else:
-        group_id = ("__single__", addr)
-        groups[group_id] = [addr]
+        if members:
+            key = ",".join(sorted(members))
+            if key not in group_order_candidates or len(members) > len(group_order_candidates[key]):
+                group_order_candidates[key] = members
+        for other in grouped:
+            if other in addr_set:
+                union(addr, other)
+
+groups = {}
+addr_to_group = {}
+for addr in addr_set:
+    root = find(addr)
+    groups.setdefault(root, []).append(addr)
+
+for root, members in groups.items():
+    members.sort()
+    group_id = ",".join(members)
+    groups[root] = members
+    for addr in members:
+        addr_to_group[addr] = group_id
 
 group_entries = []
-for members in groups.values():
-    group_pos = min((pos(a) for a in members), default=(0, 0))
-    group_entries.append((group_pos, members))
-
-group_entries.sort(key=lambda item: (item[0][0], item[0][1]))
-addresses = [addr for _, members in group_entries for addr in members]
+members_order_by_group = {}
+def focus_id(addr):
+    c = addr_to_client.get(addr) or {}
+    try:
+        return int(c.get("focusHistoryID") or -1)
+    except Exception:
+        return -1
 
 active_addr = active.get("address")
-try:
-    idx = addresses.index(active_addr)
-except ValueError:
-    idx = 0
+active_group = addr_to_group.get(active_addr)
+if active_group:
+    group_last[active_group] = active_addr
 
-if direction == "prev":
-    idx = (idx - 1) % len(addresses)
+def pick_rep(members, group_key):
+    cached = group_last.get(group_key)
+    if cached in members:
+        return cached
+    rep = max(members, key=focus_id)
+    if focus_id(rep) >= 0:
+        return rep
+    return sorted(members)[0]
+
+for group_id, members in groups.items():
+    group_pos = min((pos(a) for a in members), default=(0, 0))
+    real_id = ",".join(members)
+    order = list(group_order_candidates.get(real_id, []))
+    if not order:
+        order = list(members)
+    else:
+        missing = [m for m in members if m not in set(order)]
+        if missing:
+            order.extend(sorted(missing))
+    members_order_by_group[real_id] = order
+    rep = pick_rep(members, real_id)
+    group_entries.append((group_pos, real_id, rep))
+
+group_entries.sort(key=lambda item: (item[0][0], item[0][1], item[1]))
+group_ids = [gid for _, gid, _ in group_entries]
+rep_by_group = {gid: rep for _, gid, rep in group_entries}
+if len(group_ids) < 2:
+    sys.exit(0)
+
+if not active_group:
+    sys.exit(0)
+
+if mode == "all":
+    addresses = []
+    for gid in group_ids:
+        addresses.extend(members_order_by_group.get(gid, []))
+    if len(addresses) < 2:
+        sys.exit(0)
+    try:
+        idx = addresses.index(active_addr)
+    except ValueError:
+        idx = 0
+    if direction == "prev":
+        idx = (idx - 1) % len(addresses)
+    else:
+        idx = (idx + 1) % len(addresses)
+    target = addresses[idx]
 else:
-    idx = (idx + 1) % len(addresses)
+    if direction == "prev":
+        idx = (group_ids.index(active_group) - 1) % len(group_ids)
+    else:
+        idx = (group_ids.index(active_group) + 1) % len(group_ids)
+    target = rep_by_group[group_ids[idx]]
 
-sys.stdout.write(addresses[idx])
+if cache_file:
+    try:
+        if not is_fullscreen:
+            for addr in addr_set:
+                x, y = pos(addr)
+                pos_cache[addr] = [x, y]
+        cache = {"group_last": group_last, "pos": pos_cache}
+        with open(cache_file, "w", encoding="utf-8") as f:
+            json.dump(cache, f)
+    except Exception:
+        pass
+
+sys.stdout.write(target)
 PY
 )"
 
