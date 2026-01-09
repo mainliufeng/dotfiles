@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** 将原 `codex/agents_md` 工具迁移为 `code_agents` 下的单窗 UI，支持同时配置 AGENTS/CLAUDE 与 skills，并同步到用户级或指定目录。
+**Goal:** 将原 `codex/agents_md` 工具迁移为 `code_agents` 下的单窗 UI，支持同时配置 AGENTS/CLAUDE（指定目录输出 `AGENTS.override.md`）与 skills，并同步到用户级或指定目录。
 
 **Architecture:** 用 bash + yad 单窗表单完成“范围选择 + 目标路径 + 双分组多选”。确认后拼接 AGENTS/CLAUDE 文件并同步 skills 目录到 Codex/Claude 约定路径。旧命令与脚本全部移除或改为打开新 UI。
 
@@ -132,5 +132,6 @@ Expected: 目标路径默认填充当前目录。
 **Step 3: 同步结果检查**
 
 选择若干片段与 skills 并确认后，检查：
-- `~/.codex/AGENTS.md` 和 `~/.claude/CLAUDE.md` 更新
+- 用户级：`~/.codex/AGENTS.md` 和 `~/.claude/CLAUDE.md` 更新
+- 指定目录：`$TARGET/AGENTS.override.md` 和 `$TARGET/CLAUDE.md` 更新
 - `~/.codex/skills` 与 `~/.claude/skills` 按选择同步

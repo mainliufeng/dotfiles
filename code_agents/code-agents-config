@@ -182,7 +182,7 @@ else
     echo "Target path not found: $target_path" >&2
     exit 1
   fi
-  codex_agents="$target_path/AGENTS.md"
+  codex_agents="$target_path/AGENTS.override.md"
   codex_skills="$target_path/.codex/skills"
   claude_agents="$target_path/CLAUDE.md"
   claude_skills="$target_path/.claude/skills"
