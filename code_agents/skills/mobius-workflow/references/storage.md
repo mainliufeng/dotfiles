@@ -4,17 +4,18 @@
 
 Default root directory:
 
-- `~/.workflow_desktop/`
+- `~/.mobius-workflow/`
 
 Structure:
 
 ```
-~/.workflow_desktop/
+~/.mobius-workflow/
   workflows/
     <workflowId>/
       workflow.json
       nodes/
-        <nodeId>.json
+        <nodeId>.session.json
+        <nodeId>.result.json
 ```
 
 ## workflow.json
@@ -24,7 +25,7 @@ Fields used by this skill:
 - `id`, `name`, `rootPrompt`, `status`, `createdAt`, `updatedAt`
 - `nodes[]`: `id`, `title`, `prompt`, `mode`, `status`, `dependsOn`, `createdAt`, `updatedAt`
 
-## nodes/<nodeId>.json
+## nodes/<nodeId>.session.json
 
 Fields used by this skill:
 
@@ -34,5 +35,6 @@ Fields used by this skill:
 ## Notes
 
 - Dependency data is determined by `workflow.json` (`dependsOn`).
-- Node messages live in `nodes/<nodeId>.json`.
-- This skill only reads/writes `workflow.json` and `nodes/<nodeId>.json`.
+- Node messages live in `nodes/<nodeId>.session.json`.
+- Node results live in `nodes/<nodeId>.result.json` (last assistant output per run).
+- This skill only reads/writes `workflow.json` and reads `nodes/<nodeId>.result.json`.

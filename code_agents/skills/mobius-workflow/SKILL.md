@@ -1,114 +1,112 @@
 ---
 name: mobius-workflow
-description: Fetch dependency node results for Workflow Desktop nodes and update workflow/node metadata. Use when you need to read upstream node outputs, build prompts with dependency context, or patch workflow.json/nodes/<nodeId>.json (title, prompt, dependsOn, status, mode).
+description: Read/update workflow.json and fetch node result files for Workflow Desktop. Use when you need to inspect or modify workflow metadata or read node results.
 ---
 
-# Workflow Node Deps
+# Workflow Split and Node Results
 
 ## Overview
 
-Read dependency node results and update workflow/node metadata for Workflow Desktop without touching output files. Use the bundled scripts to fetch upstream messages and to modify workflow.json + nodes/<nodeId>.json safely.
+Workflow Desktop nodes run with isolated context. Information should flow only via `workflow.json` dependencies and node result files. This skill provides scripts to read/update `workflow.json` and to fetch node results, plus common split patterns.
 
 ## Quick start
 
-1. Locate the workflow root (default `~/.workflow_desktop/`).
-2. Fetch dependency results for the current node.
-3. Merge dependency outputs into the current node prompt if needed.
-4. Update workflow or node metadata via script when edits are required.
+1. Locate the workflow root (default `~/.mobius-workflow/`).
+2. Read `workflow.json` or a node result with the scripts.
+3. Only update `workflow.json` (do not edit session/result files).
 
-## Get dependency node results
+## Read workflow.json
 
-Use `scripts/get_node_deps_results.py`.
-
-Examples:
+Use `scripts/get_workflow.py`:
 
 ```bash
-python scripts/get_node_deps_results.py \
+python scripts/get_workflow.py --workflow-id <workflowId>
+```
+
+## Update workflow.json
+
+Use `scripts/update_workflow.py` (only reads/writes `workflow.json`):
+
+Update workflow metadata:
+
+```bash
+python scripts/update_workflow.py \
   --workflow-id <workflowId> \
-  --node-id <nodeId>
+  --name "New workflow name" \
+  --root-prompt "New root prompt" \
+  --status running
 ```
 
-Return only the last assistant message for each dependency:
+Update node fields (still only `workflow.json`):
 
 ```bash
-python scripts/get_node_deps_results.py \
-  --workflow-id <workflowId> \
-  --node-id <nodeId> \
-  --mode last-assistant
-```
-
-Return the last N messages for each dependency:
-
-```bash
-python scripts/get_node_deps_results.py \
-  --workflow-id <workflowId> \
-  --node-id <nodeId> \
-  --mode tail \
-  --tail 4
-```
-
-## Build prompts with dependency context
-
-Use this pattern when you need to inform the model about upstream results:
-
-1. Read dependency outputs with `get_node_deps_results.py`.
-2. Concatenate dependency summaries into the current node prompt, for example:
-
-```
-[Dependency Results]
-- node-a: <last assistant output>
-- node-b: <last assistant output>
-
-[Current Node Task]
-<original prompt>
-```
-
-Do not attempt to read or write any external output files; only use the JSON files under the workflow root.
-
-## Update workflow/node metadata
-
-Use `scripts/update_workflow_node.py` to patch workflow.json and nodes/<nodeId>.json.
-
-Examples:
-
-Update node title and prompt:
-
-```bash
-python scripts/update_workflow_node.py \
+python scripts/update_workflow.py \
   --workflow-id <workflowId> \
   --node-id <nodeId> \
   --title "New title" \
-  --prompt "New prompt"
+  --prompt "New prompt" \
+  --mode automatic
 ```
 
-Set dependencies:
+Dependencies:
 
 ```bash
-python scripts/update_workflow_node.py \
+python scripts/update_workflow.py \
   --workflow-id <workflowId> \
   --node-id <nodeId> \
   --set-depends node-a,node-b
 ```
 
-Add/remove dependencies:
+## Fetch a single node result
+
+Use `scripts/get_node_result.py`:
 
 ```bash
-python scripts/update_workflow_node.py \
+python scripts/get_node_result.py \
   --workflow-id <workflowId> \
-  --node-id <nodeId> \
-  --add-dep node-c \
-  --remove-dep node-b
+  --node-id <nodeId>
 ```
 
-Update status or mode:
+Text output (result only):
 
 ```bash
-python scripts/update_workflow_node.py \
+python scripts/get_node_result.py \
   --workflow-id <workflowId> \
   --node-id <nodeId> \
-  --status awaiting_input \
-  --mode interactive
+  --format text
 ```
+
+## How to split a workflow (context isolation)
+
+- Each node should have one clear objective and a reusable output (`nodes/<nodeId>.result.json`).
+- Make dependencies explicit: use `dependsOn` whenever upstream results are required.
+- Pass information only via result files or agreed shared files, not implicit context.
+- Use interactive nodes for human confirmation or missing details; use automatic nodes for deterministic outputs.
+- Each node prompt must declare inputs (upstream results / files) and expected output format.
+
+## Common patterns
+
+Single-node workflow (simple tasks):
+- nodes: 1 automatic node that produces the final deliverable.
+
+Requirements -> Design -> Implementation:
+- node-req (interactive/automatic): clarify constraints and produce a requirement brief.
+- node-design (automatic): derive the design and task split from the brief.
+- node-impl (automatic): implement and output changes/results.
+
+Parallel research -> Synthesis (fan-out / fan-in):
+- node-research-a/b/c: research subtopics in parallel.
+- node-synthesis: dependsOn all research nodes, consolidate into one result.
+
+Design -> Implementation -> Verification:
+- node-design: define solution and acceptance criteria.
+- node-impl: implement and output change notes.
+- node-verify: validate against acceptance criteria and return verdict.
+
+Multi-stage interactive flow:
+- node-discovery (interactive): iterative clarification.
+- node-plan (automatic): produce execution plan.
+- node-exec (automatic): execute and deliver final result.
 
 ## References
 
