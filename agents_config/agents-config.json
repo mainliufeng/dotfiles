@@ -1,0 +1,124 @@
+{
+  "version": 3,
+  "sources": [
+    "https://github.com/vercel-labs/agent-browser/tree/main/skills",
+    "https://github.com/anthropics/skills/tree/main/skills",
+    "https://github.com/michalparkola/tapestry-skills-for-claude-code",
+    "https://github.com/ComposioHQ/awesome-claude-skills/tree/master/content-research-writer",
+    "/home/liufeng/dotfiles/agents_config/personal/skills"
+  ],
+  "fragments": [
+    {
+      "name": "base",
+      "content": "# Agent Guidelines\n\n- **Language**: Always answer in the language used by the user in the prompt (e.g. Mandarin for Mandarin).\n- **Conciseness**: Be concise. Do not use courtesy phrases.\n"
+    },
+    {
+      "name": "debug",
+      "content": "# Debug Guidelines\n\nWhen debugging issues:\n\n1. **Reproduce First**: Always try to reproduce the issue before attempting to fix it.\n2. **Read Error Messages**: Pay close attention to error messages and stack traces.\n3. **Isolate the Problem**: Narrow down the scope of the issue systematically.\n4. **Check Recent Changes**: Review recent code changes that might have caused the issue.\n5. **Use Logging**: Add strategic logging to trace the flow of execution.\n6. **Verify Assumptions**: Question your assumptions about how the code works.\n7. **Test Incrementally**: After making a fix, test incrementally to ensure it works.\n"
+    },
+    {
+      "name": "solution-discipline",
+      "content": "# Solution Discipline\n\nWhen implementing solutions:\n\n1. **Understand Before Acting**: Fully understand the problem before proposing a solution.\n2. **One Thing at a Time**: Focus on one task at a time. Complete it before moving on.\n3. **Minimal Changes**: Make the smallest change that solves the problem.\n4. **Test Your Changes**: Always verify that your changes work as expected.\n5. **Consider Side Effects**: Think about potential side effects of your changes.\n6. **Document Your Reasoning**: Explain why you made certain decisions.\n7. **Ask When Uncertain**: If something is unclear, ask for clarification rather than guessing.\n"
+    },
+    {
+      "name": "superpowers",
+      "content": "# Superpowers\n\nYou have access to powerful tools that allow you to:\n\n1. **Read Files**: Access any file in the codebase to understand the context.\n2. **Write Files**: Create or modify files to implement solutions.\n3. **Execute Commands**: Run shell commands to build, test, and verify changes.\n4. **Search Code**: Use grep and glob patterns to find relevant code.\n5. **Web Search**: Search the web for documentation and solutions when needed.\n\nUse these powers responsibly and effectively to help users accomplish their goals.\n"
+    }
+  ],
+  "codex": {
+    "fragments": [
+      "base",
+      "superpowers"
+    ],
+    "skills": [
+      {
+        "name": "agent-browser",
+        "source": "https://github.com/vercel-labs/agent-browser/tree/main/skills"
+      },
+      {
+        "name": "commit",
+        "source": "/home/liufeng/dotfiles/agents_config/personal/skills"
+      },
+      {
+        "name": "content-research-writer",
+        "source": "https://github.com/ComposioHQ/awesome-claude-skills/tree/master/content-research-writer"
+      },
+      {
+        "name": "frontend-design",
+        "source": "https://github.com/anthropics/skills/tree/main/skills"
+      },
+      {
+        "name": "skill-creator",
+        "source": "https://github.com/anthropics/skills/tree/main/skills"
+      },
+      {
+        "name": "tapestry",
+        "source": "https://github.com/michalparkola/tapestry-skills-for-claude-code"
+      },
+      {
+        "name": "webapp-testing",
+        "source": "https://github.com/anthropics/skills/tree/main/skills"
+      }
+    ]
+  },
+  "claude": {
+    "skills": [
+      {
+        "name": "agent-browser",
+        "source": "https://github.com/vercel-labs/agent-browser/tree/main/skills"
+      },
+      {
+        "name": "commit",
+        "source": "/home/liufeng/dotfiles/agents_config/personal/skills"
+      },
+      {
+        "name": "content-research-writer",
+        "source": "https://github.com/ComposioHQ/awesome-claude-skills/tree/master/content-research-writer"
+      },
+      {
+        "name": "frontend-design",
+        "source": "https://github.com/anthropics/skills/tree/main/skills"
+      },
+      {
+        "name": "tapestry",
+        "source": "https://github.com/michalparkola/tapestry-skills-for-claude-code"
+      },
+      {
+        "name": "webapp-testing",
+        "source": "https://github.com/anthropics/skills/tree/main/skills"
+      }
+    ]
+  },
+  "projects": [
+    {
+      "path": "/home/liufeng/dotfiles",
+      "codex": {
+        "fragments": [
+          "base"
+        ],
+        "skills": [
+          {
+            "name": "agent-browser",
+            "source": "https://github.com/vercel-labs/agent-browser/tree/main/skills"
+          },
+          {
+            "name": "commit",
+            "source": "/home/liufeng/dotfiles/agents_config/personal/skills"
+          },
+          {
+            "name": "frontend-design",
+            "source": "https://github.com/anthropics/skills/tree/main/skills"
+          },
+          {
+            "name": "skill-creator",
+            "source": "https://github.com/anthropics/skills/tree/main/skills"
+          },
+          {
+            "name": "tapestry",
+            "source": "https://github.com/michalparkola/tapestry-skills-for-claude-code"
+          }
+        ]
+      }
+    }
+  ]
+}
