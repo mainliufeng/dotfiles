@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Alma
-Comment=Alma AppImage
-Exec=/bin/sh -c 'exec "$HOME/.local/bin/alma" "$@"' sh %U
-Icon=alma
-Terminal=false
-Categories=Utility;
-StartupNotify=true
