@@ -27,6 +27,7 @@ claude mcp add chrome-devtools npx chrome-devtools-mcp@latest -s user
 
 claude plugin marketplace add anthropics/skills
 claude plugin install document-skills
+claude plugin install ralph-loop
 
 echo ""
 echo "✓ Claude Code hooks 配置完成"
