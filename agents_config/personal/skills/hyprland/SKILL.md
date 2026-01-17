@@ -1,6 +1,6 @@
 ---
 name: hyprland
-description: Hyprland automation with hyprctl: create/close named workspaces, open a standard 3-window dev layout (Codex + shell + Neovim) for a project, and manage windows via hyprctl dispatch. Use when asked to manipulate Hyprland workspaces or windows, or to script Hyprland layouts.
+description: "Hyprland automation with hyprctl: create/close named workspaces, open a standard 3-window dev layout (Codex + shell + Neovim) for a project, and manage windows via hyprctl dispatch. Use when asked to manipulate Hyprland workspaces or windows, or to script Hyprland layouts."
 ---
 
 # Hyprland
