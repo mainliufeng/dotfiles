@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" && -x "$script_dir/hypr-instance.sh" ]]; then
+  inst="$("$script_dir/hypr-instance.sh" 2>/dev/null || true)"
+  if [[ -n "$inst" ]]; then
+    export HYPRLAND_INSTANCE_SIGNATURE="$inst"
+  fi
+fi
+
 if [[ -n "${HYPR_PROJECT_ROOTS:-}" ]]; then
   IFS=':' read -r -a project_roots <<<"$HYPR_PROJECT_ROOTS"
 else
@@ -95,22 +103,9 @@ hypr_instance() {
     return 0
   fi
 
-  hyprctl -j instances 2>/dev/null | python -c '
-import json,os,sys
-try:
-  items=json.load(sys.stdin)
-except Exception:
-  items=[]
-if not items:
-  sys.exit(0)
-want=os.environ.get("WAYLAND_DISPLAY")
-if want:
-  for it in items:
-    if it.get("wl_socket")==want and it.get("instance"):
-      print(it["instance"])
-      sys.exit(0)
-print(items[0].get("instance",""))
-'
+  if [[ -x "$script_dir/hypr-instance.sh" ]]; then
+    "$script_dir/hypr-instance.sh" 2>/dev/null || true
+  fi
 }
 
 hypr() {

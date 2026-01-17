@@ -11,6 +11,7 @@ description: "Hyprland automation with hyprctl: create/close named workspaces, o
 - Close workspace(s): `scripts/hypr-ws-close.sh <name> [name...]`
 - Open project layout: `scripts/hypr-ws-open-project.sh [project|path]`
 - Open custom terminals: `scripts/hypr-ws-open-terms.sh <workspace> <dir> [Title::Command]...`
+- Get instance signature: `scripts/hypr-instance.sh [--all]`
 - Focus window by rule: `scripts/hypr-win-focus.sh --class REGEX --title REGEX`
 - Move active window: `scripts/hypr-win-move.sh <workspace> [--follow]`
 - Float & center: `scripts/hypr-win-float.sh --size 1300x800 --center`
