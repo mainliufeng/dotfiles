@@ -127,6 +127,12 @@ except Exception:
 
 ws_name = str(ws.get("name") or "")
 ws_id = str(ws.get("id") or "")
+aw = active.get("workspace") or {}
+aw_name = str(aw.get("name") or "")
+aw_id = str(aw.get("id") or "")
+if aw_name and (aw_name.startswith("special:") or aw_id.startswith("-")):
+    ws_name = aw_name or ws_name
+    ws_id = aw_id or ws_id
 
 def in_ws(client):
     w = client.get("workspace") or {}
