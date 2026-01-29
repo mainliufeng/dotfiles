@@ -31,7 +31,10 @@ def in_ws(client):
     w = client.get("workspace") or {}
     return str(w.get("name") or "") == ws_name or str(w.get("id") or "") == ws_id
 
-items = [c for c in clients if in_ws(c)]
+def is_pinned(client):
+    return bool(client.get("pinned"))
+
+items = [c for c in clients if in_ws(c) and not is_pinned(c)]
 if len(items) < 2:
     sys.exit(0)
 

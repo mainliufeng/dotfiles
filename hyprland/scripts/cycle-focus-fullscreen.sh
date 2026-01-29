@@ -138,7 +138,10 @@ def in_ws(client):
     w = client.get("workspace") or {}
     return str(w.get("name") or "") == ws_name or str(w.get("id") or "") == ws_id
 
-items = [c for c in clients if in_ws(c)]
+def is_pinned(client):
+    return bool(client.get("pinned"))
+
+items = [c for c in clients if in_ws(c) and not is_pinned(c)]
 if len(items) < 2:
     sys.exit(0)
 
@@ -146,6 +149,13 @@ addr_to_client = {c.get("address"): c for c in items if c.get("address")}
 addr_set = set(addr_to_client)
 if not addr_set:
     sys.exit(0)
+
+def focus_id(addr):
+    c = addr_to_client.get(addr) or {}
+    try:
+        return int(c.get("focusHistoryID") or -1)
+    except Exception:
+        return -1
 
 cache = {}
 if cache_file:
@@ -217,14 +227,11 @@ for root, members in groups.items():
 
 group_entries = []
 members_order_by_group = {}
-def focus_id(addr):
-    c = addr_to_client.get(addr) or {}
-    try:
-        return int(c.get("focusHistoryID") or -1)
-    except Exception:
-        return -1
-
 active_addr = active.get("address")
+if active_addr not in addr_set:
+    active_addr = max(addr_set, key=focus_id, default=None)
+if not active_addr:
+    sys.exit(0)
 active_group = addr_to_group.get(active_addr)
 if active_group:
     group_last[active_group] = active_addr
