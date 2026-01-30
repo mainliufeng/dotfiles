@@ -1,5 +1,8 @@
 export FZF_DEFAULT_OPTS='--height 100% --layout=reverse --border'
 
+# Avoid alias expansion breaking function definition in zsh.
+unalias co 2>/dev/null || true
+unset -f co 2>/dev/null || true
 co() {
   local tags branches target
   branches=$(

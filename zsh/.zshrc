@@ -90,7 +90,6 @@ for sh in $DOTFILES_HOME/code/*/env.*sh; do [ -f "$sh" ] && source "$sh"; done
 PRIVATE_DOTFILES_HOME="$HOME/dotfiles-private"
 for sh in $PRIVATE_DOTFILES_HOME/*/env.*sh; do source $sh; done
 
-[ -f ~/dotfiles/fzf/.fzf.zsh ] && source ~/dotfiles/fzf/.fzf.zsh
 [ -f "$DOTFILES_HOME/code_agents/.code_agents.zsh" ] && source "$DOTFILES_HOME/code_agents/.code_agents.zsh"
 
 
@@ -155,7 +154,9 @@ for sh in $DOTFILES_HOME/*/env.*sh; do source $sh; done
 # for sh in $DOTFILES_HOME/private/*/env/*; do source $sh; done
 for sh in $DOTFILES_HOME/private/*/env.*sh; do source $sh; done
 
+# Load fzf key-bindings after other env scripts to avoid overrides.
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+[ -f ~/dotfiles/fzf/.fzf.zsh ] && source ~/dotfiles/fzf/.fzf.zsh
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
