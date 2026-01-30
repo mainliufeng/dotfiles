@@ -30,8 +30,10 @@ let g:multi_cursor_quit_key='<Esc>'
 " coc-explorer
 nmap <leader>e :CocCommand explorer<CR>
 
-" which key
-call which_key#register(',', "g:which_key_map")
+" which key (vim-which-key may be absent when using which-key.nvim)
+if exists('*which_key#register')
+  call which_key#register(',', "g:which_key_map")
+endif
 nnoremap <silent> <leader> :<c-u>WhichKey ','<CR>
 vnoremap <silent> <leader> :<c-u>WhichKeyVisual ','<CR>
 " nnoremap <localleader> :<c-u>WhichKey  ','<CR>

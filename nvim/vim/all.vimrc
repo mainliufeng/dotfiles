@@ -62,8 +62,11 @@ let maplocalleader = ","
 
 " color
 let g:gruvbox_italic=1
-colorscheme gruvbox
-colorscheme torte
+try
+  colorscheme gruvbox
+catch
+  colorscheme torte
+endtry
 set background=dark
 
 if &term =~ '256color'
