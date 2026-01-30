@@ -45,7 +45,13 @@ zplug "lukechilds/gifgen", as:command, use:"gifgen"
 zplug "mattberther/zsh-pyenv"
 
 # theme
-source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
+if [ -f /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme ]; then
+  source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
+elif [ -f /opt/homebrew/opt/powerlevel10k/powerlevel10k.zsh-theme ]; then
+  source /opt/homebrew/opt/powerlevel10k/powerlevel10k.zsh-theme
+elif [ -f /usr/local/opt/powerlevel10k/powerlevel10k.zsh-theme ]; then
+  source /usr/local/opt/powerlevel10k/powerlevel10k.zsh-theme
+fi
 POWERLEVEL10K_LEFT_PROMPT_ELEMENTS=(status dir vcs background_jobs)
 POWERLEVEL10K_RIGHT_PROMPT_ELEMENTS=(go_version virtualenv anaconda)
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
@@ -144,3 +150,12 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
+for sh in $DOTFILES_HOME/*/env/*; do source $sh; done
+for sh in $DOTFILES_HOME/*/env.*sh; do source $sh; done
+# for sh in $DOTFILES_HOME/private/*/env/*; do source $sh; done
+for sh in $DOTFILES_HOME/private/*/env.*sh; do source $sh; done
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

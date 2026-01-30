@@ -1,0 +1,1 @@
+ln -svfn ~/dotfiles/zsh/.zshrc ~/.zshrc

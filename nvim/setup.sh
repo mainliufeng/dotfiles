@@ -1,25 +1,25 @@
 #!/bin/sh
+set -e
 
-sudo pacman -S neovim
+if command -v pacman >/dev/null 2>&1; then
+  sudo pacman -S --needed neovim ctags
+  # language servers / tools (optional)
+  sudo pacman -S --needed delve || true
+  command -v yay >/dev/null 2>&1 && yay -S --needed pyright bash-language-server lua-language-server || true
+elif command -v brew >/dev/null 2>&1; then
+  brew install neovim ctags ripgrep node npm yarn
+  sudo npm install -g neovim
+  brew install luarocks
+  # vim-plug
+  sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+else
+  echo "Please install neovim using your package manager (pacman/brew)." >&2
+  exit 1
+fi
 
-#curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-# pip3 install --user pynvim
+# Python provider
+pip3 install --user pynvim || true
 
-# install luarocks (required by lua-lsp)
-# sudo pacman -S luarocks
-
-# golang
-go get golang.org/x/tools/gopls@latest
-sudo pacman -S delve
-
-yay -S pyright
-
-# install bash-language-server
-yay -S bash-language-server
-
-# lua language server
-yay -S lua-language-server 
-
-# or npm i -g bash-language-server
-
-sudo pacman -S ctags
+# gopls
+command -v go >/dev/null 2>&1 && go install golang.org/x/tools/gopls@latest || true

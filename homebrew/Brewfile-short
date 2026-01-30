@@ -1,0 +1,46 @@
+cask_args appdir: '/Applications'
+
+tap 'mainliufeng/formulae'
+
+# dev env
+brew 'gcc'
+brew 'git'
+brew 'wget'
+brew 'pkg-config'
+brew 'makedepend'
+brew 'zsh'
+brew 'fzf'
+brew 'zsh-syntax-highlighting'
+brew 'zsh-history-substring-search'
+brew 'zsh-completions'
+brew 'neovim'
+brew 'grip'
+brew 'tmux'
+brew 'reattach-to-user-namespace'
+brew 'fasd'
+brew 'tree'
+brew 'mainliufeng/formulae/termtile', args: ['HEAD']
+brew "mainliufeng/formulae/pinyin-completion", args: ["HEAD"]
+# brew 'simulate-input-macos', args: ['HEAD']
+brew 'fd'  # replace find command
+brew 'jq'
+brew 'tldr'
+brew 'diff-so-fancy'
+brew 'fabric'
+brew 'the_silver_searcher'
+cask 'iterm2'
+cask 'alfred'
+cask 'dash'
+cask 'postman'
+cask 'google-chrome'
+cask 'beyond-compare'
+
+# doc
+brew 'pandoc'
+cask 'macdown'
+brew 'ffmpeg'
+brew 'gifsicle'
+
+# other
+brew 'shellcheck'
+brew 'trash'

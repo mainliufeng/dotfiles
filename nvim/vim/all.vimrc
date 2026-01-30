@@ -1,5 +1,4 @@
-" ============================================================================
-" Vim settings and mappings
+" =====================================================================" Vim settings and mappings
 " You can edit them as you wish
 
 " allow plugins by file type (required for plugins!)
@@ -37,6 +36,10 @@ set noshowmode
 
 " cmd height
 set cmdheight=1
+augroup END
+
+" always show status bar
+set ls=2
 
 " incremental search
 set incsearch
@@ -60,6 +63,7 @@ let maplocalleader = ","
 " color
 let g:gruvbox_italic=1
 colorscheme gruvbox
+colorscheme torte
 set background=dark
 
 if &term =~ '256color'
@@ -99,6 +103,7 @@ autocmd InsertLeave,WinEnter * set cursorline
 autocmd InsertEnter,WinLeave * set nocursorline
 
 let g:python3_host_prog = '/usr/bin/python3'
+let g:python3_host_prog = '/usr/local/bin/python3'
 
 " popup menu color
 highlight Pmenu ctermbg=black guibg=black

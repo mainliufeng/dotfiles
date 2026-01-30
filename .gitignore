@@ -1,16 +1,25 @@
 *.swp
 .resources
 private
-tmux/tmuxinator/*
 */private
+
+# local/private/external
 external/jdt/config_mac/
+
+# previews/backups
 vim-markdown-preview.html
 git_backup/*.bundle
+
+# editor/cache
 nvim/.netrwhist
 .tasks
-git/.gitconfig
 *.luarc.json
-codex/agents_md/node_modules/
 .worktrees/
 .cache/
 .tmp/
+
+# local machine git config (generated)
+git/.gitconfig
+
+# node
+codex/agents_md/node_modules/

@@ -1,0 +1,21 @@
+[user]
+	name = 刘峰
+	email = mainliufeng@gmail.com
+[core]
+	excludesfile = /Users/liufeng/.gitignore_global
+[filter "media"]
+	clean = git-media-clean %f
+	smudge = git-media-smudge %f
+[filter "lfs"]
+	clean = git lfs clean %f
+	smudge = git lfs smudge %f
+	required = true
+[push]
+	default = simple
+[alias]
+    lg = !"git lg-specific --all"
+    lg-specific = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) %C(auto)%d%C(reset)%n%C(dim white)%s - %an (%ar) %C(reset)%n'
+[http]
+	postBuffer = 524288000
+[log]
+	date = iso
