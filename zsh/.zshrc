@@ -160,3 +160,6 @@ for sh in $DOTFILES_HOME/private/*/env.*sh; do source $sh; done
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# OpenClaw Completion
+source <(openclaw completion --shell zsh)
