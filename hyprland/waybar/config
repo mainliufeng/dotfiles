@@ -7,7 +7,7 @@
     // Choose the order of the modules
     "modules-left": ["hyprland/workspaces", "sway/mode", "sway/scratchpad", "custom/media"],
     "modules-center": ["hyprland/window"],
-    "modules-right": ["mpd", "idle_inhibitor", "group/av", "group/system", "custom/codex", "battery#bat2", "clock", "tray"],
+    "modules-right": ["mpd", "idle_inhibitor", "group/av", "group/system", "custom/codex", "custom/bluetooth", "battery#bat2", "clock", "tray"],
     "wlr/taskbar": {
         "format": "{icon}",
         "icon-size": 28,
@@ -210,6 +210,14 @@
         "on-click": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
         "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 1%-",
         "on-scroll-down": "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SOURCE@ 1%+"
+    },
+    "custom/bluetooth": {
+        "format": "{}",
+        "return-type": "json",
+        "interval": 5,
+        "exec": "~/.config/hypr/scripts/waybar-bluetooth.sh",
+        "on-click": "blueman-manager",
+        "on-click-right": "bash -lc 'if bluetoothctl show 2>/dev/null | grep -q \"Powered: yes\"; then bluetoothctl power off; else bluetoothctl power on; fi'"
     },
     "custom/media": {
         "format": "{icon} {}",
