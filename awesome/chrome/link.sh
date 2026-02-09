@@ -20,14 +20,14 @@ cat > "${SCRIPT_PATH}" <<'EOF'
 export http_proxy="http://127.0.0.1:7897"
 export https_proxy="http://127.0.0.1:7897"
 
-# Check if google-chrome-stable exists
-if ! command -v google-chrome-stable &> /dev/null
+# Check if google-chrome-unstable exists
+if ! command -v google-chrome-unstable &> /dev/null
 then
-    echo "google-chrome-stable could not be found"
+    echo "google-chrome-unstable could not be found"
     exit
 fi
 
-exec /usr/bin/google-chrome-stable "$@"
+exec /usr/bin/google-chrome-unstable "$@"
 EOF
 
 # Make the script executable
@@ -58,7 +58,7 @@ mkdir -p "${APPS_DIR}"
 # Using a temporary file for sed to avoid issues on different systems
 TMP_FILE=$(mktemp)
 sed -e 's/^Name=.*/Name=Google Chrome (Proxy)/' "${ORIGINAL_DESKTOP_FILE_PATH}" > "${TMP_FILE}"
-sed -e "s|/usr/bin/google-chrome-stable|${SCRIPT_PATH}|g" "${TMP_FILE}" > "${NEW_DESKTOP_FILE_PATH}"
+sed -E "s|/usr/bin/google-chrome(-stable|-unstable)?|${SCRIPT_PATH}|g" "${TMP_FILE}" > "${NEW_DESKTOP_FILE_PATH}"
 rm "${TMP_FILE}"
 
 echo "Successfully created ${NEW_DESKTOP_FILE_PATH}"

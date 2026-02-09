@@ -4,7 +4,7 @@ Name=Google Chrome (Xorg)
 GenericName=Web Browser
 Comment=Access the Internet
 StartupWMClass=Google-chrome
-Exec=/usr/bin/google-chrome-stable %U
+Exec=/usr/bin/google-chrome-unstable %U
 StartupNotify=true
 Terminal=false
 Icon=google-chrome
@@ -15,8 +15,8 @@ Actions=new-window;new-private-window;
 
 [Desktop Action new-window]
 Name=New Window
-Exec=/usr/bin/google-chrome-stable --new-window %U
+Exec=/usr/bin/google-chrome-unstable --new-window %U
 
 [Desktop Action new-private-window]
 Name=New Incognito Window
-Exec=/usr/bin/google-chrome-stable --incognito %U
+Exec=/usr/bin/google-chrome-unstable --incognito %U
