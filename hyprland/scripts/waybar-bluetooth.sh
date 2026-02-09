@@ -18,7 +18,7 @@ fi
 
 powered="$(awk -F': ' '/Powered:/ {print $2; exit}' <<<"$show_output")"
 if [[ "$powered" != "yes" ]]; then
-  printf '{"text":" Off","tooltip":"Bluetooth is off (right click to turn on)","class":"off"}\n'
+  printf '{"text":" Off","tooltip":"Bluetooth is off (middle click to toggle power)","class":"off"}\n'
   exit 0
 fi
 
@@ -30,5 +30,5 @@ if [[ "$connected_count" -gt 0 ]]; then
   names_escaped="$(printf '%s' "$names" | json_escape)"
   printf '{"text":" %s","tooltip":"Connected: %s","class":"on"}\n' "$connected_count" "$names_escaped"
 else
-  printf '{"text":" On","tooltip":"Bluetooth is on (click to open manager)","class":"on"}\n'
+  printf '{"text":" On","tooltip":"Left: manager | Right: audio menu | Middle: power","class":"on"}\n'
 fi
