@@ -89,6 +89,7 @@ button:hover {
 #wireplumber,
 #custom-media,
 #custom-bluetooth,
+#custom-ac_keepawake,
 #tray,
 #mode,
 #idle_inhibitor,
@@ -243,6 +244,31 @@ label:focus {
 
 #custom-bluetooth {
     background-color: #0f8f8f;
+    color: #ffffff;
+}
+
+#custom-ac_keepawake {
+    background-color: #3f5873;
+    color: #ffffff;
+}
+
+#custom-ac_keepawake.active-ac {
+    background-color: #2e9d50;
+    color: #ffffff;
+}
+
+#custom-ac_keepawake.armed {
+    background-color: #bf7f00;
+    color: #ffffff;
+}
+
+#custom-ac_keepawake.off {
+    background-color: #56606b;
+    color: #ffffff;
+}
+
+#custom-ac_keepawake.error {
+    background-color: #c0392b;
     color: #ffffff;
 }
 
