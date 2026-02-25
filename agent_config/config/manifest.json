@@ -18,7 +18,7 @@
   },
   "profiles": {
     "codex": {
-      "agent_md_fragments": ["base", "superpowers"]
+      "agent_md_fragments": ["base"]
     },
     "claude": {
       "agent_md_fragments": ["base", "superpowers"]
