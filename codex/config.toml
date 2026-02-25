@@ -7,6 +7,7 @@ unified_exec = true
 shell_snapshot = true
 steer = true
 web_search_request = true
+multi_agent = true
 
 [projects."/home/liufeng"]
 trust_level = "trusted"
@@ -33,4 +34,3 @@ chrome_remote = "~/dotfiles/scripts/start-chrome-remote"
 [notice]
 "hide_gpt-5.1-codex-max_migration_prompt" = true
 hide_rate_limit_model_nudge = true
-
