@@ -13,15 +13,16 @@
   "agent_md_fragments": {
     "base": "agent_md_fragments/base.md",
     "debug": "agent_md_fragments/debug.md",
+    "gstack": "agent_md_fragments/gstack.md",
     "solution-discipline": "agent_md_fragments/solution-discipline.md",
     "superpowers": "agent_md_fragments/superpowers.md"
   },
   "profiles": {
     "codex": {
-      "agent_md_fragments": ["base"]
+      "agent_md_fragments": ["base", "gstack"]
     },
     "claude": {
-      "agent_md_fragments": ["base", "superpowers"]
+      "agent_md_fragments": ["base", "superpowers", "gstack"]
     }
   },
   "project_overrides": [
@@ -29,7 +30,7 @@
       "path": "~/dotfiles",
       "target": "codex",
       "file": "AGENTS.override.md",
-      "agent_md_fragments": ["base"]
+      "agent_md_fragments": ["base", "gstack"]
     }
   ],
   "skills": [
@@ -66,6 +67,12 @@
       "kind": "github",
       "repo": "anthropics/skills",
       "path": "skills/frontend-design",
+      "targets": ["codex", "claude"]
+    },
+    {
+      "name": "gstack",
+      "kind": "special",
+      "id": "gstack",
       "targets": ["codex", "claude"]
     },
     {

@@ -33,9 +33,11 @@ fi
 require_bin jq
 require_bin python3
 require_bin git
+require_bin bun
 
 CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
 INSTALLER="$CODEX_HOME_DIR/skills/.system/skill-installer/scripts/install-skill-from-github.py"
+CLAUDE_SKILLS_DIR="$(expand_path "$(jq -r '.targets.claude.skills_dir' "$MANIFEST")")"
 
 if [[ ! -f "$INSTALLER" ]]; then
   echo "Error: skill installer not found: $INSTALLER" >&2
@@ -158,6 +160,41 @@ install_ui_ux_pro_max() {
   rm -rf "$tmp_dir"
 }
 
+install_gstack() {
+  local target_name="$1"
+  local dest="$2"
+  local name="gstack"
+  local canonical_dir="$CLAUDE_SKILLS_DIR/$name"
+  local target_dir="$dest/$name"
+
+  mkdir -p "$CLAUDE_SKILLS_DIR"
+
+  if [[ ! -e "$canonical_dir" ]]; then
+    git clone --depth 1 https://github.com/garrytan/gstack.git "$canonical_dir"
+    echo "Installed $name to $canonical_dir"
+  else
+    echo "[skip] $name source already exists: $canonical_dir"
+  fi
+
+  if [[ "$target_dir" != "$canonical_dir" ]]; then
+    mkdir -p "$dest"
+    if [[ -L "$target_dir" ]]; then
+      echo "[skip] $name link already exists: $target_dir"
+    elif [[ -e "$target_dir" ]]; then
+      echo "[skip] $name target already exists and is not a symlink: $target_dir"
+    else
+      ln -s "$canonical_dir" "$target_dir"
+      echo "Linked $name to $target_dir -> $canonical_dir"
+    fi
+  fi
+
+  if [[ "$target_name" == "codex" ]]; then
+    (cd "$target_dir" && ./setup)
+  else
+    (cd "$canonical_dir" && ./setup)
+  fi
+}
+
 mapfile -t TARGET_LIST < <(resolve_targets "$TARGET")
 
 for target_name in "${TARGET_LIST[@]}"; do
@@ -192,6 +229,9 @@ for target_name in "${TARGET_LIST[@]}"; do
       special)
         special_id="$(jq -r '.id' <<<"$skill_json")"
         case "$special_id" in
+          gstack)
+            install_gstack "$target_name" "$dest"
+            ;;
           ui-ux-pro-max)
             install_ui_ux_pro_max "$dest"
             ;;
