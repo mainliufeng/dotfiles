@@ -43,8 +43,10 @@ Only install skills:
 
 - GitHub skills are installed through Codex built-in installer:
   `~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py`
-- `gstack` is installed specially: the canonical checkout lives at
-  `~/.claude/skills/gstack`, and Codex uses a compatibility symlink from
-  `~/.codex/skills/gstack` because upstream hardcodes the Claude path.
+- `gstack` follows upstream README now:
+  Claude installs from `~/.claude/skills/gstack` via `./setup`,
+  while Codex installs from `~/gstack` via `./setup --host codex`.
+  The Codex setup command manages `~/.codex/skills/gstack` and the generated
+  top-level skill links for you.
 - `ui-ux-pro-max` needs both skill files and `~/src/ui-ux-pro-max` source files;
   this is handled by `scripts/install-skills.sh`.

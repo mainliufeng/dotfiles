@@ -164,35 +164,33 @@ install_gstack() {
   local target_name="$1"
   local dest="$2"
   local name="gstack"
-  local canonical_dir="$CLAUDE_SKILLS_DIR/$name"
-  local target_dir="$dest/$name"
+  local claude_dir="$CLAUDE_SKILLS_DIR/$name"
+  local codex_src_dir="$HOME/gstack"
 
-  mkdir -p "$CLAUDE_SKILLS_DIR"
-
-  if [[ ! -e "$canonical_dir" ]]; then
-    git clone --depth 1 https://github.com/garrytan/gstack.git "$canonical_dir"
-    echo "Installed $name to $canonical_dir"
-  else
-    echo "[skip] $name source already exists: $canonical_dir"
-  fi
-
-  if [[ "$target_dir" != "$canonical_dir" ]]; then
-    mkdir -p "$dest"
-    if [[ -L "$target_dir" ]]; then
-      echo "[skip] $name link already exists: $target_dir"
-    elif [[ -e "$target_dir" ]]; then
-      echo "[skip] $name target already exists and is not a symlink: $target_dir"
-    else
-      ln -s "$canonical_dir" "$target_dir"
-      echo "Linked $name to $target_dir -> $canonical_dir"
-    fi
-  fi
-
-  if [[ "$target_name" == "codex" ]]; then
-    (cd "$target_dir" && ./setup)
-  else
-    (cd "$canonical_dir" && ./setup)
-  fi
+  case "$target_name" in
+    claude)
+      mkdir -p "$CLAUDE_SKILLS_DIR"
+      if [[ ! -e "$claude_dir" ]]; then
+        git clone --depth 1 https://github.com/garrytan/gstack.git "$claude_dir"
+        echo "Installed $name to $claude_dir"
+      else
+        echo "[skip] $name source already exists: $claude_dir"
+      fi
+      (cd "$claude_dir" && ./setup)
+      ;;
+    codex)
+      if [[ ! -e "$codex_src_dir" ]]; then
+        git clone --depth 1 https://github.com/garrytan/gstack.git "$codex_src_dir"
+        echo "Installed $name to $codex_src_dir"
+      else
+        echo "[skip] $name source already exists: $codex_src_dir"
+      fi
+      (cd "$codex_src_dir" && ./setup --host codex)
+      ;;
+    *)
+      echo "[skip] unsupported gstack target '$target_name' for $dest"
+      ;;
+  esac
 }
 
 mapfile -t TARGET_LIST < <(resolve_targets "$TARGET")
