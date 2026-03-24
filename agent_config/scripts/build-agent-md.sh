@@ -32,6 +32,13 @@ fi
 
 require_bin jq
 
+TMP_DIR="$(mktemp -d)"
+trap 'rm -rf "$TMP_DIR"' EXIT
+
+MERGED_MANIFEST="$TMP_DIR/manifest.json"
+build_merged_manifest "$MANIFEST" "$MERGED_MANIFEST"
+MANIFEST="$MERGED_MANIFEST"
+
 render_file() {
   local out_file="$1"
   shift
@@ -46,14 +53,17 @@ render_file() {
 
   local first="1"
   for name in "${agent_md_fragments[@]}"; do
-    rel_path="$(jq -r --arg n "$name" '.agent_md_fragments[$n] // empty' "$MANIFEST")"
-    if [[ -z "$rel_path" ]]; then
+    fragment_path_raw="$(jq -r --arg n "$name" '.agent_md_fragments[$n] // empty' "$MANIFEST")"
+    if [[ -z "$fragment_path_raw" ]]; then
       echo "Error: agent_md_fragment not defined: $name" >&2
       rm -f "$tmp"
       exit 1
     fi
 
-    fragment_file="$ROOT_DIR/$rel_path"
+    fragment_file="$(expand_path "$fragment_path_raw")"
+    if [[ "$fragment_file" != /* ]]; then
+      fragment_file="$ROOT_DIR/$fragment_file"
+    fi
     if [[ ! -f "$fragment_file" ]]; then
       echo "Error: agent_md_fragment file not found: $fragment_file" >&2
       rm -f "$tmp"

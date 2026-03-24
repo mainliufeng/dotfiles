@@ -44,6 +44,13 @@ if [[ ! -f "$INSTALLER" ]]; then
   exit 1
 fi
 
+TMP_DIR="$(mktemp -d)"
+trap 'rm -rf "$TMP_DIR"' EXIT
+
+MERGED_MANIFEST="$TMP_DIR/manifest.json"
+build_merged_manifest "$MANIFEST" "$MERGED_MANIFEST"
+MANIFEST="$MERGED_MANIFEST"
+
 install_github_skill() {
   local name="$1"
   local repo="$2"
@@ -69,19 +76,27 @@ install_local_skill() {
   local name="$1"
   local src="$2"
   local dest="$3"
-
-  if [[ -d "$dest/$name" ]]; then
-    echo "[skip] $name already installed in $dest"
-    return 0
-  fi
+  local dest_path="$dest/$name"
 
   if [[ ! -d "$src" ]]; then
     echo "[skip] $name source not found: $src"
     return 0
   fi
 
-  cp -a "$src" "$dest/$name"
-  echo "Installed $name to $dest/$name"
+  if [[ -L "$dest_path" ]]; then
+    if [[ "$(readlink "$dest_path")" == "$src" ]]; then
+      echo "[skip] $name link already points to $src"
+      return 0
+    fi
+    rm -f "$dest_path"
+  elif [[ -e "$dest_path" ]]; then
+    local backup_path="${dest_path}.agent_config.bak.$(date +%Y%m%d%H%M%S)"
+    mv "$dest_path" "$backup_path"
+    echo "Backed up existing $name to $backup_path"
+  fi
+
+  ln -s "$src" "$dest_path"
+  echo "Linked $name to $src"
 }
 
 ensure_amap_skill_frontmatter() {

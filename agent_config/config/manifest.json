@@ -89,12 +89,6 @@
       "targets": ["codex"]
     },
     {
-      "name": "rcrai",
-      "kind": "local",
-      "path": "/home/liufeng/dotfiles-private/agent_config/local_skills/rcrai",
-      "targets": ["codex"]
-    },
-    {
       "name": "remotion",
       "kind": "github",
       "repo": "remotion-dev/skills",
