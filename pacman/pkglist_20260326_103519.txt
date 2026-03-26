@@ -1,7 +1,10 @@
 adobe-source-han-serif-cn-fonts
+alma-desktop-bin
 alsa-firmware
 alsa-utils
 android-sdk-cmdline-tools-latest
+antigravity
+antigravity-tools-bin
 ark
 awesome
 b43-fwcutter
@@ -24,6 +27,7 @@ chaotic-keyring
 chaotic-mirrorlist
 clash-verge-rev-bin
 cliphist
+confirmo-bin
 coreutils
 cronie
 cryptsetup
@@ -57,6 +61,7 @@ fcitx5-pinyin-zhwiki
 fcitx5-qt
 fcitx5-rime
 feh
+feishu
 file
 filesystem
 findutils
@@ -82,6 +87,8 @@ git-lfs
 github-cli
 glibc
 go
+goland
+goland-jre
 google-chrome-dev
 gradle
 graphviz
@@ -157,6 +164,8 @@ nss-mdns
 ntfs-3g
 obs-studio
 openbsd-netcat
+opencode-bin
+opencode-openai-codex-auth
 openssh
 openvpn
 openvpn-update-systemd-resolved
