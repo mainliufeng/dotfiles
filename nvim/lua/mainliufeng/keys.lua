@@ -81,6 +81,9 @@ require "which-key".add({
     { "<space>p", "<cmd>Telescope project<CR>", desc = "Projects" },
     { "<space>g", "<cmd>Telescope live_grep<cr>", desc = "Live grep" },
     { "<space>b", "<cmd>Telescope git_branches<cr>", desc = "Checkout branch" },
+    { "<space>m", group = "Markdown" },
+    { "<space>mh", "<cmd>MarkdownHTML<CR>", desc = "Render HTML" },
+    { "<space>mo", "<cmd>MarkdownOpen<CR>", desc = "Open in browser" },
     { "<space>e", function()
         local harpoon = require("harpoon")
         harpoon.ui:toggle_quick_menu(harpoon:list())

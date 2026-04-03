@@ -422,6 +422,7 @@ require("lazy").setup({
 
 -- 本地插件
 require("mainliufeng.plugins.git")
+require("mainliufeng.plugins.markdown").setup()
 require("mainliufeng.plugins.window")
 require("mainliufeng.plugins.highlight")
 
