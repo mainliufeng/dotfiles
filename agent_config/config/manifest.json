@@ -56,6 +56,76 @@
       "targets": ["codex", "claude"]
     },
     {
+      "name": "chatroom-austrian",
+      "kind": "github",
+      "repo": "dontbesilent2025/dbskill",
+      "path": "skills/chatroom-austrian",
+      "targets": ["codex"]
+    },
+    {
+      "name": "dbs",
+      "kind": "github",
+      "repo": "dontbesilent2025/dbskill",
+      "path": "skills/dbs",
+      "targets": ["codex"]
+    },
+    {
+      "name": "dbs-action",
+      "kind": "github",
+      "repo": "dontbesilent2025/dbskill",
+      "path": "skills/dbs-action",
+      "targets": ["codex"]
+    },
+    {
+      "name": "dbs-benchmark",
+      "kind": "github",
+      "repo": "dontbesilent2025/dbskill",
+      "path": "skills/dbs-benchmark",
+      "targets": ["codex"]
+    },
+    {
+      "name": "dbs-content",
+      "kind": "github",
+      "repo": "dontbesilent2025/dbskill",
+      "path": "skills/dbs-content",
+      "targets": ["codex"]
+    },
+    {
+      "name": "dbs-deconstruct",
+      "kind": "github",
+      "repo": "dontbesilent2025/dbskill",
+      "path": "skills/dbs-deconstruct",
+      "targets": ["codex"]
+    },
+    {
+      "name": "dbs-diagnosis",
+      "kind": "github",
+      "repo": "dontbesilent2025/dbskill",
+      "path": "skills/dbs-diagnosis",
+      "targets": ["codex"]
+    },
+    {
+      "name": "dbs-hook",
+      "kind": "github",
+      "repo": "dontbesilent2025/dbskill",
+      "path": "skills/dbs-hook",
+      "targets": ["codex"]
+    },
+    {
+      "name": "dbskill-upgrade",
+      "kind": "github",
+      "repo": "dontbesilent2025/dbskill",
+      "path": "skills/dbskill-upgrade",
+      "targets": ["codex"]
+    },
+    {
+      "name": "dbs-xhs-title",
+      "kind": "github",
+      "repo": "dontbesilent2025/dbskill",
+      "path": "skills/dbs-xhs-title",
+      "targets": ["codex"]
+    },
+    {
       "name": "docx",
       "kind": "github",
       "repo": "anthropics/skills",
