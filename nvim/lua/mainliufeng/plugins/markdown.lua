@@ -6,18 +6,21 @@ local function write_temp_file(lines, suffix)
     return path
 end
 
-local function browser_command()
+local function browser_command(html_path)
     local candidates = {
-        "google-chrome-unstable",
-        "google-chrome",
-        "chromium",
-        "chromium-browser",
-        "xdg-open",
+        { cmd = "xdg-open", args = { html_path } },
+        { cmd = "gio", args = { "open", html_path } },
+        { cmd = "google-chrome-unstable", args = { html_path } },
+        { cmd = "google-chrome", args = { html_path } },
+        { cmd = "chromium", args = { html_path } },
+        { cmd = "chromium-browser", args = { html_path } },
     }
 
-    for _, cmd in ipairs(candidates) do
-        if vim.fn.executable(cmd) == 1 then
-            return cmd
+    for _, candidate in ipairs(candidates) do
+        if vim.fn.executable(candidate.cmd) == 1 then
+            local argv = { candidate.cmd }
+            vim.list_extend(argv, candidate.args)
+            return argv
         end
     end
 
@@ -410,12 +413,12 @@ function M.setup()
 
     vim.api.nvim_create_user_command("MarkdownOpen", function()
         local html_path = render_markdown_to_html()
-        local browser = browser_command()
+        local browser = browser_command(html_path)
         if not browser then
             error("No browser command found")
         end
 
-        vim.fn.jobstart({ browser, vim.uri_from_fname(html_path) }, { detach = true })
+        vim.fn.jobstart(browser, { detach = true })
         notify_path(html_path)
     end, { desc = "Render current markdown buffer to HTML and open it in browser" })
 end
