@@ -45,6 +45,151 @@ local function mermaid_filter_path()
     }, ".lua")
 end
 
+local function buffer_resource_path()
+    local paths = {}
+    local seen = {}
+
+    local function add(path)
+        if not path or path == "" or seen[path] then
+            return
+        end
+        seen[path] = true
+        table.insert(paths, path)
+    end
+
+    local bufname = vim.api.nvim_buf_get_name(0)
+    if bufname ~= "" then
+        add(vim.fs.dirname(bufname))
+    end
+
+    add(vim.fn.getcwd())
+
+    return table.concat(paths, ":")
+end
+
+local function current_buffer_dir()
+    local bufname = vim.api.nvim_buf_get_name(0)
+    if bufname == "" then
+        return nil
+    end
+    return vim.fs.dirname(bufname)
+end
+
+local function absolutize_local_image_links(lines)
+    local base_dir = current_buffer_dir()
+    if not base_dir then
+        return lines
+    end
+
+    local function normalize_target(target)
+        local path = vim.trim(target)
+        if path == "" then
+            return target
+        end
+
+        if path:match("^[a-zA-Z][a-zA-Z0-9+.-]*://") or path:match("^data:") then
+            return target
+        end
+
+        local inner = path:match("^<(.+)>$")
+        if inner then
+            path = inner
+        end
+
+        if path:match("^#") then
+            return target
+        end
+
+        local clean_path = path:match('^([^%s]+)') or path
+        if not clean_path:match("^%.?%.?/") and not clean_path:match("^/") then
+            return target
+        end
+
+        local absolute = clean_path
+        if not clean_path:match("^/") then
+            absolute = vim.fs.normalize(vim.fs.joinpath(base_dir, clean_path))
+        end
+
+        local uri = vim.uri_from_fname(absolute)
+        local suffix = path:sub(#clean_path + 1)
+        if inner then
+            return "<" .. uri .. suffix .. ">"
+        end
+        return uri .. suffix
+    end
+
+    local out = {}
+    for _, line in ipairs(lines) do
+        local rewritten = line:gsub("!%[([^%]]-)%]%(([^%)]+)%)", function(alt, target)
+            return string.format("![%s](%s)", alt, normalize_target(target))
+        end)
+        table.insert(out, rewritten)
+    end
+    return out
+end
+
+local function collect_local_image_files(lines)
+    local base_dir = current_buffer_dir()
+    if not base_dir then
+        return {}
+    end
+
+    local files = {}
+    local seen = {}
+
+    local function add_target(target)
+        local path = vim.trim(target)
+        if path == "" then
+            return
+        end
+        if path:match("^[a-zA-Z][a-zA-Z0-9+.-]*://") or path:match("^data:") or path:match("^#") then
+            return
+        end
+
+        local inner = path:match("^<(.+)>$")
+        if inner then
+            path = inner
+        end
+
+        local clean_path = path:match('^([^%s]+)') or path
+        if not clean_path:match("^%.?%.?/") and not clean_path:match("^/") then
+            return
+        end
+
+        local absolute = clean_path
+        if not clean_path:match("^/") then
+            absolute = vim.fs.normalize(vim.fs.joinpath(base_dir, clean_path))
+        end
+
+        if vim.fn.filereadable(absolute) == 1 and not seen[absolute] then
+            seen[absolute] = true
+            table.insert(files, absolute)
+        end
+    end
+
+    for _, line in ipairs(lines) do
+        for target in line:gmatch("!%[[^%]]-%]%(([^%)]+)%)") do
+            add_target(target)
+        end
+    end
+
+    return files
+end
+
+local function copy_local_images_to_output_dir(image_files, html_path)
+    if not image_files or #image_files == 0 then
+        return
+    end
+
+    local output_dir = vim.fs.dirname(html_path)
+    for _, image_path in ipairs(image_files) do
+        local dest_path = vim.fs.joinpath(output_dir, vim.fs.basename(image_path))
+        if vim.fn.filereadable(dest_path) ~= 1 then
+            vim.fn.writefile(vim.fn.readfile(image_path, "b"), dest_path, "b")
+        end
+    end
+end
+
 local function html_unescape(text)
     return text
         :gsub("&lt;", "<")
@@ -63,12 +208,39 @@ local function normalize_mermaid_blocks(html_path)
     vim.fn.writefile(vim.split(html, "\n", { plain = true }), html_path)
 end
 
+local function rewrite_html_local_image_paths(html_path)
+    local base_dir = current_buffer_dir()
+    if not base_dir then
+        return
+    end
+
+    local lines = vim.fn.readfile(html_path)
+    local html = table.concat(lines, "\n")
+    html = html:gsub('src="([^"]+)"', function(src)
+        if src:match("^[a-zA-Z][a-zA-Z0-9+.-]*://") or src:match("^data:") then
+            return string.format('src="%s"', src)
+        end
+        if not src:match("^%.?%.?/") then
+            return string.format('src="%s"', src)
+        end
+
+        local absolute = src
+        if not src:match("^/") then
+            absolute = vim.fs.normalize(vim.fs.joinpath(base_dir, src))
+        end
+        return string.format('src="%s"', vim.uri_from_fname(absolute))
+    end)
+    vim.fn.writefile(vim.split(html, "\n", { plain = true }), html_path)
+end
+
 local function render_markdown_to_html()
     if vim.fn.executable("pandoc") ~= 1 then
         error("pandoc is not installed")
     end
 
     local markdown_lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    local local_image_files = collect_local_image_files(markdown_lines)
+    markdown_lines = absolutize_local_image_links(markdown_lines)
     local markdown_path = write_temp_file(markdown_lines, ".md")
     local html_path = output_html_path()
     local filter_path = mermaid_filter_path()
@@ -201,6 +373,8 @@ local function render_markdown_to_html()
         "--to=html5",
         "--standalone",
         "--embed-resources",
+        "--resource-path",
+        buffer_resource_path(),
         "--lua-filter",
         filter_path,
         "--include-in-header",
@@ -216,6 +390,8 @@ local function render_markdown_to_html()
     end
 
     normalize_mermaid_blocks(html_path)
+    rewrite_html_local_image_paths(html_path)
+    copy_local_images_to_output_dir(local_image_files, html_path)
 
     return html_path
 end
