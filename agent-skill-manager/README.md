@@ -12,6 +12,7 @@ This repo intentionally does **not** replace `~/dotfiles/agent_config` yet. Run 
 - `setup.sh` — installs the manager skill itself via symlinks
 - `skill/assets/targets.md` — runtime locations and target notes
 - `skill/assets/skill-catalog.md` — public human-maintained list of managed skills
+- `public_skills/` — public local skill source directories managed by this repo
 - `~/dotfiles-private/agent-skill-manager/assets/private-skill-catalog.md` — optional private overlay catalog
 - `skill/assets/agent-doc-catalog.md` — markdown source of truth for runtime instruction docs
 - `~/dotfiles-private/agent-skill-manager/assets/private-agent-doc-catalog.md` — optional private overlay for runtime docs
@@ -45,6 +46,7 @@ Runtime note:
 
 - `setup.sh` only links the manager skill itself into each runtime.
 - Skill installation, updates, audits, and runtime doc sync are executed in dialog through the manager skill.
+- Public local skills live under `~/dotfiles/agent-skill-manager/public_skills/`.
 
 ## Current status
 

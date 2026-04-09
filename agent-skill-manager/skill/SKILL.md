@@ -66,7 +66,7 @@ Before taking action, read these files in this order:
 - For installs: default to missing-only behavior unless the user asked for reinstall.
 - For updates: refresh existing installs but do not silently add new catalog entries unless requested.
 - For doc sync: render from markdown fragments and profiles instead of hand-editing generated runtime files.
-- Public local skills currently resolve from `~/dotfiles/agent_config/local_skills/<skill-name>` until they are moved into a manager-owned public skill directory.
+- Public local skills resolve from `~/dotfiles/agent-skill-manager/public_skills/<skill-name>` unless a public catalog entry says otherwise.
 - Private local skills resolve from `~/dotfiles-private/agent-skill-manager/private_skills/<skill-name>` unless a private overlay explicitly says otherwise.
 
 ## Current scope

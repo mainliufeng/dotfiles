@@ -36,5 +36,5 @@ Expand and correct this file as migration proceeds.
 - `special:*` means there is enough nuance that the agent must read the named special-install document first.
 - This file is intentionally markdown instead of YAML so it stays easy to edit during migration.
 - Former OpenClaw-import skills should be switched to direct GitHub sources whenever an upstream repo exists.
-- Public local skills currently resolve from `~/dotfiles/agent_config/local_skills/<skill-name>` until they are moved into a manager-owned public skill directory.
+- Public local skills resolve from `~/dotfiles/agent-skill-manager/public_skills/<skill-name>`.
 - Private-only skills live in `~/dotfiles-private/agent-skill-manager/assets/private-skill-catalog.md` and are part of the manager's full source of truth when that file exists.
