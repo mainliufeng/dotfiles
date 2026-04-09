@@ -1,10 +1,10 @@
 # agent-skill-manager
 
-A new, isolated replacement for the old `agent_config/` flow.
+A markdown-driven replacement for the old `agent_config/` flow.
 
 Goal: install one manager skill into Codex, Claude Code, and Hermes. That skill then acts as the control plane for installing, updating, auditing, and comparing the rest of your skills, and for syncing runtime instruction docs such as `AGENTS.md` and `CLAUDE.md`.
 
-This repo intentionally does **not** replace `~/dotfiles/agent_config` yet. Run them side-by-side until this one is proven.
+This repo now owns the manager skill, public local skills, and runtime doc catalogs that previously lived under `agent_config/`.
 
 ## Layout
 
@@ -54,9 +54,9 @@ Runtime note:
 - Claude Code: supported
 - Hermes: supported
 
-## Migration plan
+## Migration status
 
-1. Keep `agent_config/` untouched.
-2. Evolve this skill until it can reliably install/update/check the full catalog.
-3. Migrate runtime doc rendering from `agent_config/` into the markdown catalogs in this repo.
-4. Once proven, delete or archive `agent_config/`.
+1. Public local skills now live under `public_skills/`.
+2. Runtime docs are described by markdown catalogs and fragments in this repo.
+3. Private overlays stay in `~/dotfiles-private/agent-skill-manager/`.
+4. Remaining work is catalog completeness and workflow polish, not ownership transfer from `agent_config/`.
