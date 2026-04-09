@@ -22,6 +22,7 @@ Expand and correct this file as migration proceeds.
 | remotion | github / remotion-dev/skills | codex | default | candidate |
 | tapestry | github / michalparkola/tapestry-skills-for-claude-code | codex, claude-code | default | candidate |
 | gstack | github / garrytan/gstack | codex, claude-code | special:gstack | special flow |
+| notebooklm | github / teng-lin/notebooklm-py | codex, hermes | special:notebooklm | pipx CLI + managed local skill |
 | ui-ux-pro-max | github / nextlevelbuilder/ui-ux-pro-max-skill | codex, claude-code | special:ui-ux-pro-max | upstream CLI flow |
 | superpowers | upstream bootstrap | codex, claude-code | special:superpowers | special flow |
 | last30days | github / mvanhorn/last30days-skill | hermes | default | github source confirmed |
