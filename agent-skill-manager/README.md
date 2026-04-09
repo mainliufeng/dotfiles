@@ -2,7 +2,7 @@
 
 A new, isolated replacement for the old `agent_config/` flow.
 
-Goal: install one manager skill into Codex, Claude Code, and Hermes. That skill then acts as the control plane for installing, updating, auditing, and comparing the rest of your skills.
+Goal: install one manager skill into Codex, Claude Code, and Hermes. That skill then acts as the control plane for installing, updating, auditing, and comparing the rest of your skills, and for syncing runtime instruction docs such as `AGENTS.md` and `CLAUDE.md`.
 
 This repo intentionally does **not** replace `~/dotfiles/agent_config` yet. Run them side-by-side until this one is proven.
 
@@ -13,8 +13,11 @@ This repo intentionally does **not** replace `~/dotfiles/agent_config` yet. Run 
 - `skill/assets/targets.md` — runtime locations and target notes
 - `skill/assets/skill-catalog.md` — public human-maintained list of managed skills
 - `~/dotfiles-private/agent-skill-manager/assets/private-skill-catalog.md` — optional private overlay catalog
+- `skill/assets/agent-doc-catalog.md` — markdown source of truth for runtime instruction docs
+- `~/dotfiles-private/agent-skill-manager/assets/private-agent-doc-catalog.md` — optional private overlay for runtime docs
+- `skill/assets/agent-doc-fragments/` — reusable fragments for rendered runtime docs
 - `skill/assets/install-defaults/` — default installation strategy per agent
-- `skill/assets/special-installs/` — exceptions like gstack and superpowers
+- `skill/assets/special-installs/` — exceptions like gstack, ui-ux-pro-max, and superpowers
 - `skill/assets/verification/` — how to verify installs per agent
 
 ## Usage
@@ -38,6 +41,11 @@ Preview only:
 ~/dotfiles/agent-skill-manager/setup.sh --dry-run
 ```
 
+Runtime note:
+
+- `setup.sh` only links the manager skill itself into each runtime.
+- Skill installation, updates, audits, and runtime doc sync are executed in dialog through the manager skill.
+
 ## Current status
 
 - Codex: supported
@@ -48,4 +56,5 @@ Preview only:
 
 1. Keep `agent_config/` untouched.
 2. Evolve this skill until it can reliably install/update/check the full catalog.
-3. Once proven, delete or archive `agent_config/`.
+3. Migrate runtime doc rendering from `agent_config/` into the markdown catalogs in this repo.
+4. Once proven, delete or archive `agent_config/`.

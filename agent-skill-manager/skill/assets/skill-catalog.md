@@ -22,6 +22,7 @@ Expand and correct this file as migration proceeds.
 | remotion | github / remotion-dev/skills | codex | default | candidate |
 | tapestry | github / michalparkola/tapestry-skills-for-claude-code | codex, claude-code | default | candidate |
 | gstack | github / garrytan/gstack | codex, claude-code | special:gstack | special flow |
+| ui-ux-pro-max | github / nextlevelbuilder/ui-ux-pro-max-skill | codex, claude-code | special:ui-ux-pro-max | upstream CLI flow |
 | superpowers | upstream bootstrap | codex, claude-code | special:superpowers | special flow |
 | last30days | github / mvanhorn/last30days-skill | hermes | default | github source confirmed |
 | chirp | github / zizi-cat/chirp | hermes | default | github source confirmed |
@@ -35,4 +36,5 @@ Expand and correct this file as migration proceeds.
 - `special:*` means there is enough nuance that the agent must read the named special-install document first.
 - This file is intentionally markdown instead of YAML so it stays easy to edit during migration.
 - Former OpenClaw-import skills should be switched to direct GitHub sources whenever an upstream repo exists.
+- Public local skills currently resolve from `~/dotfiles/agent_config/local_skills/<skill-name>` until they are moved into a manager-owned public skill directory.
 - Private-only skills live in `~/dotfiles-private/agent-skill-manager/assets/private-skill-catalog.md` and are part of the manager's full source of truth when that file exists.

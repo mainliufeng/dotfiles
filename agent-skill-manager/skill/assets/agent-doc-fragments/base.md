@@ -1,0 +1,6 @@
+# Agent Guidelines
+
+## Language Alignment Prompt
+```
+始终使用用户提问的语言进行沟通与回复；除非用户明确要求切换语言，否则不要自行改用其他语言。
+```
