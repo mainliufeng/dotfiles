@@ -8,10 +8,11 @@ Use this when a skill has no special install doc.
 
 ## Default behavior
 1. Preserve category/name layout.
-2. Prefer symlinks for local skills.
-3. Ensure `SKILL.md` remains in the installed directory.
-4. Create `DESCRIPTION.md` for a new category if needed.
-5. Do not flatten category structure unless the user explicitly wants that.
+2. For local skills, do **not** symlink the whole skill directory into `~/.hermes/skills/...` because Hermes currently indexes skills with `os.walk(..., followlinks=False)` and will miss symlinked directories.
+3. Instead, create a real installed directory and symlink or copy the files inside it (at minimum `SKILL.md`).
+4. Ensure `SKILL.md` remains in the installed directory.
+5. Create `DESCRIPTION.md` for a new category if needed.
+6. Do not flatten category structure unless the user explicitly wants that.
 
 ## Verify
 - Installed path exists
