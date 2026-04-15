@@ -6,14 +6,14 @@ local function write_temp_file(lines, suffix)
     return path
 end
 
-local function browser_command(html_path)
+local function browser_command(target)
     local candidates = {
-        { cmd = "xdg-open", args = { html_path } },
-        { cmd = "gio", args = { "open", html_path } },
-        { cmd = "google-chrome-unstable", args = { html_path } },
-        { cmd = "google-chrome", args = { html_path } },
-        { cmd = "chromium", args = { html_path } },
-        { cmd = "chromium-browser", args = { html_path } },
+        { cmd = "xdg-open", args = { target } },
+        { cmd = "gio", args = { "open", target } },
+        { cmd = "google-chrome-unstable", args = { target } },
+        { cmd = "google-chrome", args = { target } },
+        { cmd = "chromium", args = { target } },
+        { cmd = "chromium-browser", args = { target } },
     }
 
     for _, candidate in ipairs(candidates) do
@@ -25,6 +25,23 @@ local function browser_command(html_path)
     end
 
     return nil
+end
+
+local function preview_uri(path)
+    return vim.uri_from_fname(vim.fs.normalize(path))
+end
+
+local function resolve_preview_request(opts)
+    local path = opts.path or ""
+
+    if path == "" then
+        error("Current buffer has no file path; save it before previewing")
+    end
+
+    return {
+        mode = "open_file",
+        target = preview_uri(path),
+    }
 end
 
 local function output_html_path()
@@ -405,22 +422,38 @@ local function notify_path(html_path)
     vim.notify("Markdown HTML: " .. html_path, vim.log.levels.INFO, { title = "Markdown Preview" })
 end
 
+local function open_in_browser(target)
+    local browser = browser_command(target)
+    if not browser then
+        error("No browser command found")
+    end
+
+    vim.fn.jobstart(browser, { detach = true })
+end
+
+local function current_preview_request()
+    return resolve_preview_request({
+        path = vim.api.nvim_buf_get_name(0),
+    })
+end
+
 function M.setup()
     vim.api.nvim_create_user_command("MarkdownHTML", function()
         local html_path = render_markdown_to_html()
         notify_path(html_path)
     end, { desc = "Render current markdown buffer to HTML" })
 
-    vim.api.nvim_create_user_command("MarkdownOpen", function()
-        local html_path = render_markdown_to_html()
-        local browser = browser_command(html_path)
-        if not browser then
-            error("No browser command found")
-        end
+    vim.api.nvim_create_user_command("PreviewOpen", function()
+        local request = current_preview_request()
+        open_in_browser(request.target)
+        vim.notify("Opened in browser: " .. vim.api.nvim_buf_get_name(0), vim.log.levels.INFO, { title = "Preview" })
+    end, { desc = "Preview current buffer in browser" })
 
-        vim.fn.jobstart(browser, { detach = true })
-        notify_path(html_path)
-    end, { desc = "Render current markdown buffer to HTML and open it in browser" })
+    vim.api.nvim_create_user_command("MarkdownOpen", function()
+        vim.cmd("PreviewOpen")
+    end, { desc = "Preview current buffer in browser" })
 end
+
+M._resolve_preview_request = resolve_preview_request
 
 return M
