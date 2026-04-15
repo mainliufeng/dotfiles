@@ -1,5 +1,20 @@
 local M = {}
 
+local markdown_filetypes = {
+    markdown = true,
+    quarto = true,
+    rmd = true,
+}
+
+local markdown_extensions = {
+    markdown = true,
+    md = true,
+    mdown = true,
+    mkd = true,
+    qmd = true,
+    rmd = true,
+}
+
 local function write_temp_file(lines, suffix)
     local path = vim.fn.tempname() .. suffix
     vim.fn.writefile(lines, path)
@@ -31,8 +46,22 @@ local function preview_uri(path)
     return vim.uri_from_fname(vim.fs.normalize(path))
 end
 
+local function is_markdown_buffer(path, filetype)
+    if markdown_filetypes[filetype] then
+        return true
+    end
+
+    local ext = vim.fn.fnamemodify(path or "", ":e"):lower()
+    return markdown_extensions[ext] == true
+end
+
 local function resolve_preview_request(opts)
     local path = opts.path or ""
+    local filetype = opts.filetype or ""
+
+    if is_markdown_buffer(path, filetype) then
+        return { mode = "render_markdown" }
+    end
 
     if path == "" then
         error("Current buffer has no file path; save it before previewing")
@@ -434,6 +463,7 @@ end
 local function current_preview_request()
     return resolve_preview_request({
         path = vim.api.nvim_buf_get_name(0),
+        filetype = vim.bo.filetype,
     })
 end
 
@@ -445,6 +475,13 @@ function M.setup()
 
     vim.api.nvim_create_user_command("PreviewOpen", function()
         local request = current_preview_request()
+        if request.mode == "render_markdown" then
+            local html_path = render_markdown_to_html()
+            open_in_browser(preview_uri(html_path))
+            notify_path(html_path)
+            return
+        end
+
         open_in_browser(request.target)
         vim.notify("Opened in browser: " .. vim.api.nvim_buf_get_name(0), vim.log.levels.INFO, { title = "Preview" })
     end, { desc = "Preview current buffer in browser" })

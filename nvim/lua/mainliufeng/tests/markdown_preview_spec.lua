@@ -5,9 +5,9 @@ function M.run()
 
     local cases = {
         {
-            name = "markdown files open directly",
+            name = "markdown files still render to html",
             input = { path = "/tmp/note.md", filetype = "markdown" },
-            expected = { mode = "open_file", target = "file:///tmp/note.md" },
+            expected = { mode = "render_markdown" },
         },
         {
             name = "saved html files open directly",
