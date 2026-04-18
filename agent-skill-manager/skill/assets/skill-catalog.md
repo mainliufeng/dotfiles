@@ -24,6 +24,7 @@ Expand and correct this file as migration proceeds.
 | gstack | github / garrytan/gstack | codex, claude-code | special:gstack | special flow |
 | notebooklm | github / teng-lin/notebooklm-py | codex, hermes | special:notebooklm | pipx CLI + managed local skill |
 | ui-ux-pro-max | github / nextlevelbuilder/ui-ux-pro-max-skill | codex, claude-code | special:ui-ux-pro-max | upstream CLI flow |
+| web-access | github / eze-is/web-access | codex, hermes | default | github source confirmed; install for codex + hermes |
 | superpowers | upstream bootstrap | codex, claude-code | special:superpowers | special flow |
 | last30days | github / mvanhorn/last30days-skill | hermes | default | github source confirmed |
 | chirp | github / zizi-cat/chirp | hermes | default | github source confirmed |
