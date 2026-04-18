@@ -21,9 +21,10 @@ Expand and correct this file as migration proceeds.
 | skill-creator | github / anthropics/skills | codex | default | candidate |
 | remotion | github / remotion-dev/skills | codex | default | candidate |
 | tapestry | github / michalparkola/tapestry-skills-for-claude-code | codex, claude-code | default | candidate |
+| humanizer-zh | github / op7418/Humanizer-zh | codex, hermes | default | github source confirmed; install for codex + hermes |
 | gstack | github / garrytan/gstack | codex, claude-code | special:gstack | special flow |
 | notebooklm | github / teng-lin/notebooklm-py | codex, hermes | special:notebooklm | pipx CLI + managed local skill |
-| ui-ux-pro-max | github / nextlevelbuilder/ui-ux-pro-max-skill | codex, claude-code | special:ui-ux-pro-max | upstream CLI flow |
+| impeccable | github / pbakaus/impeccable | codex | special:impeccable | codex skill bundle from upstream repo |
 | web-access | github / eze-is/web-access | codex, hermes | default | github source confirmed; install for codex + hermes |
 | superpowers | upstream bootstrap | codex, claude-code | special:superpowers | special flow |
 | last30days | github / mvanhorn/last30days-skill | hermes | default | github source confirmed |
