@@ -68,6 +68,8 @@ Before taking action, read these files in this order:
 - For doc sync: render from markdown fragments and profiles instead of hand-editing generated runtime files.
 - Public local skills resolve from `~/dotfiles/agent-skill-manager/public_skills/<skill-name>` unless a public catalog entry says otherwise.
 - Private local skills resolve from `~/dotfiles-private/agent-skill-manager/private_skills/<skill-name>` unless a private overlay explicitly says otherwise.
+- For Hermes local/private installs, never make `~/.hermes/skills/<category>/<skill-name>` itself a directory symlink; create a real installed directory there and symlink or copy `SKILL.md` plus needed subdirs inside it.
+- If Hermes shows warnings or `hermes skills list` omits a skill that exists in source, inspect whether the installed path is a top-level directory symlink before changing the source skill.
 
 ## Current scope
 

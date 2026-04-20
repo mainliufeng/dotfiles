@@ -47,6 +47,8 @@ Runtime note:
 - `setup.sh` only links the manager skill itself into each runtime.
 - Skill installation, updates, audits, and runtime doc sync are executed in dialog through the manager skill.
 - Public local skills live under `~/dotfiles/agent-skill-manager/public_skills/`.
+- Hermes caveat: do **not** install ordinary local/private skills by making `~/.hermes/skills/<category>/<skill-name>` a whole-directory symlink. For Hermes local/private skills, the installed path should be a real directory that contains `SKILL.md` plus any needed subdirs as internal symlinks or copies.
+- The manager skill bootstrap symlink created by `setup.sh` is a narrow exception for the manager skill itself, not a template for all Hermes local skills.
 
 ## Current status
 

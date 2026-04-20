@@ -12,6 +12,8 @@ Usage: setup.sh [--target codex|claude-code|hermes|all] [--dry-run]
 
 Installs the agent-skill-manager skill itself by symlinking it into runtime skill directories.
 This does NOT install the rest of the catalog yet — that is the skill's job.
+Do NOT reuse this whole-directory symlink pattern for ordinary Hermes local/private skills.
+For Hermes local/private skills, create a real installed directory and symlink/copy files inside it.
 EOF
 }
 
