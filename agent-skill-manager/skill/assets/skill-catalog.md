@@ -14,6 +14,7 @@ Expand and correct this file as migration proceeds.
 |---|---|---|---|---|
 | commit | local repo | codex, claude-code, hermes | default | migrate first |
 | hyprland | local repo | codex | default | migrate later |
+| touchpad-recovery | local repo | codex, claude-code | default | public local skill for Linux touchpad incidents |
 | frontend-design | github / anthropics/skills | codex, claude-code | default | candidate |
 | webapp-testing | github / anthropics/skills | codex, claude-code | default | candidate |
 | docx | github / anthropics/skills | codex | default | candidate |
