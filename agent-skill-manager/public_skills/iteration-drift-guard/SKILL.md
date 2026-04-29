@@ -1,42 +1,30 @@
 ---
 name: iteration-drift-guard
-description: General engineering iteration drift guard. Use this skill whenever coding, reviewing, or planning changes in a long-running codebase, especially after repo migration/splitting, repeated bug fixes, prototype-to-production transitions, integration-test patches, AI-generated code iterations, or when a request says the project may have "gone off track", "跑偏", "越改越乱", "codex一直在写", "fix after fix", "migration", "refactor", "local integration", or "make this process safer". It forces a short boundary, invariant, entrypoint, ownership, and test-loop check before implementation so patches do not accumulate into architectural drift.
+description: 通用工程迭代防跑偏守卫。每当你在长期迭代的代码库里编码、review、调试或规划改动时都应使用，尤其是发生仓库迁移/拆分、连续修同类 bug、prototype 转 production、本地联调补丁、AI 反复生成代码、架构边界变模糊，或用户提到“跑偏”“越改越乱”“codex一直在写”“连续修 bug”“迁移”“重构”“联调”“fix after fix”“migration”“refactor”“local integration”“gone off track”等场景。它要求实现前做一次简短的边界、不变量、正式入口、归属和测试闭环检查，避免补丁堆叠成架构漂移。
 ---
 
 # Iteration Drift Guard
 
-## Purpose
+## 目的
 
-Use this skill to keep software work from drifting during long AI-assisted iterations.
+用这个 skill 防止长期 AI 辅助开发中，代码越改越偏。
 
-It is not a full design process. It is a compact guardrail to run before code changes, reviews, or debugging when the project has signs of drift:
+这不是完整设计流程，而是一个轻量守卫：在编码、review、调试前，如果项目已经出现漂移迹象，先做一次短检查，再决定能不能继续落代码。
 
-- A feature has moved across repos, modules, or deployment units.
-- Several fixes keep touching the same concept.
-- Local integration code starts becoming production behavior.
-- Prompts, mocks, fallback paths, or UI compatibility patches are carrying business rules.
-- Data identifiers, ownership boundaries, or external dependencies are being guessed.
-- The code now passes a demo but the formal entrypoint, persistence, tests, or docs do not match.
+常见漂移迹象：
 
-## Core Rule
+- 功能跨过多个 repo、模块或部署单元迁移。
+- 多个修复反复围绕同一组概念打补丁。
+- 本地联调代码开始承担正式业务行为。
+- prompt、mock、fallback、UI 兼容逻辑开始承载业务规则。
+- 数据 ID、归属边界、外部依赖靠猜或兜底选择。
+- demo 跑通了，但正式入口、持久化、测试和文档没有对齐。
 
-Before implementing, write a short drift check. If the check exposes an unresolved boundary or invariant problem, fix the plan first instead of adding another patch.
+## 核心规则
 
-Keep the check concise. One screen is enough for small work.
+实现前先写一段简短的“漂移检查”。如果检查暴露出未解决的边界或不变量问题，先修正方案，不要继续叠补丁。
 
-```text
-Drift check:
-- Scope boundary:
-- Formal entrypoint:
-- Core invariants:
-- Data ownership:
-- Dependency ownership:
-- Runtime vs fallback:
-- Test loop:
-- Decision: PROCEED / NEEDS_DESIGN / NEEDS_CONTEXT / OUT_OF_SCOPE
-```
-
-If the user is speaking Chinese, output the Chinese version:
+小任务保持一屏以内即可：
 
 ```text
 漂移检查:
@@ -50,150 +38,157 @@ If the user is speaking Chinese, output the Chinese version:
 - 结论: PROCEED / NEEDS_DESIGN / NEEDS_CONTEXT / OUT_OF_SCOPE
 ```
 
-## How To Check
+结论含义：
 
-### 1. Scope Boundary
+- `PROCEED`：边界清楚，可以继续实现。
+- `NEEDS_DESIGN`：模型、边界或测试矩阵需要先补设计。
+- `NEEDS_CONTEXT`：缺关键上下文，继续写会靠猜。
+- `OUT_OF_SCOPE`：需求属于别的 repo、模块或系统。
 
-State exactly where the change belongs.
+## 检查方法
 
-Ask:
+### 1. 范围边界
 
-- Is this production code, test support, local integration, migration glue, or documentation?
-- Is this the correct repo/module/service for the responsibility?
-- Is the change expanding the module's ownership just because it is convenient?
-- If this came from a migrated repo, what responsibilities were intentionally left behind?
+先说清楚这次改动到底属于哪里。
 
-If the change belongs elsewhere, say so directly. Do not re-create another system's responsibility locally unless the user explicitly chooses that tradeoff.
+要问：
 
-### 2. Formal Entrypoint
+- 这是生产代码、测试辅助、本地联调、迁移胶水，还是文档？
+- 当前 repo、模块或服务是否真的是这个职责的归属地？
+- 这个改动是否只是因为方便，扩大了当前模块的职责？
+- 如果能力来自一次迁移，哪些职责是当时明确不应该带过来的？
 
-Name the real entrypoint that makes the capability production-visible.
+如果改动属于别的系统，直接说明。除非用户明确接受这个取舍，不要在当前 repo 里重建另一个系统的长期职责。
 
-Examples:
+### 2. 正式入口
 
-- HTTP route mounted in the real server startup path.
-- CLI command wired into the real binary.
-- Kafka/queue/topic consumer connected on startup.
-- Cron/scheduler/worker registered in the runtime.
-- Webhook/callback route with auth and routing.
-- UI workflow connected to the real API.
+说清楚这个能力真正从哪里进入生产运行路径。
 
-Do not count these as formal entrypoints by themselves:
+正式入口可以是：
 
-- A helper function.
-- A service method with no caller.
-- A mock consumer.
-- A local-only script.
-- A debug UI button.
-- An integration-test-only path.
+- 挂到真实 server 启动路径上的 HTTP route。
+- 接到真实 binary 的 CLI command。
+- 启动时注册的 Kafka、队列或 topic consumer。
+- 注册到运行时的 cron、scheduler 或 worker。
+- 带鉴权和路由的 webhook / callback。
+- 调到真实 API 的 UI workflow。
 
-### 3. Core Invariants
+下面这些不能单独算正式入口：
 
-List the rules that must always hold, then decide where each is enforced.
+- 一个 helper function。
+- 没有调用方的 service method。
+- mock consumer。
+- 只在本地跑的脚本。
+- debug UI 按钮。
+- integration-test-only 路径。
 
-Prefer service/database/state-machine enforcement for invariants. Prompts, comments, docs, frontend checks, and tests are useful, but they are not primary enforcement.
+### 3. 核心不变量
 
-Common invariant categories:
+列出必须永远成立的规则，并说明由哪里强制。
 
-- Identity: which ID means what.
-- State machine: which transitions are legal.
-- Idempotency: what makes repeated calls safe.
-- Ordering: what can run concurrently and what must be serialized.
-- Authorization/tenant scope: what data boundary must never be crossed.
-- Evidence: what must be recorded before a status can change.
+默认把不变量落在 service、数据库约束、状态机、权限层或后端校验里。prompt、注释、文档、前端判断和测试都很有用，但不能作为主约束。
 
-If an invariant is currently enforced only by a prompt, model instruction, UI condition, or "latest record wins" guess, treat that as a risk.
+常见不变量：
 
-### 4. Data Ownership
+- 身份：每个 ID 到底表示什么。
+- 状态机：哪些状态转换合法。
+- 幂等：重复调用靠什么保证安全。
+- 顺序：哪些能并发，哪些必须串行。
+- 权限/租户：哪些数据边界不能跨。
+- 证据：状态变更前必须记录什么事实。
 
-For every important field or object, say who owns the truth.
+如果一个不变量目前只靠 prompt、模型指令、UI 条件或“取最新记录”兜底成立，把它标成风险。
 
-Use concrete names:
+### 4. 数据归属
 
-- Which table, store, external API, file, or memory cache owns the value?
-- Is this field canonical, derived, denormalized, or just display data?
-- Can one value fan out to many owners, or must it be unique?
-- What is the lookup key, and is it stable?
+对每个重要字段或对象，说清楚谁是真值来源。
 
-Never use one field to mean two things. If the code needs a customer ID, thread ID, account ID, task ID, session ID, binding ID, or external ID, name the distinction explicitly.
+用具体名字说明：
 
-### 5. Dependency Ownership
+- 哪张表、哪个 store、哪个外部 API、哪个文件或哪个缓存拥有这个值？
+- 这是 canonical 字段、派生字段、冗余字段，还是纯展示字段？
+- 一个值能否 fan-out 到多个归属方，还是必须唯一？
+- 查找 key 是什么，是否稳定？
 
-Assign each external call to the correct dependency.
+不要让一个字段表达两种语义。客户 ID、线程 ID、账号 ID、任务 ID、session ID、绑定 ID、外部 ID 如果都存在，就显式命名区分。
 
-Ask:
+### 5. 依赖归属
 
-- Which client owns this API call?
-- Is this a real production dependency or a local/test substitute?
-- Are config keys separate for separate dependencies?
-- Does the fallback path accidentally override the production path?
-- Are DTOs stored under the dependency that actually owns them?
+把每个外部调用归属到正确依赖。
 
-Do not let local integration endpoints blur dependency boundaries.
+要问：
 
-### 6. Runtime vs Fallback
+- 这个 API 调用应该属于哪个 client？
+- 这是生产依赖，还是本地/测试替身？
+- 不同依赖是否有独立配置项？
+- fallback 路径是否会意外覆盖生产路径？
+- DTO 是否放在真正拥有该语义的依赖包下？
 
-Separate the production path from compatibility and test paths.
+不要让本地联调 endpoint 把依赖边界搅混。
 
-For each fallback, record:
+### 6. 正式路径 vs fallback
 
-- Why it exists.
-- How it is enabled.
-- Whether it is off by default in production.
-- Which tests prove the real path still works.
+把生产路径、兼容路径和测试路径分开。
 
-Fallbacks are useful during migration, but they should not silently become the architecture.
+每个 fallback 都要说清楚：
 
-### 7. Test Loop
+- 为什么存在。
+- 如何开启。
+- 生产默认是否关闭。
+- 哪些测试证明真实路径仍然可用。
 
-Match tests to the risk.
+fallback 在迁移期很有价值，但不能静默变成架构本身。
 
-At minimum, consider:
+### 7. 测试闭环
 
-- Unit tests for invariants, state transitions, ID mapping, parsing, and error returns.
-- Integration tests through real process wiring when the risk is entrypoint or dependency wiring.
-- Regression tests for the exact bug and at least one adjacent counterexample.
-- Contract/API tests when DTOs or external calls change.
-- Migration tests when data shape or ownership changes.
+测试范围要匹配风险。
 
-If the bug came from repeated patching, add a test around the model, not only around the latest symptom.
+至少考虑：
 
-## Drift Signals
+- 单元测试：不变量、状态转换、ID 映射、解析、错误返回。
+- 集成测试：真实进程接线、正式入口、依赖 wiring。
+- 回归测试：覆盖本次 bug，以及一个相邻反例。
+- 契约/API 测试：DTO 或外部调用发生变化时必须补。
+- 迁移测试：数据形态或归属关系变化时必须补。
 
-Pause and re-check when you see any of these:
+如果 bug 来自反复补丁，测试要覆盖底层模型，不要只覆盖最新症状。
 
-- Many commits or patches say `fix` around the same nouns.
-- Code chooses "latest", "first", "default", or "fallback" without a written business rule.
-- A mock, local server, in-memory adapter, or demo endpoint becomes a runtime default.
-- A service takes parameters it should be able to derive only from trusted context.
-- The same concept appears under different names in API, DB, UI, and docs.
-- A function is added but not wired into the actual startup path.
-- The UI compensates for an API mismatch instead of clarifying the contract.
-- The implementation updates code but not docs/tests that define the workflow.
-- A prompt is asked to guarantee behavior that the backend can enforce.
+## 漂移信号
 
-## Implementation Guidance
+看到下面情况时，先暂停并重新检查：
 
-- Prefer tightening the existing model over adding a parallel special case.
-- Keep temporary compatibility code explicitly named and gated.
-- When fixing a bug, identify whether the root cause is in a missing invariant, unclear ownership, bad entrypoint wiring, or inadequate test coverage.
-- If a small fix touches many unrelated layers, stop and write the missing model first.
-- If the right fix requires a different repo, say so before editing.
-- If the user explicitly wants a quick demo patch, label it as such and avoid presenting it as production-ready.
+- 多个 commit 或 patch 都在同一组名词附近写 `fix`。
+- 代码无业务规则说明地选择 `latest`、`first`、`default` 或 `fallback`。
+- mock、本地 server、in-memory adapter 或 demo endpoint 变成 runtime 默认路径。
+- service 接收了本该从可信上下文推导的参数。
+- 同一个概念在 API、DB、UI、文档里有不同名字。
+- 新增了函数，但没有接到真实启动路径。
+- UI 用兼容逻辑掩盖 API 契约不清。
+- 代码改了，但定义 workflow 的文档或测试没同步。
+- prompt 被要求保证本该由后端强制的行为。
 
-## Review Guidance
+## 实现指导
 
-When reviewing code, lead with drift risks before style comments:
+- 优先收紧现有模型，不要先新增平行特例。
+- 临时兼容代码要显式命名并受配置开关控制。
+- 修 bug 时，先判断根因是缺不变量、归属不清、入口未接线，还是测试覆盖不足。
+- 一个“小修”如果碰到很多无关层，先停下来补模型。
+- 正确修复如果属于另一个 repo，先说明，不要直接在当前 repo 兜底实现。
+- 如果用户明确要 demo 快速补丁，要标明这是 demo patch，不要说成 production-ready。
 
-- Boundary expansion.
-- Unwired or fallback-only entrypoints.
-- Ambiguous identifiers.
-- Invariants enforced only by prompt/UI/test.
-- Dependency ownership confusion.
-- Missing regression test for the model.
+## Review 指导
 
-## Output Discipline
+做 code review 时，优先看漂移风险，再看风格问题：
 
-For small tasks, the drift check can be 6-8 lines. For larger tasks, include a short plan after the check.
+- 边界是否扩张。
+- 是否只有 fallback，没有正式入口。
+- ID 是否语义不清。
+- 不变量是否只靠 prompt、UI 或测试成立。
+- 外部依赖归属是否混乱。
+- 是否缺少覆盖底层模型的回归测试。
 
-Do not turn every task into heavyweight process. The value is in forcing the right boundary and invariant questions before another patch lands.
+## 输出纪律
+
+小任务的漂移检查可以只有 6-8 行。大任务再在检查后补短计划。
+
+不要把每个任务都变成重流程。这个 skill 的价值是：在继续打补丁前，先把边界和不变量问清楚。
