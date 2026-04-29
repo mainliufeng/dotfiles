@@ -18,7 +18,7 @@ This repo now owns the manager skill, public local skills, and runtime doc catal
 - `~/dotfiles-private/agent-skill-manager/assets/private-agent-doc-catalog.md` — optional private overlay for runtime docs
 - `skill/assets/agent-doc-fragments/` — reusable fragments for rendered runtime docs
 - `skill/assets/install-defaults/` — default installation strategy per agent
-- `skill/assets/special-installs/` — exceptions like gstack, impeccable, notebooklm, and superpowers
+- `skill/assets/special-installs/` — exceptions like gstack, impeccable, and notebooklm
 - `skill/assets/verification/` — how to verify installs per agent
 
 ## Usage

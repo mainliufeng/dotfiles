@@ -13,11 +13,9 @@ Expand and correct this file as migration proceeds.
 | skill | source | targets | mode | status |
 |---|---|---|---|---|
 | commit | local repo | codex, claude-code, hermes | default | migrate first |
-| hyprland | local repo | codex | default | migrate later |
-| touchpad-recovery | local repo | codex, claude-code | default | public local skill for Linux touchpad incidents |
+| archlinux-desktop-ops | local repo | codex | default | local Arch Linux / Hyprland desktop operations |
 | iteration-drift-guard | local repo | codex, claude-code | default | general guardrail for long AI-assisted engineering iterations |
 | frontend-design | github / anthropics/skills | codex, claude-code | default | candidate |
-| webapp-testing | github / anthropics/skills | codex, claude-code | default | candidate |
 | docx | github / anthropics/skills | codex | default | candidate |
 | pdf | github / anthropics/skills | codex | default | candidate |
 | skill-creator | github / anthropics/skills | codex | default | candidate |
@@ -28,7 +26,6 @@ Expand and correct this file as migration proceeds.
 | notebooklm | github / teng-lin/notebooklm-py | codex, hermes | special:notebooklm | pipx CLI + managed local skill |
 | impeccable | github / pbakaus/impeccable | codex | special:impeccable | codex skill bundle from upstream repo |
 | web-access | github / eze-is/web-access | codex, hermes | default | github source confirmed; install for codex + hermes |
-| superpowers | upstream bootstrap | codex, claude-code | special:superpowers | special flow |
 | last30days | github / mvanhorn/last30days-skill | hermes | default | github source confirmed |
 | chirp | github / zizi-cat/chirp | hermes | default | github source confirmed |
 | md2wechat | github / geekjourneyx/md2wechat-skill | hermes | default | github source confirmed |
