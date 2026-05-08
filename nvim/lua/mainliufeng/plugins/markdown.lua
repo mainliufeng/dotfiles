@@ -23,12 +23,13 @@ end
 
 local function browser_command(target)
     local candidates = {
-        { cmd = "xdg-open", args = { target } },
-        { cmd = "gio", args = { "open", target } },
+        { cmd = "gtk-launch", args = { "google-chrome.xorg", target } },
         { cmd = "google-chrome-unstable", args = { target } },
         { cmd = "google-chrome", args = { target } },
         { cmd = "chromium", args = { target } },
         { cmd = "chromium-browser", args = { target } },
+        { cmd = "xdg-open", args = { target } },
+        { cmd = "gio", args = { "open", target } },
     }
 
     for _, candidate in ipairs(candidates) do
@@ -492,5 +493,6 @@ function M.setup()
 end
 
 M._resolve_preview_request = resolve_preview_request
+M._browser_command = browser_command
 
 return M
