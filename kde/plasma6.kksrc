@@ -105,10 +105,10 @@ Enable Touchpad=Touchpad On
 Toggle Touchpad=Touchpad Toggle; Meta+Ctrl+Zenkaku Hankaku
 
 [kitt.desktop][Global Shortcuts]
-_launch=Meta+Shift+Return
+_launch=none
 
 [kitty.desktop][Global Shortcuts]
-_launch=Meta+Shift+Return
+_launch=none
 
 [kmix][Global Shortcuts]
 decrease_microphone_volume=Microphone Volume Down
@@ -340,6 +340,9 @@ previousmedia=Media Previous
 stopmedia=Media Stop
 
 [net.local.kitt.desktop][Global Shortcuts]
+_launch=none
+
+[com.mitchellh.ghostty.desktop][Global Shortcuts]
 _launch=Meta+Shift+Return
 
 [org.kde.dolphin.desktop][Global Shortcuts]
