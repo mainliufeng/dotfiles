@@ -95,7 +95,18 @@ for sh in "$PRIVATE_DOTFILES_HOME"/*/env.*sh; do [ -f "$sh" ] && source "$sh"; d
 [ -f ~/dotfiles/fzf/.fzf.zsh ] && source ~/dotfiles/fzf/.fzf.zsh
 [ -f "$DOTFILES_HOME/code_agents/.code_agents.zsh" ] && source "$DOTFILES_HOME/code_agents/.code_agents.zsh"
 
-if command -v zoxide >/dev/null 2>&1; then
+if command -v fasd >/dev/null 2>&1; then
+  eval "$(fasd --init auto)"
+  if (( $+functions[compdef] )); then
+    _fasd_z_complete() {
+      local query="${words[2,-1]//,/ }"
+      local -a results
+      results=("${(@f)$(fasd --query d $query 2>/dev/null | sort -nr | sed 's/^[^ ]*[ ]*//')}")
+      compadd -U -V fasd -a results
+    }
+    compdef _fasd_z_complete z zz
+  fi
+elif command -v zoxide >/dev/null 2>&1; then
   eval "$(zoxide init zsh)"
 fi
 
