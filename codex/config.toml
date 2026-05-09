@@ -18,6 +18,12 @@ trust_level = "trusted"
 [projects."/home/liufeng/Code/self/mobius"]
 trust_level = "trusted"
 
+[projects."/Users/liufeng"]
+trust_level = "trusted"
+
+[projects."/Users/liufeng/dotfiles"]
+trust_level = "trusted"
+
 [mcp_servers.chrome-devtools]
 command = "npx"
 args = [

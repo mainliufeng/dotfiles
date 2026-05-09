@@ -1,25 +1,22 @@
-#!/bin/sh
+#!/usr/bin/env bash
+set -euo pipefail
 
-sudo pacman -S neovim
+case "$(uname -s)" in
+  Darwin)
+    brew install neovim delve pyright bash-language-server lua-language-server universal-ctags
+    ;;
+  Linux)
+    sudo pacman -S --needed neovim delve ctags
+    if command -v yay >/dev/null 2>&1; then
+      yay -S --needed pyright bash-language-server lua-language-server
+    fi
+    ;;
+  *)
+    echo "unsupported platform: $(uname -s)" >&2
+    exit 1
+    ;;
+esac
 
-#curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-# pip3 install --user pynvim
-
-# install luarocks (required by lua-lsp)
-# sudo pacman -S luarocks
-
-# golang
-go get golang.org/x/tools/gopls@latest
-sudo pacman -S delve
-
-yay -S pyright
-
-# install bash-language-server
-yay -S bash-language-server
-
-# lua language server
-yay -S lua-language-server 
-
-# or npm i -g bash-language-server
-
-sudo pacman -S ctags
+if command -v go >/dev/null 2>&1; then
+  go install golang.org/x/tools/gopls@latest
+fi

@@ -1,7 +1,7 @@
 {
   "statusLine": {
     "type": "command",
-    "command": "bash /home/liufeng/.claude/statusline.sh"
+    "command": "bash ~/.claude/statusline.sh"
   },
   "outputStyle": "default",
   "autoSave": true,
@@ -12,7 +12,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /home/liufeng/.claude/hooks/notify-complete.sh"
+            "command": "bash ~/.claude/hooks/notify-complete.sh"
           }
         ]
       }

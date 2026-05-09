@@ -8,7 +8,9 @@ else
     echo "Installing Zellij..."
 
     # Try installing via package manager first
-    if command -v pacman &> /dev/null; then
+    if command -v brew &> /dev/null; then
+        brew install zellij
+    elif command -v pacman &> /dev/null; then
         sudo pacman -S --noconfirm zellij
     elif command -v apt &> /dev/null; then
         # For Debian/Ubuntu, install from cargo or download binary

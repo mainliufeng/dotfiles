@@ -12,8 +12,12 @@ export LC_ALL=
 alias v="f -e mvim"
 
 ## Color
-alias ls="ls --color=auto"
-alias ll="ls --color=auto -l"
+if ls --color=auto >/dev/null 2>&1; then
+  alias ls="ls --color=auto"
+  alias ll="ls --color=auto -l"
+else
+  alias ll="ls -l"
+fi
 
 ## pinyin completion
 # source /usr/share/pinyin-completion/shell/pinyin-comp.zsh

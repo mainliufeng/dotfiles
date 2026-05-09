@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOTFILES_HOME="${DOTFILES_HOME:-$HOME/dotfiles}"
+
+for dir in "$DOTFILES_HOME/scripts" "$DOTFILES_HOME/linux/scripts"; do
+  [ -d "$dir" ] || continue
+  for binary in "$dir"/*; do
+    [ -f "$binary" ] || continue
+    chmod +x "$binary"
+    sudo cp "$binary" /usr/local/bin/
+  done
+done

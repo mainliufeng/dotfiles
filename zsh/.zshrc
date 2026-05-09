@@ -9,8 +9,8 @@ fi
 DOTFILES_HOME="$HOME/dotfiles"
 ZPLUG_HOME="$HOME/.zplug"
 if [[ ! -d $ZPLUG_HOME ]]; then
-  git clone https://github.com/zplug/zplug $ZPLUG_HOME
-  source $ZPLUG_HOME/init.zsh && zplug update --self
+  git clone https://github.com/zplug/zplug "$ZPLUG_HOME"
+  source "$ZPLUG_HOME/init.zsh" && zplug update --self
 fi
 
 # completion
@@ -21,7 +21,7 @@ if [[ -z "${_comps:-}" ]]; then
 fi
 
 # Essential
-source $ZPLUG_HOME/init.zsh
+source "$ZPLUG_HOME/init.zsh"
 
 # History size
 HISTFILE="$HOME/.zsh_history"
@@ -45,7 +45,15 @@ zplug "lukechilds/gifgen", as:command, use:"gifgen"
 zplug "mattberther/zsh-pyenv"
 
 # theme
-source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
+for p10k_theme in \
+  /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme \
+  /usr/local/share/powerlevel10k/powerlevel10k.zsh-theme \
+  /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme; do
+  if [[ -r "$p10k_theme" ]]; then
+    source "$p10k_theme"
+    break
+  fi
+done
 POWERLEVEL10K_LEFT_PROMPT_ELEMENTS=(status dir vcs background_jobs)
 POWERLEVEL10K_RIGHT_PROMPT_ELEMENTS=(go_version virtualenv anaconda)
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
@@ -76,13 +84,13 @@ fi
 
 zplug load
 
-for sh in $DOTFILES_HOME/*/env/*; do [ -f "$sh" ] && source "$sh"; done
-for sh in $DOTFILES_HOME/*/env.*sh; do [ -f "$sh" ] && source "$sh"; done
-for sh in $DOTFILES_HOME/code/*/env/*; do [ -f "$sh" ] && source "$sh"; done
-for sh in $DOTFILES_HOME/code/*/env.*sh; do [ -f "$sh" ] && source "$sh"; done
+for sh in "$DOTFILES_HOME"/*/env/*; do [ -f "$sh" ] && source "$sh"; done
+for sh in "$DOTFILES_HOME"/*/env.*sh; do [ -f "$sh" ] && source "$sh"; done
+for sh in "$DOTFILES_HOME"/code/*/env/*; do [ -f "$sh" ] && source "$sh"; done
+for sh in "$DOTFILES_HOME"/code/*/env.*sh; do [ -f "$sh" ] && source "$sh"; done
 
 PRIVATE_DOTFILES_HOME="$HOME/dotfiles-private"
-for sh in $PRIVATE_DOTFILES_HOME/*/env.*sh; do source $sh; done
+for sh in "$PRIVATE_DOTFILES_HOME"/*/env.*sh; do [ -f "$sh" ] && source "$sh"; done
 
 [ -f ~/dotfiles/fzf/.fzf.zsh ] && source ~/dotfiles/fzf/.fzf.zsh
 [ -f "$DOTFILES_HOME/code_agents/.code_agents.zsh" ] && source "$DOTFILES_HOME/code_agents/.code_agents.zsh"
@@ -119,23 +127,25 @@ export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 
 
 # Added by LM Studio CLI (lms)
-export PATH="$PATH:/home/liufeng/.lmstudio/bin"
+export PATH="$PATH:$HOME/.lmstudio/bin"
 # End of LM Studio CLI section
 
 
 # Android SDK
-export ANDROID_HOME=/opt/android-sdk
-export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin
+if [[ "$(uname -s)" == "Linux" && -d /opt/android-sdk ]]; then
+  export ANDROID_HOME=/opt/android-sdk
+  export PATH="$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin"
+fi
 
 # bun completions
-[ -s "/home/liufeng/.bun/_bun" ] && source "/home/liufeng/.bun/_bun"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
 # opencode
-export PATH=/home/liufeng/.opencode/bin:$PATH
+export PATH="$HOME/.opencode/bin:$PATH"
 
 # pnpm
 export PNPM_HOME="/home/liufeng/.local/share/pnpm"
@@ -146,4 +156,4 @@ esac
 # pnpm end
 
 # OpenClaw Completion
-source "/home/liufeng/.openclaw/completions/openclaw.zsh"
+[ -f "$HOME/.openclaw/completions/openclaw.zsh" ] && source "$HOME/.openclaw/completions/openclaw.zsh"

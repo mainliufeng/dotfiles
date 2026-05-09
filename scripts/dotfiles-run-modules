@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ACTION="${1:-}"
+LIST_PATH="${2:-}"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DRY_RUN="${DOTFILES_DRY_RUN:-0}"
+KEEP_GOING="${DOTFILES_KEEP_GOING:-0}"
+
+if [[ "$ACTION" != "setup" && "$ACTION" != "link" ]]; then
+  echo "Usage: dotfiles-run-modules setup|link <module-list>" >&2
+  exit 1
+fi
+
+if [[ ! -f "$LIST_PATH" ]]; then
+  echo "Module list not found: $LIST_PATH" >&2
+  exit 1
+fi
+
+run_module() {
+  local module="$1"
+  local script="$ROOT_DIR/$module/$ACTION.sh"
+
+  if [[ ! -f "$script" ]]; then
+    echo "[skip] $module has no $ACTION.sh"
+    return 0
+  fi
+
+  if [[ "$DRY_RUN" == "1" ]]; then
+    echo "[dry-run] $script"
+    return 0
+  fi
+
+  echo "[run] $script"
+  if ! (cd "$ROOT_DIR/$module" && bash "$script" </dev/null); then
+    echo "[fail] $module $ACTION" >&2
+    if [[ "$KEEP_GOING" == "1" ]]; then
+      return 0
+    fi
+    return 1
+  fi
+}
+
+while IFS= read -r -u 3 raw_line || [[ -n "$raw_line" ]]; do
+  line="${raw_line%%#*}"
+  line="${line#"${line%%[![:space:]]*}"}"
+  line="${line%"${line##*[![:space:]]}"}"
+  [[ -z "$line" ]] && continue
+  run_module "$line"
+done 3< "$LIST_PATH"

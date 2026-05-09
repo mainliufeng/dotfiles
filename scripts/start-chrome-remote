@@ -6,7 +6,12 @@
 set -euo pipefail
 
 REMOTE_PORT="${REMOTE_DEBUG_PORT:-9222}"
-USER_DATA_DIR="${CHROME_REMOTE_PROFILE:-$HOME/.cache/chrome-devtools}"
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  DEFAULT_USER_DATA_DIR="$HOME/Library/Application Support/chrome-devtools-profile"
+else
+  DEFAULT_USER_DATA_DIR="$HOME/.cache/chrome-devtools"
+fi
+USER_DATA_DIR="${CHROME_REMOTE_PROFILE:-$DEFAULT_USER_DATA_DIR}"
 CHROME_PATH=""
 
 detect_windows_chrome() {
@@ -25,11 +30,29 @@ detect_linux_chrome() {
   done
 }
 
+detect_macos_chrome() {
+  for candidate in \
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+    "/Applications/Chromium.app/Contents/MacOS/Chromium"; do
+    if [[ -x "$candidate" ]]; then
+      CHROME_PATH="$candidate"
+      return
+    fi
+  done
+}
+
 if [[ -z "${CHROME_TARGET:-}" ]]; then
-  detect_windows_chrome
-  if [[ -z "$CHROME_PATH" ]]; then
-    detect_linux_chrome
-  fi
+  case "$(uname -s)" in
+    Darwin)
+      detect_macos_chrome
+      ;;
+    *)
+      detect_windows_chrome
+      if [[ -z "$CHROME_PATH" ]]; then
+        detect_linux_chrome
+      fi
+      ;;
+  esac
 else
   CHROME_PATH="$CHROME_TARGET"
 fi

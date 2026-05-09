@@ -1,8 +1,8 @@
-[submodule "kde/kwin-last-used-desktop"]
-	path = kde/kwin-last-used-desktop
+[submodule "linux/desktop/kde/kwin-last-used-desktop"]
+	path = linux/desktop/kde/kwin-last-used-desktop
 	url = https://github.com/NoahHakansson/kwin-last-used-desktop.git
-[submodule "kde/krohnkite"]
-	path = kde/krohnkite
+[submodule "linux/desktop/kde/krohnkite"]
+	path = linux/desktop/kde/krohnkite
 	url = https://github.com/esjeon/krohnkite.git
 [submodule "code/gp.nvim"]
 	path = code/gp.nvim

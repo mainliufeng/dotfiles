@@ -10,13 +10,7 @@ if ! command -v claude >/dev/null 2>&1; then
     
     # 检测操作系统
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS
-        if command -v brew >/dev/null 2>&1; then
-            brew install claude
-        else
-            echo "❌ 请先安装 Homebrew"
-            exit 1
-        fi
+        echo "⚠️  Claude Code 未安装；macOS 自动安装暂未托管，跳过二进制安装"
     elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
         # Linux
         if command -v apt >/dev/null 2>&1; then
@@ -24,12 +18,10 @@ if ! command -v claude >/dev/null 2>&1; then
         elif command -v yum >/dev/null 2>&1; then
             sudo yum install claude
         else
-            echo "❌ 不支持的Linux发行版，请手动安装"
-            exit 1
+            echo "⚠️  不支持的Linux发行版，请手动安装 Claude Code，继续配置文件安装"
         fi
     else
-        echo "❌ 不支持的操作系统"
-        exit 1
+        echo "⚠️  不支持的操作系统，跳过 Claude Code 二进制安装"
     fi
 else
     echo "✅ Claude Code 已安装"

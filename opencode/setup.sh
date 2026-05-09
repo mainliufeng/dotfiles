@@ -1,6 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # OpenCode 一键安装和配置脚本 (Arch Linux)
+
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    echo "OpenCode setup is not managed on macOS yet; skipping."
+    exit 0
+fi
 
 echo "🚀 开始安装和配置 OpenCode..."
 

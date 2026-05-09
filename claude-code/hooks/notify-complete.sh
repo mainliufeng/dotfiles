@@ -41,13 +41,25 @@ Start-Sleep -Seconds 2
     return 1
 }
 
-if ! send_linux_notification; then
-    send_windows_notification || echo "$title - $message"
+send_macos_notification() {
+    if command -v osascript >/dev/null 2>&1; then
+        osascript -e "display notification \"${message}\" with title \"${title}\"" >/dev/null 2>&1
+        return 0
+    fi
+    return 1
+}
+
+if ! send_macos_notification; then
+    if ! send_linux_notification; then
+        send_windows_notification || echo "$title - $message"
+    fi
 fi
 
 # 可选：同时在终端播放提示音（如果支持）
 if command -v paplay &> /dev/null; then
     paplay /usr/share/sounds/freedesktop/stereo/complete.oga 2>/dev/null &
+elif command -v afplay >/dev/null 2>&1; then
+    afplay /System/Library/Sounds/Glass.aiff 2>/dev/null &
 fi
 
 # 记录日志（可选）

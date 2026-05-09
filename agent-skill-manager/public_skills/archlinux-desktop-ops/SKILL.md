@@ -85,9 +85,9 @@ pactl list sink-inputs short | awk '{print $1}' | xargs -r -I{} pactl move-sink-
 
 本仓库已有：
 
-- `~/dotfiles/hyprland/scripts/waybar-bluetooth.sh`
-- `~/dotfiles/hyprland/scripts/audio-route-menu.sh`
-- `~/dotfiles/hyprland/waybar/config` 中的 `custom/bluetooth`
+- `~/dotfiles/linux/desktop/hyprland/scripts/waybar-bluetooth.sh`
+- `~/dotfiles/linux/desktop/hyprland/scripts/audio-route-menu.sh`
+- `~/dotfiles/linux/desktop/hyprland/waybar/config` 中的 `custom/bluetooth`
 
 需要 UI 菜单时，优先调用或修补这些脚本。
 
