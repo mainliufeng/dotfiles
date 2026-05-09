@@ -1,7 +1,7 @@
 font-family = "Hack Nerd Font"
 font-size = 12
 
-theme = "Builtin Solarized Dark"
+theme = "iTerm2 Solarized Dark"
 
 cursor-style = block
 cursor-style-blink = false
