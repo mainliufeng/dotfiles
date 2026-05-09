@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+hook="$HOME/.local/lib/dingtalk-wayland-screenshare/libdingtalkhook.so"
+log_dir="$HOME/.cache/dingtalk-wayland-screenshare"
+log="$log_dir/dingtalk-hook.log"
+
+mkdir -p "$log_dir"
+
+if [ ! -r "$hook" ]; then
+  echo "Missing hook library: $hook" >&2
+  exit 1
+fi
+
+export QT_QPA_PLATFORM="wayland;xcb"
+export QT_AUTO_SCREEN_SCALE_FACTOR=1
+export LD_PRELOAD="$hook${LD_PRELOAD:+:$LD_PRELOAD}"
+
+cd /opt/dingtalk/release
+exec ./com.alibabainc.dingtalk "$@" >>"$log" 2>&1
