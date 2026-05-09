@@ -9,6 +9,8 @@ if command -v kwriteconfig6 >/dev/null 2>&1; then
   kwriteconfig6 --file kwinrc --group Script-krohnkite --key floatedWindowsLayer 1
   kwriteconfig6 --file kwinrc --group Plugins --key zoomEnabled --type bool false
   kwriteconfig6 --file kwinrc --group Effect-zoom --key InitialZoom 1
+  kwriteconfig6 --file kwinrc --group Wayland --key InputMethod /usr/share/applications/org.fcitx.Fcitx5.desktop
+  kwriteconfig6 --file kwinrc --group Wayland --key VirtualKeyboardEnabled --type bool true
 else
-  echo "kwriteconfig6 not found; cannot configure Krohnkite layers" >&2
+  echo "kwriteconfig6 not found; cannot configure KWin" >&2
 fi

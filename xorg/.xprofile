@@ -10,7 +10,11 @@ sysmodmap=/etc/X11/xinit/.Xmodmap
 export GTK_IM_MODULE=fcitx
 export QT_IM_MODULE=fcitx
 export XMODIFIERS="@im=fcitx"
-fcitx5 &
+# KDE Wayland should launch Fcitx through KWin's virtual keyboard/input
+# method integration. Starting it here breaks the Wayland input frontend.
+if [ "${XDG_SESSION_TYPE:-}" != "wayland" ] || [ "${XDG_CURRENT_DESKTOP:-}" != "KDE" ]; then
+    fcitx5 &
+fi
 
 DEFAULT_SESSION=awesome
 
