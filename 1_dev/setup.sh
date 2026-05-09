@@ -56,7 +56,8 @@ execute "sh awesome/link.sh"
 
 # input method
 execute "sudo pacman -S fcitx5-qt fcitx5-gtk fcitx5-configtool fcitx5-chinese-addons fcitx5"
-execute "yay -S fcitx5-pinyin-zhwiki rime-ice-git fcitx5-rime"
+execute "yay -S fcitx5-pinyin-zhwiki fcitx5-rime"
+execute "sh input-method/setup-rime-ice.sh"
 
 # zsh
 execute "sh zsh/setup.sh"
@@ -110,7 +111,6 @@ execute "yay -S dingtalk-bin"
 # rcrai
 execute "sh ~/dotfiles-private/setup.sh"
 
-manual_step "rime-ice-git配置：https://github.com/iDvel/rime-ice?tab=readme-ov-file#arch-linux"
 manual_step "clash-verge导入订阅"
 
 execute "sh go/after.sh"
