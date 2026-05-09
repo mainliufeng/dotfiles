@@ -52,7 +52,7 @@ projects :: [Project]
 projects =
   [ Project { projectName      = "Gpt"
             , projectDirectory = "~/"
-            , projectStartHook = Just $ do spawn "google-chrome-unstable --new-window 'https://google.com' 'https://chat.openai.com/chat' && /usr/bin/microsoft-edge-dev https://www.bing.com/new"
+            , projectStartHook = Just $ do spawn "google-chrome-stable --new-window 'https://google.com' 'https://chat.openai.com/chat' && /usr/bin/microsoft-edge-dev https://www.bing.com/new"
             }
     , Project { projectName      = "dotfiles"
             , projectDirectory = "~/dotfiles"

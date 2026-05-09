@@ -103,7 +103,7 @@ execute "sh kube/setup.sh"
 # application
 execute "sudo pacman -S volumeicon blueman libinput-gestures network-manager-applet flameshot slock"
 execute "yay -S xautolock nitrogen"
-execute "yay -S google-chrome-dev"
+execute "yay -S google-chrome"
 
 # dingtalk
 execute "yay -S dingtalk-bin"

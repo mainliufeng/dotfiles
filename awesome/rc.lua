@@ -261,7 +261,7 @@ local globalkeys = gears.table.join(
     -- ChatGPT client
     awful.key({ modkey }, "p",
         function()
-            scratch.toggle("google-chrome-unstable --app=https://chat.openai.com/", {instance = "chat.openai.com"})
+            scratch.toggle("google-chrome-stable --app=https://chat.openai.com/", {instance = "chat.openai.com"})
         end,
         { description = "toggle chatgpt", group = "tag" }),
     -- Layout

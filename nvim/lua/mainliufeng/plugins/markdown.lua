@@ -24,7 +24,7 @@ end
 local function browser_command(target)
     local candidates = {
         { cmd = "gtk-launch", args = { "google-chrome.xorg", target } },
-        { cmd = "google-chrome-unstable", args = { target } },
+        { cmd = "google-chrome-stable", args = { target } },
         { cmd = "google-chrome", args = { target } },
         { cmd = "chromium", args = { target } },
         { cmd = "chromium-browser", args = { target } },

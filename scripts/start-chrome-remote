@@ -17,7 +17,7 @@ detect_windows_chrome() {
 }
 
 detect_linux_chrome() {
-  for candidate in google-chrome-unstable google-chrome-stable google-chrome chromium chromium-browser; do
+  for candidate in google-chrome-stable google-chrome chromium chromium-browser; do
     if command -v "$candidate" >/dev/null 2>&1; then
       CHROME_PATH="$candidate"
       return

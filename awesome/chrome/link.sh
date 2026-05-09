@@ -20,14 +20,14 @@ cat > "${SCRIPT_PATH}" <<'EOF'
 export http_proxy="http://127.0.0.1:7897"
 export https_proxy="http://127.0.0.1:7897"
 
-# Check if google-chrome-unstable exists
-if ! command -v google-chrome-unstable &> /dev/null
+# Check if google-chrome-stable exists
+if ! command -v google-chrome-stable &> /dev/null
 then
-    echo "google-chrome-unstable could not be found"
+    echo "google-chrome-stable could not be found"
     exit
 fi
 
-exec /usr/bin/google-chrome-unstable "$@"
+exec /usr/bin/google-chrome-stable "$@"
 EOF
 
 # Make the script executable
