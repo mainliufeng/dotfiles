@@ -3,10 +3,10 @@ set -euo pipefail
 
 case "$(uname -s)" in
   Darwin)
-    brew install zsh zplug powerlevel10k zsh-completions zsh-history-substring-search zsh-syntax-highlighting
+    brew install zsh zplug powerlevel10k zsh-completions zsh-history-substring-search zsh-syntax-highlighting zoxide
     ;;
   Linux)
-    sudo pacman -S --needed zsh zsh-theme-powerlevel10k zsh-completions zsh-history-substring-search zsh-syntax-highlighting
+    sudo pacman -S --needed zsh zsh-theme-powerlevel10k zsh-completions zsh-history-substring-search zsh-syntax-highlighting zoxide
     if command -v yay >/dev/null 2>&1; then
       yay -S --needed zplug
     fi

@@ -1,4 +1,11 @@
 #!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+NPM_GLOBAL_HOME="${NPM_GLOBAL_HOME:-$HOME/.npm-global}"
+if [ -d "$NPM_GLOBAL_HOME/bin" ]; then
+    export PATH="$NPM_GLOBAL_HOME/bin:$PATH"
+fi
 
 # Claude Code 一键安装和配置脚本
 
@@ -7,21 +14,11 @@ echo "🚀 开始安装和配置 Claude Code..."
 # 检查是否已安装Claude Code
 if ! command -v claude >/dev/null 2>&1; then
     echo "📦 正在安装 Claude Code..."
-    
-    # 检测操作系统
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        echo "⚠️  Claude Code 未安装；macOS 自动安装暂未托管，跳过二进制安装"
-    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        # Linux
-        if command -v apt >/dev/null 2>&1; then
-            sudo apt update && sudo apt install claude
-        elif command -v yum >/dev/null 2>&1; then
-            sudo yum install claude
-        else
-            echo "⚠️  不支持的Linux发行版，请手动安装 Claude Code，继续配置文件安装"
-        fi
+
+    if command -v npm >/dev/null 2>&1; then
+        npm install -g @anthropic-ai/claude-code
     else
-        echo "⚠️  不支持的操作系统，跳过 Claude Code 二进制安装"
+        echo "⚠️  npm 未安装，跳过 Claude Code 二进制安装"
     fi
 else
     echo "✅ Claude Code 已安装"
@@ -33,12 +30,16 @@ mkdir -p ~/.claude
 
 # 复制配置文件
 echo "⚙️  配置状态栏..."
-cp statusline.sh ~/.claude/statusline.sh
+if [ -f ~/.claude/statusline.sh ] && cmp -s "$SCRIPT_DIR/statusline.sh" ~/.claude/statusline.sh; then
+    echo "✅ 状态栏已是最新"
+else
+    cp "$SCRIPT_DIR/statusline.sh" ~/.claude/statusline.sh
+fi
 chmod +x ~/.claude/statusline.sh
 
 # 复制设置文件（如果不存在）
 if [ ! -f ~/.claude/settings.json ]; then
-    cp settings.json.example ~/.claude/settings.json
+    cp "$SCRIPT_DIR/settings.json.example" ~/.claude/settings.json
     echo "✅ 配置文件已创建"
 else
     echo "⚠️  配置文件已存在，跳过创建"

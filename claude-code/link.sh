@@ -24,12 +24,16 @@ fi
 
 # 配置 MCP (Context7)
 # npm install -g @upstash/context7-mcp
-claude mcp add context7 "npx -y @upstash/context7-mcp" 2>/dev/null || true
-claude mcp add chrome-devtools npx chrome-devtools-mcp@latest -s user
+if command -v claude >/dev/null 2>&1; then
+    claude mcp add context7 "npx -y @upstash/context7-mcp" 2>/dev/null || true
+    claude mcp add chrome-devtools npx chrome-devtools-mcp@latest -s user || true
 
-claude plugin marketplace add anthropics/skills
-claude plugin install document-skills
-claude plugin install ralph-loop
+    claude plugin marketplace add anthropics/skills || true
+    claude plugin install document-skills || true
+    claude plugin install ralph-loop || true
+else
+    echo "⚠ Claude Code CLI 未安装，跳过 MCP 和 plugin 配置"
+fi
 
 echo ""
 echo "✓ Claude Code hooks 配置完成"

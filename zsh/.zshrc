@@ -44,21 +44,6 @@ zplug "djui/alias-tips"
 zplug "lukechilds/gifgen", as:command, use:"gifgen"
 zplug "mattberther/zsh-pyenv"
 
-# theme
-for p10k_theme in \
-  /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme \
-  /usr/local/share/powerlevel10k/powerlevel10k.zsh-theme \
-  /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme; do
-  if [[ -r "$p10k_theme" ]]; then
-    source "$p10k_theme"
-    break
-  fi
-done
-POWERLEVEL10K_LEFT_PROMPT_ELEMENTS=(status dir vcs background_jobs)
-POWERLEVEL10K_RIGHT_PROMPT_ELEMENTS=(go_version virtualenv anaconda)
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
 # allow no match
 setopt no_nomatch
 
@@ -84,6 +69,21 @@ fi
 
 zplug load
 
+# theme
+for p10k_theme in \
+  /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme \
+  /usr/local/share/powerlevel10k/powerlevel10k.zsh-theme \
+  /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme; do
+  if [[ -r "$p10k_theme" ]]; then
+    source "$p10k_theme"
+    break
+  fi
+done
+POWERLEVEL10K_LEFT_PROMPT_ELEMENTS=(status dir vcs background_jobs)
+POWERLEVEL10K_RIGHT_PROMPT_ELEMENTS=(go_version virtualenv anaconda)
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
 for sh in "$DOTFILES_HOME"/*/env/*; do [ -f "$sh" ] && source "$sh"; done
 for sh in "$DOTFILES_HOME"/*/env.*sh; do [ -f "$sh" ] && source "$sh"; done
 for sh in "$DOTFILES_HOME"/code/*/env/*; do [ -f "$sh" ] && source "$sh"; done
@@ -94,6 +94,10 @@ for sh in "$PRIVATE_DOTFILES_HOME"/*/env.*sh; do [ -f "$sh" ] && source "$sh"; d
 
 [ -f ~/dotfiles/fzf/.fzf.zsh ] && source ~/dotfiles/fzf/.fzf.zsh
 [ -f "$DOTFILES_HOME/code_agents/.code_agents.zsh" ] && source "$DOTFILES_HOME/code_agents/.code_agents.zsh"
+
+if command -v zoxide >/dev/null 2>&1; then
+  eval "$(zoxide init zsh)"
+fi
 
 
 # JINA_CLI_BEGIN
@@ -148,7 +152,7 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 export PATH="$HOME/.opencode/bin:$PATH"
 
 # pnpm
-export PNPM_HOME="/home/liufeng/.local/share/pnpm"
+export PNPM_HOME="$HOME/.local/share/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
