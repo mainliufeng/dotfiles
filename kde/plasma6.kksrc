@@ -325,9 +325,9 @@ Window to Screen 5=
 Window to Screen 6=
 Window to Screen 7=
 disableInputCapture=Meta+Shift+Esc
-view_actual_size=Meta+0
-view_zoom_in=Meta+=
-view_zoom_out=Meta+_
+view_actual_size=
+view_zoom_in=
+view_zoom_out=
 
 [mediacontrol][Global Shortcuts]
 mediavolumedown=
