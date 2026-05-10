@@ -27,6 +27,15 @@ trust_level = "trusted"
 [projects."/Users/liufeng/Documents/Codex/2026-05-10/skill"]
 trust_level = "trusted"
 
+[projects."/Users/liufeng/Documents/Codex/2026-05-10/skill-2"]
+trust_level = "trusted"
+
+[projects."/Users/liufeng/Documents/Codex/2026-05-10/hermes-agent"]
+trust_level = "trusted"
+
+[projects."/Users/liufeng/dotfiles-private"]
+trust_level = "trusted"
+
 [mcp_servers.chrome-devtools]
 command = "npx"
 args = [

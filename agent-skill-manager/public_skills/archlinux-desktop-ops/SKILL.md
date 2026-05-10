@@ -1,11 +1,13 @@
 ---
 name: archlinux-desktop-ops
-description: 本机 Arch Linux / Hyprland 桌面操作技能。用于管理 Hyprland workspace/window、蓝牙耳机连接与音频路由、触摸板异常恢复，以及调用 dotfiles 中已有桌面脚本。
+description: 仅用于 mainliufeng 的 Arch Linux / Hyprland 笔记本。用于管理 Hyprland workspace/window、蓝牙耳机连接与音频路由、触摸板异常恢复，以及调用 dotfiles 中已有桌面脚本；不要在 macOS 上使用。
 ---
 
 # Arch Linux Desktop Ops
 
 这个 skill 覆盖 mainliufeng 本机 Arch Linux + Hyprland 桌面环境的日常操作。
+
+如果当前主机不是 Arch Linux，或者没有 Hyprland 相关命令和配置，直接说明该 skill 不适用，不要尝试把这些命令迁移到 macOS。
 
 ## 使用场景
 
