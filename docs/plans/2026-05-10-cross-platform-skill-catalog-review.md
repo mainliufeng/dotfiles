@@ -100,7 +100,11 @@ skill | source | targets | platforms | mode | status
 - `all`
 - `macos`
 - `archlinux`
-- `runtime-builtin`
+
+`mode` 用来表达安装方式：
+
+- `default`
+- `special:<name>`
 
 如果暂时不想改表结构，也可以先把平台约束写进 `status`，但长期建议加列。
 
@@ -111,7 +115,6 @@ manager skill 后续安装时应先解析：
 - 当前 OS: `Darwin` / `Linux`
 - Arch Linux: 通过 `/etc/os-release` 确认 `ID=arch` 或 `ID_LIKE` 包含 `arch`
 - 可用运行时: Codex / Claude Code / Hermes
-- Codex App 内置插件是否已启用
 
 不匹配平台的 skill 应显示为 `skipped: platform mismatch`，不是安装失败。
 
@@ -124,6 +127,7 @@ manager skill 后续安装时应先解析：
 - `presentations`
 
 catalog 中不应再建议安装同类 GitHub skill，除非该 skill 提供内置插件没有的明确补充能力。
+纯内置能力不作为 active catalog 行维护，也不做额外检查。
 
 ## Public Catalog 建议调整
 
@@ -165,15 +169,15 @@ docx | github / anthropics/skills | codex | default | candidate
 建议：
 
 ```text
-docx | builtin / openai-primary-runtime documents | codex | runtime-builtin | builtin:documents | replaced by Codex App Documents plugin
+docx | github / anthropics/skills | codex | archlinux | default | install only on Arch Linux / Codex CLI; macOS Codex App uses built-in Documents plugin
 ```
 
-或者直接从 active install list 移除，改放到 “replaced/deprecated notes”。
+这里不把 `documents` plugin 写成 platform。平台只描述是否要安装外部 `docx` skill；macOS Codex App 的内置替代能力写在 `status` 里。
 
 行为：
 
-- Codex App: 不安装外部 `docx` skill，使用内置 `Documents` 插件。
-- Codex CLI 无插件环境: 后续再决定是否需要 fallback。
+- macOS / Codex App: 因为平台不匹配，跳过外部 `docx` skill；实际处理 `.docx` 时使用内置 `Documents` 插件。
+- Arch Linux / Codex CLI: 安装外部 `docx` skill。
 
 ### pdf
 
@@ -213,7 +217,7 @@ skill-creator | github / anthropics/skills | codex | default | candidate
 建议：
 
 ```text
-skill-creator | builtin / codex system skill | codex | runtime-builtin | builtin | do not install duplicate
+从 active catalog 移除。
 ```
 
 行为：
@@ -366,9 +370,8 @@ manju-auto-studio | private local repo | hermes | all | default | keep; verify h
 |---|---|---|---|---|---|
 | commit | local repo | codex, claude-code, hermes | all | default | keep |
 | archlinux-desktop-ops | local repo | codex | archlinux | default | skip on macOS |
-| docx | builtin / openai-primary-runtime documents | codex | runtime-builtin | builtin:documents | no external install |
+| docx | github / anthropics/skills | codex | archlinux | default | install on Arch Linux; macOS Codex App uses Documents plugin |
 | pdf | github / anthropics/skills | codex | all | default | review-needed |
-| skill-creator | builtin / codex system skill | codex | runtime-builtin | builtin | no external install |
 ```
 
 私有 catalog 同步加 `platforms` 列：
@@ -397,7 +400,6 @@ manager skill 后续安装时按以下顺序处理：
 5. 对每个 catalog entry：
    - target 不匹配：skip
    - platform 不匹配：skip
-   - mode 是 `runtime-builtin` 或 `builtin:*`：verify builtin exists, do not install external copy
    - mode 是 `special:*`：读取对应 special install doc
    - mode 是 `default`：按 runtime install-default doc 安装
 
@@ -413,8 +415,8 @@ manager skill 后续安装时按以下顺序处理：
 加入 `platforms` 列，并先完成以下关键项：
 
 - `archlinux-desktop-ops`: `archlinux`
-- `docx`: `runtime-builtin`
-- `skill-creator`: `runtime-builtin`
+- `docx`: `archlinux`
+- `skill-creator`: 从 active catalog 移除
 - `mainliufeng-local-env`: `all`
 
 ### Step 2: 更新 mainliufeng-local-env
@@ -441,8 +443,8 @@ Only use on Arch Linux / Hyprland hosts. Do not use on macOS.
 
 `docx`：
 
-- 从外部安装候选降级为 Codex App builtin marker。
-- 不再安装 anthropics `docx` skill 到 Codex App。
+- 保留为 Arch Linux / Codex CLI 的外部安装候选。
+- macOS 不安装 anthropics `docx` skill；由 Codex App 内置 `Documents` plugin 覆盖。
 
 `pdf`：
 
@@ -461,7 +463,6 @@ Only use on Arch Linux / Hyprland hosts. Do not use on macOS.
 输出：
 
 - installed
-- builtin
 - catalog-only
 - stale/runtime-only
 - skipped by platform
@@ -469,12 +470,12 @@ Only use on Arch Linux / Hyprland hosts. Do not use on macOS.
 ## 风险
 
 - 加 `platforms` 列会要求 agent-skill-manager 以后解析新版表格；如果现有流程只人工读取，风险很低。
-- `docx` 外部 skill 如果有内置 Documents 没覆盖的功能，直接删除可能损失能力；所以建议先标记 builtin/replaced，不删除历史记录。
+- `docx` 外部 skill 如果有内置 Documents 没覆盖的功能，直接删除可能损失能力；所以建议保留为 Arch Linux / Codex CLI 的安装候选，macOS 由平台过滤跳过。
 - `mainliufeng-local-env` 是高触发私有 skill，改得太长会污染上下文；应保持正文简洁，把细节放 references 里，或用短规则覆盖。
 
 ## Review 问题
 
-1. `docx` 是否直接从 active catalog 移除，还是保留为 `runtime-builtin` marker？
+1. `docx` 是否只保留为 Arch Linux / Codex CLI 安装项，还是以后再补一个 macOS 非 Codex App fallback？
 2. `pdf` 是否继续安装外部 skill，还是也等 Codex 内置 PDF 能力出现后再处理？
 3. `archlinux-desktop-ops` 是否只做 platform gate，还是从 Codex targets 移除，改成 Arch Linux 机器专用 overlay？
 4. `mainliufeng-local-env` 里的 `~/Code/self`、`~/Code/source` 是否应该在 macOS 上自动创建，还是只作为“存在时使用”的默认？

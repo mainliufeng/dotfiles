@@ -44,12 +44,11 @@ Before taking action, read these files in this order:
    - `macos` when `uname -s` is `Darwin`
    - `archlinux` only when Linux `/etc/os-release` reports Arch or Arch-like
 4. Read the relevant markdown catalogs and build a concrete action plan.
-5. Skip catalog rows whose `platforms` value does not match the current platform, unless the value is `all` or `runtime-builtin`.
-6. For `runtime-builtin` rows, verify the runtime/plugin/system skill exists and do not install an external duplicate.
-7. Show a short dry-run summary before making changes.
-8. Execute using the local filesystem and shell tools.
-9. Verify using the target verification docs and render rules.
-10. Report:
+5. Skip catalog rows whose `platforms` value does not match the current platform, unless the value is `all`.
+6. Show a short dry-run summary before making changes.
+7. Execute using the local filesystem and shell tools.
+8. Verify using the target verification docs and render rules.
+9. Report:
    - installed
    - updated
    - skipped
@@ -63,6 +62,7 @@ Before taking action, read these files in this order:
 - Do not assume all runtimes use the same skill directory layout.
 - Do not assume all catalog entries apply on all machines. Respect the `platforms` column.
 - Treat `archlinux` as the only Linux platform currently managed by this catalog; do not broaden it to generic Linux without updating the catalog first.
+- Do not check or install pure runtime built-ins. If a platform's runtime already includes a skill, omit that platform from the install row.
 - Prefer the target's default install doc unless a special-install doc exists.
 - Treat the public catalog plus the private catalog overlay (when present) as the source of truth.
 - A private skill listed in `~/dotfiles-private/agent-skill-manager/assets/private-skill-catalog.md` is considered registered and may be installed without extra confirmation.

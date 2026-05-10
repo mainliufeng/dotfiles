@@ -7,7 +7,7 @@ Expand and correct this file as migration proceeds.
 - `skill`: canonical skill name
 - `source`: where the skill comes from
 - `targets`: desired runtimes
-- `platforms`: `all`, `macos`, `archlinux`, or `runtime-builtin`
+- `platforms`: `all`, `macos`, or `archlinux`
 - `mode`: `default` means use target default install doc; `special:<name>` means read a matching file under `assets/special-installs/`
 - `status`: migration note
 
@@ -17,9 +17,8 @@ Expand and correct this file as migration proceeds.
 | archlinux-desktop-ops | local repo | codex | archlinux | default | Arch Linux / Hyprland only; skip on macOS |
 | iteration-drift-guard | local repo | codex, claude-code | all | default | general guardrail for long AI-assisted engineering iterations |
 | frontend-design | github / anthropics/skills | codex, claude-code | all | default | keep; verify source vs local runtime copy |
-| docx | builtin / openai-primary-runtime documents | codex | runtime-builtin | builtin:documents | replaced by Codex App Documents plugin; no external install |
+| docx | github / anthropics/skills | codex | archlinux | default | install only on Arch Linux / Codex CLI; macOS Codex App uses built-in Documents plugin and skips this row |
 | pdf | github / anthropics/skills | codex | all | default | review-needed; keep only for non-DOCX PDF operations |
-| skill-creator | builtin / codex system skill | codex | runtime-builtin | builtin | Codex App system skill; no external install |
 | remotion | github / remotion-dev/skills | codex | all | default | candidate |
 | tapestry | github / michalparkola/tapestry-skills-for-claude-code | codex, claude-code | all | default | keep; verify source vs local runtime copy |
 | humanizer-zh | github / op7418/Humanizer-zh | codex, hermes | all | default | github source confirmed; install for codex + hermes |
@@ -37,8 +36,9 @@ Expand and correct this file as migration proceeds.
 
 - `default` mode means: read the target-specific install-default doc and apply that behavior.
 - `special:*` means there is enough nuance that the agent must read the named special-install document first.
-- `runtime-builtin` platform means the target runtime already provides the capability; verify it exists and do not install an external duplicate.
 - `archlinux` platform means the skill is only for the Arch Linux laptop. Skip it on macOS.
+- Do not list pure runtime built-ins that never need installation, such as Codex App's system `skill-creator`.
+- macOS-only Codex App replacements should be modeled by omitting the macOS install row. Prefer an `archlinux` external-install row with a status note when macOS should use an app-provided plugin instead.
 - This file is intentionally markdown instead of YAML so it stays easy to edit during migration.
 - Former OpenClaw-import skills should be switched to direct GitHub sources whenever an upstream repo exists.
 - Public local skills resolve from `~/dotfiles/agent-skill-manager/public_skills/<skill-name>`.
