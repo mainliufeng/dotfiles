@@ -1,4 +1,4 @@
-model = "gpt-5.1-codex-max"
+model = "gpt-5.5"
 model_reasoning_effort = "high"
 web_search = "live"
 
@@ -24,6 +24,9 @@ trust_level = "trusted"
 [projects."/Users/liufeng/dotfiles"]
 trust_level = "trusted"
 
+[projects."/Users/liufeng/Documents/Codex/2026-05-10/skill"]
+trust_level = "trusted"
+
 [mcp_servers.chrome-devtools]
 command = "npx"
 args = [
@@ -40,3 +43,17 @@ chrome_remote = "~/dotfiles/scripts/start-chrome-remote"
 [notice]
 "hide_gpt-5.1-codex-max_migration_prompt" = true
 hide_rate_limit_model_nudge = true
+
+[marketplaces.openai-primary-runtime]
+last_updated = "2026-05-10T01:14:39Z"
+source_type = "local"
+source = "/Users/liufeng/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
