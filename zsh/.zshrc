@@ -69,6 +69,10 @@ fi
 
 zplug load
 
+# Keep older oh-my-zsh git aliases that were removed upstream.
+alias gup='git pull --rebase'
+alias gupa='git pull --rebase --autostash'
+
 # theme
 for p10k_theme in \
   /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme \
