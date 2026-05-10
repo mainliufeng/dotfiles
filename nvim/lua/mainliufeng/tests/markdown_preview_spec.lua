@@ -50,12 +50,27 @@ function M.run()
         return 0
     end
 
-    local browser = preview._browser_command("file:///tmp/page.html")
+    local browser = preview._browser_command("file:///tmp/page.html", { sysname = "Linux" })
     vim.fn.executable = original_executable
 
     assert(
         vim.deep_equal(browser, { "gtk-launch", "google-chrome.xorg", "file:///tmp/page.html" }),
         "preview opener should prefer the Chrome Xorg desktop entry over xdg-open"
+    )
+
+    vim.fn.executable = function(cmd)
+        if cmd == "open" or cmd == "gtk-launch" or cmd == "xdg-open" then
+            return 1
+        end
+        return 0
+    end
+
+    local mac_browser = preview._browser_command("file:///tmp/page.html", { sysname = "Darwin" })
+    vim.fn.executable = original_executable
+
+    assert(
+        vim.deep_equal(mac_browser, { "open", "file:///tmp/page.html" }),
+        "preview opener should use macOS open on Darwin"
     )
 end
 

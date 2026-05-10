@@ -21,16 +21,26 @@ local function write_temp_file(lines, suffix)
     return path
 end
 
-local function browser_command(target)
-    local candidates = {
-        { cmd = "gtk-launch", args = { "google-chrome.xorg", target } },
-        { cmd = "google-chrome-stable", args = { target } },
-        { cmd = "google-chrome", args = { target } },
-        { cmd = "chromium", args = { target } },
-        { cmd = "chromium-browser", args = { target } },
-        { cmd = "xdg-open", args = { target } },
-        { cmd = "gio", args = { "open", target } },
-    }
+local function browser_command(target, opts)
+    opts = opts or {}
+    local sysname = opts.sysname or vim.loop.os_uname().sysname
+    local candidates
+
+    if sysname == "Darwin" then
+        candidates = {
+            { cmd = "open", args = { target } },
+        }
+    else
+        candidates = {
+            { cmd = "gtk-launch", args = { "google-chrome.xorg", target } },
+            { cmd = "google-chrome-stable", args = { target } },
+            { cmd = "google-chrome", args = { target } },
+            { cmd = "chromium", args = { target } },
+            { cmd = "chromium-browser", args = { target } },
+            { cmd = "xdg-open", args = { target } },
+            { cmd = "gio", args = { "open", target } },
+        }
+    end
 
     for _, candidate in ipairs(candidates) do
         if vim.fn.executable(candidate.cmd) == 1 then
