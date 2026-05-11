@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Mission Control: keep Spaces in their manual order instead of MRU order.
+defaults write com.apple.dock mru-spaces -bool false
+
 # Mission Control: Switch to Desktop 1..10 with Option+1..9/0.
 # SymbolicHotKeys 118..127 are Desktop 1..10.
 # Parameter format is: character code, hardware key code, modifier flags.

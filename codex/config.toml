@@ -2,6 +2,8 @@ model = "gpt-5.5"
 model_reasoning_effort = "high"
 web_search = "live"
 
+notify = ["/Users/liufeng/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
+
 [features]
 unified_exec = true
 shell_snapshot = true
@@ -72,6 +74,11 @@ last_updated = "2026-05-10T01:14:39Z"
 source_type = "local"
 source = "/Users/liufeng/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
+[marketplaces.openai-bundled]
+last_updated = "2026-05-11T08:11:22Z"
+source_type = "local"
+source = "/Users/liufeng/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
 [plugins."documents@openai-primary-runtime"]
 enabled = true
 
@@ -81,13 +88,13 @@ enabled = true
 [plugins."presentations@openai-primary-runtime"]
 enabled = true
 
-[plugins."browser-use@openai-bundled"]
-enabled = true
-
 [plugins."computer-use@openai-bundled"]
 enabled = true
 
 [plugins."github@openai-curated"]
+enabled = true
+
+[plugins."browser-use@openai-bundled"]
 enabled = true
 
 [memories]
