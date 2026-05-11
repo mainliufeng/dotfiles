@@ -8,6 +8,8 @@ shell_snapshot = true
 steer = true
 web_search_request = true
 multi_agent = true
+memories = false
+chronicle = false
 
 [projects."/home/liufeng"]
 trust_level = "trusted"
@@ -40,6 +42,12 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/Users/liufeng/Documents/Codex/2026-05-10/archlinux-tiling-windown-manager-mac-mac"]
+trust_level = "trusted"
+
+[projects."/Users/liufeng/Code/rcrai/itau-demo"]
+trust_level = "trusted"
+
+[projects."/Users/liufeng/Documents/Codex/2026-05-11/computer-use"]
 trust_level = "trusted"
 
 [mcp_servers.chrome-devtools]
@@ -75,3 +83,13 @@ enabled = true
 
 [plugins."browser-use@openai-bundled"]
 enabled = true
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[plugins."github@openai-curated"]
+enabled = true
+
+[memories]
+generate_memories = false
+use_memories = false
