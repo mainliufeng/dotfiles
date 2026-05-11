@@ -33,18 +33,7 @@ hs.hotkey.bind({ "alt" }, "q", function()
 end)
 
 hs.hotkey.bind({ "alt", "shift" }, "return", function()
-  local ghostty = hs.application.get("Ghostty")
-  local windowCount = ghostty and #ghostty:allWindows() or 0
-
-  hs.application.launchOrFocus("Ghostty")
-
-  hs.timer.doAfter(0.2, function()
-    local focusedGhostty = hs.application.get("Ghostty")
-    local focusedWindowCount = focusedGhostty and #focusedGhostty:allWindows() or 0
-    if windowCount > 0 and focusedWindowCount <= windowCount then
-      hs.eventtap.keyStroke({ "cmd" }, "n")
-    end
-  end)
+  hs.task.new("/usr/bin/open", nil, { "-n", "-a", "/Applications/Ghostty.app" }):start()
 end)
 
 local ghosttyInputSourceID = "com.apple.keylayout.ABC"
