@@ -26,6 +26,7 @@ Expand and correct this file as migration proceeds.
 | notebooklm | github / teng-lin/notebooklm-py | codex, hermes | all | special:notebooklm | pipx CLI + managed local skill |
 | impeccable | github / pbakaus/impeccable | codex | all | special:impeccable | codex skill bundle from upstream repo |
 | web-access | github / eze-is/web-access | codex, hermes | all | default | github source confirmed; install for codex + hermes |
+| dbskill | github / dontbesilent2025/dbskill | codex, hermes | all | special:dbskill | 17-skill bundle; install from upstream skills/ directory |
 | last30days | github / mvanhorn/last30days-skill | hermes | all | default | github source confirmed |
 | chirp | github / zizi-cat/chirp | hermes | all | default | github source confirmed |
 | md2wechat | github / geekjourneyx/md2wechat-skill | hermes | all | default | github source confirmed |
