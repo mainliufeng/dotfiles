@@ -1,6 +1,4 @@
-local windowFilter = hs.window.filter
-  .new({ "Google Chrome", "Codex", "Ghostty" })
-  :setCurrentSpace(true)
+local windowFilter = hs.window.filter.default:setCurrentSpace(true)
 
 local function focusWindow(offset)
   local windows = windowFilter:getWindows(hs.window.filter.sortByCreated)
