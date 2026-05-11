@@ -28,6 +28,10 @@ hs.hotkey.bind({ "alt" }, "k", function()
   focusWindow(-1)
 end)
 
+hs.hotkey.bind({ "alt" }, "q", function()
+  hs.eventtap.keyStroke({ "cmd" }, "w")
+end)
+
 hs.hotkey.bind({ "alt", "shift" }, "return", function()
   local ghostty = hs.application.get("Ghostty")
   local windowCount = ghostty and #ghostty:allWindows() or 0
