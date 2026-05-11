@@ -35,14 +35,3 @@ end)
 hs.hotkey.bind({ "alt", "shift" }, "return", function()
   hs.task.new("/usr/bin/open", nil, { "-n", "-a", "/Applications/Ghostty.app" }):start()
 end)
-
-local ghosttyInputSourceID = "com.apple.keylayout.ABC"
-
-local function useEnglishForGhostty(appName, eventType)
-  if appName == "Ghostty" and eventType == hs.application.watcher.activated then
-    hs.keycodes.currentSourceID(ghosttyInputSourceID)
-  end
-end
-
-ghosttyInputSourceWatcher = hs.application.watcher.new(useEnglishForGhostty)
-ghosttyInputSourceWatcher:start()
