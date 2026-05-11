@@ -2,6 +2,35 @@ local windowFilter = hs.window.filter
   .new({ "Google Chrome", "Codex", "Ghostty" })
   :setCurrentSpace(true)
 
+local spaces = hs.spaces
+
+local function userSpacesForFocusedScreen()
+  local focusedWindow = hs.window.focusedWindow()
+  local screen = focusedWindow and focusedWindow:screen() or hs.screen.mainScreen()
+  local screenSpaces = spaces.spacesForScreen(screen)
+  local userSpaces = {}
+
+  if not screenSpaces then
+    return userSpaces
+  end
+
+  for _, spaceID in ipairs(screenSpaces) do
+    if spaces.spaceType(spaceID) == "user" then
+      table.insert(userSpaces, spaceID)
+    end
+  end
+
+  return userSpaces
+end
+
+local function gotoWorkspace(index)
+  local userSpaces = userSpacesForFocusedScreen()
+  local spaceID = userSpaces[index]
+  if spaceID then
+    spaces.gotoSpace(spaceID)
+  end
+end
+
 local function focusWindow(offset)
   local windows = windowFilter:getWindows(hs.window.filter.sortByCreated)
   if #windows == 0 then
@@ -28,6 +57,18 @@ end)
 
 hs.hotkey.bind({ "alt" }, "k", function()
   focusWindow(-1)
+end)
+
+hs.hotkey.bind({ "alt" }, "1", function()
+  gotoWorkspace(1)
+end)
+
+hs.hotkey.bind({ "alt" }, "2", function()
+  gotoWorkspace(2)
+end)
+
+hs.hotkey.bind({ "alt" }, "3", function()
+  gotoWorkspace(3)
 end)
 
 hs.hotkey.bind({ "alt", "shift" }, "return", function()
