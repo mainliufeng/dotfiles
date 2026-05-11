@@ -16,6 +16,9 @@ echo "[macos] Homebrew: $(brew --version | head -n 1)"
 echo "[macos] Applying $BREWFILE"
 brew bundle --file "$BREWFILE"
 
+echo "[macos] Applying keyboard shortcuts"
+"$ROOT_DIR/macos/keyboard-shortcuts.sh"
+
 if [[ -d /Applications/Codex.app ]]; then
   echo "[macos] Codex.app detected"
 fi
