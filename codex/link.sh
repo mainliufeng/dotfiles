@@ -1,5 +1,31 @@
-mkdir -p ~/.codex
-ln -svfn ~/dotfiles/codex/config.toml ~/.codex/config.toml
+#!/usr/bin/env bash
+set -euo pipefail
+
+codex_dir="$HOME/.codex"
+source_config="$HOME/dotfiles/codex/config.toml"
+runtime_config="$codex_dir/config.toml"
+
+mkdir -p "$codex_dir"
+
+if [ -L "$runtime_config" ]; then
+  tmp_config="$(mktemp)"
+  cp "$runtime_config" "$tmp_config"
+  rm "$runtime_config"
+  mv "$tmp_config" "$runtime_config"
+  chmod 600 "$runtime_config"
+  echo "[codex] replaced config symlink with runtime copy: $runtime_config"
+elif [ ! -e "$runtime_config" ]; then
+  cp "$source_config" "$runtime_config"
+  chmod 600 "$runtime_config"
+  echo "[codex] copied config template -> $runtime_config"
+elif [ "${DOTFILES_CODEX_OVERWRITE_CONFIG:-0}" = "1" ]; then
+  cp "$source_config" "$runtime_config"
+  chmod 600 "$runtime_config"
+  echo "[codex] overwrote runtime config from template: $runtime_config"
+else
+  echo "[codex] keeping existing runtime config: $runtime_config"
+fi
+
 #ln -svfn ~/dotfiles/codex/prompts ~/.codex/prompts
 mkdir -p ~/.codex/skills
 #rsync -a ~/dotfiles/codex/skills/ ~/.codex/skills/
