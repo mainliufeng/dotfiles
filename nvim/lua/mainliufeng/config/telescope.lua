@@ -30,10 +30,13 @@ require('telescope').setup {
     extensions = {
         project = {
             base_dirs = {
-                '~/Code',
+                { path = '~/Code/rcrai', max_depth = 2 },
+                { path = '~/Code/self', max_depth = 2 },
+                { path = '~/Code/source', max_depth = 2 },
                 '~/dotfiles',
                 '~/dotfiles-private',
             },
+            ignore_missing_dirs = true,
             hidden_files = true, -- default: false
             theme = "dropdown",
             order_by = "asc",
