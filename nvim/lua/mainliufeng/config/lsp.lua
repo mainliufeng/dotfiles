@@ -1,12 +1,14 @@
 -- Setup lspconfig.
 local capabilities = require('blink.cmp').get_lsp_capabilities()
 
--- Setup lspconfig.
-local nvim_lsp = require('lspconfig')
+local function setup_lsp(server, config)
+    vim.lsp.config(server, config)
+    vim.lsp.enable(server)
+end
 
 -- setup languages
 -- GoLang
-nvim_lsp['gopls'].setup({
+setup_lsp('gopls', {
     cmd = { 'gopls' },
     --on_attach = on_attach,
     flags = {
@@ -29,10 +31,10 @@ nvim_lsp['gopls'].setup({
         usePlaceholders = true,
     }
 })
-nvim_lsp['bashls'].setup {
+setup_lsp('bashls', {
     capabilities = capabilities,
-}
-nvim_lsp['lua_ls'].setup {
+})
+setup_lsp('lua_ls', {
     capabilities = capabilities,
     settings = {
         Lua = {
@@ -54,10 +56,10 @@ nvim_lsp['lua_ls'].setup {
             },
         },
     },
-}
-nvim_lsp.pyright.setup{
+})
+setup_lsp('pyright', {
     capabilities = capabilities,
-}
+})
 
 function goimports(wait_ms)
     local params = vim.lsp.util.make_range_params()
