@@ -39,6 +39,10 @@ local function focusWindow(offset)
   windows[nextIndex]:focus()
 end
 
+local function openGhosttyWindow()
+  hs.task.new("/usr/bin/open", nil, { "-n", "-a", "/Applications/Ghostty.app" }):start()
+end
+
 hs.hotkey.bind({ "alt" }, "j", function()
   focusWindow(1)
 end)
@@ -56,14 +60,5 @@ hs.hotkey.bind({ "alt" }, "q", function()
 end)
 
 hs.hotkey.bind({ "alt", "shift" }, "return", function()
-  local ghostty = hs.application.get("Ghostty")
-  if ghostty then
-    ghostty:activate()
-    hs.timer.doAfter(0.05, function()
-      hs.eventtap.keyStroke({ "cmd" }, "n")
-    end)
-    return
-  end
-
-  hs.application.launchOrFocus("Ghostty")
+  openGhosttyWindow()
 end)
