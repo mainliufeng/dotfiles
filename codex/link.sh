@@ -26,6 +26,8 @@ else
   echo "[codex] keeping existing runtime config: $runtime_config"
 fi
 
+"$HOME/dotfiles/codex/apply-app-font.sh"
+
 #ln -svfn ~/dotfiles/codex/prompts ~/.codex/prompts
 mkdir -p ~/.codex/skills
 #rsync -a ~/dotfiles/codex/skills/ ~/.codex/skills/

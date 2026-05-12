@@ -11,6 +11,9 @@ Managed configuration template for `~/.codex`. Run `~/dotfiles/codex/link.sh` (�
 - `~/.codex/config.toml` 已经是真实文件时，默认不覆盖。
 - 如需强制用模板覆盖运行时配置，执行 `DOTFILES_CODEX_OVERWRITE_CONFIG=1 ~/dotfiles/codex/link.sh`。
 
+Codex App 的内置 terminal/code font 由 `~/.codex/.codex-global-state.json` 管理。`link.sh` 会调用
+`~/dotfiles/codex/apply-app-font.sh`，默认将 chrome theme 的 `fonts.code` 设置为 `Hack Nerd Font Mono`，避免 prompt 图标在 App terminal 里显示成方块。执行后如当前窗口还没变化，Reload Window 或重启 Codex App 即可。
+
 配置默认启用 Chrome DevTools MCP server，并指向由 `scripts/start-chrome-remote` 启动的 Chrome/Chromium 实例：
 
 ```bash
