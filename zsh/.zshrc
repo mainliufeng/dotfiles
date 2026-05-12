@@ -73,6 +73,9 @@ zplug load
 alias gup='git pull --rebase'
 alias gupa='git pull --rebase --autostash'
 
+# Keep glg readable even when an outer tool exports GIT_PAGER/PAGER=cat.
+alias glg='GIT_PAGER="less -FRX" git log --stat'
+
 # theme
 for p10k_theme in \
   /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme \
