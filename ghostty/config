@@ -1,5 +1,5 @@
 font-family = "Hack Nerd Font"
-font-size = 14
+font-size = 17
 
 theme = "iTerm2 Solarized Dark"
 
@@ -11,3 +11,5 @@ window-padding-x = 6
 window-padding-y = 6
 
 scrollback-limit = 50000000
+
+quit-after-last-window-closed = true
