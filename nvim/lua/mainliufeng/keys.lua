@@ -78,6 +78,8 @@ keymap("n", "<F11>", cmd "lua require'dap'.step_into()")
 keymap("n", "<F12>", cmd "lua require'dap'.step_out()")
 
 require "which-key".add({
+    { "<space>?", "<cmd>Telescope keymaps<CR>", desc = "Search keymaps" },
+    { "<space>;", "<cmd>Telescope commands<CR>", desc = "Commands" },
     { "<space>p", "<cmd>Telescope project<CR>", desc = "Projects" },
     { "<space>g", "<cmd>Telescope live_grep<cr>", desc = "Live grep" },
     { "<space>b", "<cmd>Telescope git_branches<cr>", desc = "Checkout branch" },

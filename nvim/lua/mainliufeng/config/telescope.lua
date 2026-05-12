@@ -31,6 +31,8 @@ require('telescope').setup {
         project = {
             base_dirs = {
                 '~/Code',
+                '~/dotfiles',
+                '~/dotfiles-private',
             },
             hidden_files = true, -- default: false
             theme = "dropdown",
@@ -39,9 +41,11 @@ require('telescope').setup {
             sync_with_nvim_tree = true, -- default false
             -- default for on_project_selected = find project files
             on_project_selected = function(prompt_bufnr)
-                -- Do anything you want in here. For example:
                 project_actions.change_working_directory(prompt_bufnr, false)
-                require("harpoon.ui").nav_file(1)
+                local harpoon = require("harpoon")
+                if harpoon:list():length() > 0 then
+                    harpoon:list():select(1)
+                end
             end
         }
     }
