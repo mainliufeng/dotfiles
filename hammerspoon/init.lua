@@ -47,6 +47,19 @@ local function openNeovideWindow()
   hs.task.new("/usr/bin/open", nil, { "-n", "-a", "/Applications/Neovide.app" }):start()
 end
 
+local function closeFocusedWindow()
+  local app = hs.application.frontmostApplication()
+  if app and app:name() == "Neovide" then
+    local window = hs.window.focusedWindow()
+    if window then
+      window:close()
+    end
+    return
+  end
+
+  hs.eventtap.keyStroke({ "cmd" }, "w")
+end
+
 hs.hotkey.bind({ "alt" }, "j", function()
   focusWindow(1)
 end)
@@ -60,7 +73,7 @@ hs.hotkey.bind({ "alt" }, "m", function()
 end)
 
 hs.hotkey.bind({ "alt" }, "q", function()
-  hs.eventtap.keyStroke({ "cmd" }, "w")
+  closeFocusedWindow()
 end)
 
 hs.hotkey.bind({ "alt", "shift" }, "return", function()
