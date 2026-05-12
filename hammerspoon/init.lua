@@ -43,6 +43,10 @@ local function openGhosttyWindow()
   hs.task.new("/usr/bin/open", nil, { "-n", "-a", "/Applications/Ghostty.app" }):start()
 end
 
+local function openNeovideWindow()
+  hs.task.new("/usr/bin/open", nil, { "-n", "-a", "/Applications/Neovide.app" }):start()
+end
+
 hs.hotkey.bind({ "alt" }, "j", function()
   focusWindow(1)
 end)
@@ -61,4 +65,8 @@ end)
 
 hs.hotkey.bind({ "alt", "shift" }, "return", function()
   openGhosttyWindow()
+end)
+
+hs.hotkey.bind({ "alt", "shift" }, "n", function()
+  openNeovideWindow()
 end)
