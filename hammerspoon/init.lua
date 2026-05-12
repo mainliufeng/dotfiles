@@ -60,6 +60,10 @@ local function closeFocusedWindow()
   hs.eventtap.keyStroke({ "cmd" }, "w")
 end
 
+local function lockScreen()
+  hs.caffeinate.lockScreen()
+end
+
 hs.hotkey.bind({ "alt" }, "j", function()
   focusWindow(1)
 end)
@@ -82,4 +86,8 @@ end)
 
 hs.hotkey.bind({ "alt", "shift" }, "n", function()
   openNeovideWindow()
+end)
+
+hs.hotkey.bind({ "alt", "shift" }, "l", function()
+  lockScreen()
 end)
