@@ -26,17 +26,29 @@ local function focusWindow(offset)
   end
 
   local focusedWindow = hs.window.focusedWindow()
-  local focusedIndex = 0
+  local focusedWindowID = focusedWindow and focusedWindow:id()
+  local focusedIndex = offset > 0 and 0 or (#windows + 1)
 
   for index, window in ipairs(windows) do
-    if focusedWindow and window:id() == focusedWindow:id() then
+    if focusedWindowID and window:id() == focusedWindowID then
       focusedIndex = index
       break
     end
   end
 
-  local nextIndex = ((focusedIndex - 1 + offset) % #windows) + 1
-  windows[nextIndex]:focus()
+  for step = 1, #windows do
+    local nextIndex = ((focusedIndex - 1 + (offset * step)) % #windows) + 1
+    local nextWindow = windows[nextIndex]
+
+    if not focusedWindowID or nextWindow:id() ~= focusedWindowID then
+      nextWindow:focus()
+
+      local newFocusedWindow = hs.window.focusedWindow()
+      if newFocusedWindow and newFocusedWindow:id() == nextWindow:id() then
+        return
+      end
+    end
+  end
 end
 
 local function openGhosttyWindow()
