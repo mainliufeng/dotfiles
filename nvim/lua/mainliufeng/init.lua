@@ -92,7 +92,6 @@ require("lazy").setup({
     },
     {
         "mainliufeng/codex-sidecar.nvim",
-        dir = "~/Code/self/codex-sidecar.nvim",
         config = function()
             require("codex-sidecar").setup({
                 provider = "codex",
