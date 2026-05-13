@@ -99,7 +99,7 @@ require("lazy").setup({
                 providers = {
                     codex = {
                         cmd = "codex",
-                        model = "gpt-5.4-mini",
+                        model = "gpt-5.3-codex-spark",
                         reasoning_effort = "low",
                         isolate_home = true,
                         disable_skills = true,
