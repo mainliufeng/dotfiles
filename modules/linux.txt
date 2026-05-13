@@ -31,4 +31,5 @@ linux/services/docker
 linux/services/openvpn
 linux/services/redis
 linux/services/resolv
+linux/services/tailscale
 linux/services/timesyncd

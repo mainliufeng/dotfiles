@@ -208,6 +208,7 @@ swaync
 swww
 systemd
 systemd-sysvcompat
+tailscale
 tangram
 tar
 telegram-desktop
