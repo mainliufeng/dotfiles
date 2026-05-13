@@ -82,6 +82,8 @@ require "which-key".add({
     { "<space>;", "<cmd>Telescope commands<CR>", desc = "Commands" },
     { "<space>p", "<cmd>Telescope project<CR>", desc = "Projects" },
     { "<space>g", "<cmd>Telescope live_grep<cr>", desc = "Live grep" },
+    { "<space>r", "<cmd>CodeRagSearch<cr>", desc = "Semantic code search" },
+    { "<space>R", "<cmd>CodeRagIndex<cr>", desc = "Index semantic search" },
     { "<space>b", "<cmd>Telescope git_branches<cr>", desc = "Checkout branch" },
     { "<space>m", group = "Preview" },
     { "<space>mh", "<cmd>MarkdownHTML<CR>", desc = "Render HTML" },

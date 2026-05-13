@@ -1,0 +1,577 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# dependencies = [
+#   "fastembed>=0.7.0",
+#   "numpy>=2.0",
+# ]
+# ///
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+from fastembed import TextEmbedding
+
+
+INDEX_VERSION = 2
+DEFAULT_MODEL = os.environ.get("CODE_RAG_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+DEFAULT_LIMIT = 20
+CHUNK_LINES = int(os.environ.get("CODE_RAG_CHUNK_LINES", "120"))
+CHUNK_OVERLAP = int(os.environ.get("CODE_RAG_CHUNK_OVERLAP", "20"))
+MAX_FILE_BYTES = int(os.environ.get("CODE_RAG_MAX_FILE_BYTES", str(1024 * 1024)))
+
+SKIP_DIRS = {
+    ".cache",
+    ".git",
+    ".hg",
+    ".idea",
+    ".next",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".svn",
+    ".venv",
+    ".vscode",
+    "__pycache__",
+    "build",
+    "coverage",
+    "dist",
+    "node_modules",
+    "target",
+    "vendor",
+}
+
+SKIP_NAMES = {
+    "bun.lockb",
+    "go.sum",
+    "lazy-lock.json",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+}
+
+SKIP_EXTS = {
+    ".7z",
+    ".avi",
+    ".bin",
+    ".bmp",
+    ".class",
+    ".db",
+    ".dll",
+    ".dmg",
+    ".DS_Store",
+    ".eot",
+    ".exe",
+    ".gif",
+    ".gz",
+    ".ico",
+    ".jar",
+    ".jpeg",
+    ".jpg",
+    ".lock",
+    ".mov",
+    ".mp3",
+    ".mp4",
+    ".o",
+    ".onnx",
+    ".otf",
+    ".pdf",
+    ".png",
+    ".pyc",
+    ".so",
+    ".sqlite",
+    ".tar",
+    ".ttf",
+    ".wasm",
+    ".webm",
+    ".woff",
+    ".woff2",
+    ".zip",
+}
+
+QUERY_EXPANSIONS = {
+    "添加": "add append insert create",
+    "安装": "install setup",
+    "保存": "save write persist",
+    "报错": "error exception fail failure",
+    "变量": "variable var",
+    "测试": "test spec check verify",
+    "查找": "find search lookup",
+    "窗口": "window win pane",
+    "缓存": "cache cached memo",
+    "复制": "copy copied clipboard yank",
+    "打开": "open edit launch",
+    "当前": "current active",
+    "提交": "commit",
+    "搜索": "search find grep",
+    "文件": "file buffer",
+    "文件路径": "file path filename filepath",
+    "映射": "mapping keymap",
+    "环境变量": "env environment variable",
+    "目录": "directory dir path root",
+    "终端": "terminal shell",
+    "缓冲": "buffer",
+    "语义": "semantic embedding vector rag",
+    "路径": "path filename filepath",
+    "选择": "select picker choose",
+    "配置": "config configure setup options",
+    "键": "key keymap mapping shortcut",
+    "快捷键": "keymap shortcut mapping",
+    "预览": "preview render",
+}
+
+
+def eprint(*args: Any) -> None:
+    print(*args, file=sys.stderr)
+
+
+def run(cmd: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(cmd, cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
+def find_root(path: str | None) -> Path:
+    start = Path(path or os.getcwd()).expanduser().resolve()
+    if start.is_file():
+        start = start.parent
+    proc = run(["git", "rev-parse", "--show-toplevel"], start)
+    if proc.returncode == 0:
+        return Path(proc.stdout.strip()).resolve()
+    return start
+
+
+def model_slug(model: str) -> str:
+    return "".join(ch if ch.isalnum() or ch in "._-" else "_" for ch in model)
+
+
+def index_dir(root: Path, model: str) -> Path:
+    git_dir = root / ".git"
+    base = git_dir / "code-rag" if git_dir.exists() else root / ".code-rag"
+    return base / model_slug(model)
+
+
+def meta_path(root: Path, model: str) -> Path:
+    return index_dir(root, model) / "meta.json"
+
+
+def vectors_path(root: Path, model: str) -> Path:
+    return index_dir(root, model) / "vectors.npy"
+
+
+def should_skip(path: Path, root: Path) -> bool:
+    try:
+        rel = path.relative_to(root)
+    except ValueError:
+        return True
+    parts = set(rel.parts)
+    if parts & SKIP_DIRS:
+        return True
+    if path.name in SKIP_NAMES:
+        return True
+    if path.suffix in SKIP_EXTS:
+        return True
+    try:
+        stat = path.stat()
+    except OSError:
+        return True
+    if not path.is_file() or stat.st_size <= 0 or stat.st_size > MAX_FILE_BYTES:
+        return True
+    try:
+        head = path.read_bytes()[:4096]
+    except OSError:
+        return True
+    return b"\0" in head
+
+
+def list_repo_files(root: Path) -> list[Path]:
+    proc = run(["git", "ls-files", "-co", "--exclude-standard", "-z"], root)
+    if proc.returncode == 0:
+        raw = [x for x in proc.stdout.split("\0") if x]
+        paths = [root / x for x in raw]
+    else:
+        proc = run(["rg", "--files", "--hidden", "-g", "!.git"], root)
+        paths = [root / x for x in proc.stdout.splitlines()] if proc.returncode == 0 else []
+    return sorted(path for path in paths if not should_skip(path, root))
+
+
+def file_state(path: Path) -> dict[str, int]:
+    stat = path.stat()
+    return {"mtime_ns": stat.st_mtime_ns, "size": stat.st_size}
+
+
+def read_text(path: Path) -> str:
+    data = path.read_bytes()
+    for encoding in ("utf-8", "utf-16", "latin-1"):
+        try:
+            return data.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+    return data.decode("utf-8", errors="replace")
+
+
+def preview_for(lines: list[str]) -> str:
+    for line in lines:
+        stripped = line.strip()
+        if stripped:
+            return stripped[:180]
+    return ""
+
+
+def chunk_file(root: Path, path: Path) -> list[dict[str, Any]]:
+    rel = path.relative_to(root).as_posix()
+    text = read_text(path)
+    lines = text.splitlines()
+    chunks: list[dict[str, Any]] = []
+    if not lines:
+        return chunks
+
+    start = 0
+    step = max(1, CHUNK_LINES - CHUNK_OVERLAP)
+    while start < len(lines):
+        end = min(len(lines), start + CHUNK_LINES)
+        chunk_lines = lines[start:end]
+        body = "\n".join(chunk_lines).strip()
+        if body:
+            chunk_id = hashlib.sha1(f"{rel}:{start + 1}:{end}:{body}".encode("utf-8")).hexdigest()
+            chunks.append(
+                {
+                    "id": chunk_id,
+                    "path": rel,
+                    "start": start + 1,
+                    "end": end,
+                    "preview": preview_for(chunk_lines),
+                    "lex": f"{rel}\n{body}".lower().replace("_", " ")[:12000],
+                    "text": f"file: {rel}\nlines: {start + 1}-{end}\n\n{body}",
+                }
+            )
+        if end == len(lines):
+            break
+        start += step
+    return chunks
+
+
+def load_meta(root: Path, model: str) -> dict[str, Any] | None:
+    path = meta_path(root, model)
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def load_vectors(root: Path, model: str) -> np.ndarray | None:
+    path = vectors_path(root, model)
+    if not path.exists():
+        return None
+    try:
+        return np.load(path)
+    except OSError:
+        return None
+
+
+def normalize(vectors: np.ndarray) -> np.ndarray:
+    if vectors.size == 0:
+        return vectors.astype(np.float32)
+    norms = np.linalg.norm(vectors, axis=1, keepdims=True)
+    norms[norms == 0] = 1
+    return (vectors / norms).astype(np.float32)
+
+
+def embed_passages(embedder: TextEmbedding, texts: list[str]) -> np.ndarray:
+    if not texts:
+        return np.zeros((0, 0), dtype=np.float32)
+    if hasattr(embedder, "passage_embed"):
+        vectors = list(embedder.passage_embed(texts))
+    else:
+        vectors = list(embedder.embed(texts))
+    return normalize(np.asarray(vectors, dtype=np.float32))
+
+
+def embed_query(embedder: TextEmbedding, query: str) -> np.ndarray:
+    if hasattr(embedder, "query_embed"):
+        vector = next(iter(embedder.query_embed([query])))
+    else:
+        vector = next(iter(embedder.embed([query])))
+    return normalize(np.asarray([vector], dtype=np.float32))[0]
+
+
+def expand_query(query: str) -> str:
+    expansions: list[str] = []
+    for term, expansion in QUERY_EXPANSIONS.items():
+        if term in query:
+            expansions.append(expansion)
+    if not expansions:
+        return query
+    return query + "\n" + " ".join(dict.fromkeys(" ".join(expansions).split()))
+
+
+def query_terms(expanded_query: str) -> set[str]:
+    terms = set()
+    for token in re.findall(r"[a-zA-Z][a-zA-Z0-9_/-]{2,}", expanded_query.lower()):
+        for part in re.split(r"[_/-]+", token):
+            if len(part) >= 3:
+                terms.add(part)
+    return terms
+
+
+def lexical_boosts(chunks: list[dict[str, Any]], terms: set[str]) -> np.ndarray:
+    boosts = np.zeros((len(chunks),), dtype=np.float32)
+    if not terms:
+        return boosts
+    denom = max(4, len(terms))
+    for index, chunk in enumerate(chunks):
+        haystack = chunk.get("lex")
+        if not haystack:
+            haystack = f"{chunk.get('path', '')}\n{chunk.get('preview', '')}".lower().replace("_", " ")
+        hits = sum(1 for term in terms if term in haystack)
+        if hits:
+            boosts[index] = min(0.35, (hits / denom) * 0.35)
+    return boosts
+
+
+def save_index(root: Path, model: str, meta: dict[str, Any], vectors: np.ndarray) -> None:
+    out_dir = index_dir(root, model)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    meta_tmp = out_dir / "meta.json.tmp"
+    vectors_tmp = out_dir / "vectors.npy.tmp"
+
+    meta_tmp.write_text(json.dumps(meta, ensure_ascii=False, indent=2))
+    with vectors_tmp.open("wb") as f:
+        np.save(f, vectors.astype(np.float32))
+
+    os.replace(meta_tmp, meta_path(root, model))
+    os.replace(vectors_tmp, vectors_path(root, model))
+
+
+def index_root(root: Path, model: str, force: bool = False) -> dict[str, Any]:
+    started = time.time()
+    files = list_repo_files(root)
+    states = {path.relative_to(root).as_posix(): file_state(path) for path in files}
+
+    old_meta = None if force else load_meta(root, model)
+    old_vectors = None if force else load_vectors(root, model)
+    if (
+        not old_meta
+        or old_vectors is None
+        or old_meta.get("version") != INDEX_VERSION
+        or old_meta.get("model") != model
+        or old_meta.get("chunk_lines") != CHUNK_LINES
+        or old_meta.get("chunk_overlap") != CHUNK_OVERLAP
+    ):
+        old_meta = {"files": {}, "chunks": []}
+        old_vectors = np.zeros((0, 0), dtype=np.float32)
+
+    old_files = old_meta.get("files", {})
+    old_chunks = old_meta.get("chunks", [])
+    changed = {path for path, state in states.items() if old_files.get(path) != state}
+    deleted = set(old_files) - set(states)
+
+    kept_chunks: list[dict[str, Any]] = []
+    kept_indices: list[int] = []
+    for index, chunk in enumerate(old_chunks):
+        path = chunk.get("path")
+        if path not in changed and path not in deleted and path in states:
+            kept = dict(chunk)
+            kept.pop("text", None)
+            kept_chunks.append(kept)
+            kept_indices.append(index)
+
+    new_chunks: list[dict[str, Any]] = []
+    for path in files:
+        rel = path.relative_to(root).as_posix()
+        if rel in changed:
+            new_chunks.extend(chunk_file(root, path))
+
+    eprint(
+        f"code-rag: {root} model={model} files={len(files)} changed={len(changed)} "
+        f"deleted={len(deleted)} new_chunks={len(new_chunks)}"
+    )
+
+    if kept_indices and old_vectors.size:
+        kept_vectors = old_vectors[np.asarray(kept_indices, dtype=np.int64)]
+    else:
+        kept_vectors = np.zeros((0, 0), dtype=np.float32)
+
+    embedder = None
+    new_vectors = np.zeros((0, 0), dtype=np.float32)
+    if new_chunks:
+        embedder = TextEmbedding(model_name=model)
+        new_vectors = embed_passages(embedder, [chunk["text"] for chunk in new_chunks])
+
+    for chunk in new_chunks:
+        chunk.pop("text", None)
+
+    if kept_vectors.size and new_vectors.size:
+        vectors = np.vstack([kept_vectors, new_vectors]).astype(np.float32)
+    elif kept_vectors.size:
+        vectors = kept_vectors.astype(np.float32)
+    elif new_vectors.size:
+        vectors = new_vectors.astype(np.float32)
+    else:
+        dim = int(old_meta.get("embedding_size", 0) or 0)
+        vectors = np.zeros((0, dim), dtype=np.float32)
+
+    chunks = kept_chunks + new_chunks
+    meta = {
+        "version": INDEX_VERSION,
+        "model": model,
+        "root": root.as_posix(),
+        "updated_at": int(time.time()),
+        "chunk_lines": CHUNK_LINES,
+        "chunk_overlap": CHUNK_OVERLAP,
+        "embedding_size": int(vectors.shape[1]) if vectors.ndim == 2 and vectors.shape else 0,
+        "files": states,
+        "chunks": chunks,
+    }
+    save_index(root, model, meta, vectors)
+    return {
+        "root": root.as_posix(),
+        "model": model,
+        "files": len(files),
+        "chunks": len(chunks),
+        "changed": len(changed),
+        "deleted": len(deleted),
+        "seconds": round(time.time() - started, 3),
+    }
+
+
+def search(root: Path, model: str, query: str, limit: int, auto_index: bool, refresh: bool) -> list[dict[str, Any]]:
+    if refresh or not meta_path(root, model).exists() or not vectors_path(root, model).exists():
+        if not auto_index and not refresh:
+            raise SystemExit(f"missing index for {root}; run: code-rag index --root {root}")
+        index_root(root, model)
+
+    meta = load_meta(root, model)
+    vectors = load_vectors(root, model)
+    if not meta or vectors is None or vectors.size == 0:
+        return []
+
+    chunks = meta.get("chunks", [])
+    if len(chunks) != vectors.shape[0]:
+        raise SystemExit("index metadata and vectors are out of sync; run: code-rag index --force")
+
+    embedder = TextEmbedding(model_name=model)
+    expanded_query = expand_query(query)
+    query_vector = embed_query(embedder, expanded_query)
+    scores = (vectors @ query_vector) + lexical_boosts(chunks, query_terms(expanded_query))
+    top_n = min(limit, len(scores))
+    if top_n <= 0:
+        return []
+    indices = np.argpartition(-scores, top_n - 1)[:top_n]
+    indices = indices[np.argsort(-scores[indices])]
+
+    results: list[dict[str, Any]] = []
+    for index in indices:
+        chunk = chunks[int(index)]
+        results.append(
+            {
+                "path": chunk["path"],
+                "start": chunk["start"],
+                "end": chunk["end"],
+                "score": round(float(scores[int(index)]), 6),
+                "preview": chunk.get("preview", ""),
+            }
+        )
+    return results
+
+
+def cmd_index(args: argparse.Namespace) -> int:
+    stats = index_root(find_root(args.root), args.model, force=args.force)
+    print(json.dumps(stats, ensure_ascii=False) if args.json else format_stats(stats))
+    return 0
+
+
+def format_stats(stats: dict[str, Any]) -> str:
+    return (
+        f"{stats['root']}\n"
+        f"model: {stats['model']}\n"
+        f"files: {stats['files']} chunks: {stats['chunks']} changed: {stats['changed']} "
+        f"deleted: {stats['deleted']} seconds: {stats['seconds']}"
+    )
+
+
+def cmd_search(args: argparse.Namespace) -> int:
+    root = find_root(args.root)
+    results = search(root, args.model, args.query, args.limit, args.auto_index, args.refresh)
+    if args.json:
+        print(json.dumps(results, ensure_ascii=False))
+    else:
+        for item in results:
+            print(f"{item['path']}:{item['start']}:{item['end']}:{item['score']}\t{item['preview']}")
+    return 0
+
+
+def cmd_status(args: argparse.Namespace) -> int:
+    root = find_root(args.root)
+    meta = load_meta(root, args.model)
+    if not meta:
+        print(f"no index: {index_dir(root, args.model)}")
+        return 1
+    stats = {
+        "root": root.as_posix(),
+        "model": meta.get("model"),
+        "updated_at": meta.get("updated_at"),
+        "files": len(meta.get("files", {})),
+        "chunks": len(meta.get("chunks", [])),
+        "index_dir": index_dir(root, args.model).as_posix(),
+    }
+    print(json.dumps(stats, ensure_ascii=False, indent=2) if args.json else format_status(stats))
+    return 0
+
+
+def format_status(stats: dict[str, Any]) -> str:
+    updated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(stats["updated_at"]))
+    return (
+        f"{stats['root']}\n"
+        f"model: {stats['model']}\n"
+        f"updated: {updated}\n"
+        f"files: {stats['files']} chunks: {stats['chunks']}\n"
+        f"index: {stats['index_dir']}"
+    )
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Local semantic code search for Neovim/Telescope.")
+    parser.add_argument("--root", help="Project root. Defaults to the current git repository.")
+    parser.add_argument("--model", default=DEFAULT_MODEL, help=f"fastembed model. Default: {DEFAULT_MODEL}")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    index_parser = subparsers.add_parser("index", help="Build or refresh the local semantic index.")
+    index_parser.add_argument("--force", action="store_true", help="Rebuild the whole index.")
+    index_parser.add_argument("--json", action="store_true", help="Print machine-readable stats.")
+    index_parser.set_defaults(func=cmd_index)
+
+    search_parser = subparsers.add_parser("search", help="Search the semantic index.")
+    search_parser.add_argument("query")
+    search_parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT)
+    search_parser.add_argument("--json", action="store_true")
+    search_parser.add_argument("--auto-index", action="store_true", help="Create the index if it is missing.")
+    search_parser.add_argument("--refresh", action="store_true", help="Refresh changed files before searching.")
+    search_parser.set_defaults(func=cmd_search)
+
+    status_parser = subparsers.add_parser("status", help="Show index status.")
+    status_parser.add_argument("--json", action="store_true")
+    status_parser.set_defaults(func=cmd_status)
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+    try:
+        return args.func(args)
+    except KeyboardInterrupt:
+        return 130
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

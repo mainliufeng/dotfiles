@@ -426,6 +426,7 @@ require("mainliufeng.plugins.git")
 require("mainliufeng.plugins.markdown").setup()
 require("mainliufeng.plugins.window")
 require("mainliufeng.plugins.highlight")
+require("mainliufeng.plugins.code_rag").setup()
 
 -- 通用配置
 require("mainliufeng.keys")

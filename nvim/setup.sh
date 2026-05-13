@@ -3,10 +3,10 @@ set -euo pipefail
 
 case "$(uname -s)" in
   Darwin)
-    brew install neovim delve pyright bash-language-server lua-language-server universal-ctags
+    brew install neovim delve pyright bash-language-server lua-language-server universal-ctags uv
     ;;
   Linux)
-    sudo pacman -S --needed neovim delve ctags
+    sudo pacman -S --needed neovim delve ctags uv
     if command -v yay >/dev/null 2>&1; then
       yay -S --needed pyright bash-language-server lua-language-server
     fi
