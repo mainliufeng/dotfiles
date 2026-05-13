@@ -90,6 +90,22 @@ require("lazy").setup({
             require('mainliufeng.config.telescope')
         end
     },
+    {
+        "mainliufeng/code-locator.nvim",
+        dir = "~/Code/self/code-locator.nvim",
+        config = function()
+            require("code-locator").setup({
+                provider = "codex",
+                providers = {
+                    codex = {
+                        cmd = "codex",
+                        model = "gpt-5.5",
+                        reasoning_effort = "none",
+                    },
+                },
+            })
+        end,
+    },
     { 'stevearc/dressing.nvim' },
     -- Line
     {
