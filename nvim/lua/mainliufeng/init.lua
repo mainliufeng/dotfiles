@@ -99,7 +99,7 @@ require("lazy").setup({
                 providers = {
                     codex = {
                         cmd = "codex",
-                        model = "gpt-5.5",
+                        model = "gpt-5.4-mini",
                         reasoning_effort = "none",
                         timeout_ms = 60000,
                     },
