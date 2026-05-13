@@ -91,10 +91,10 @@ require("lazy").setup({
         end
     },
     {
-        "mainliufeng/code-locator.nvim",
-        dir = "~/Code/self/code-locator.nvim",
+        "mainliufeng/codex-sidecar.nvim",
+        dir = "~/Code/self/codex-sidecar.nvim",
         config = function()
-            require("code-locator").setup({
+            require("codex-sidecar").setup({
                 provider = "codex",
                 providers = {
                     codex = {
