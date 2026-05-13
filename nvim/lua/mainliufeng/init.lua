@@ -101,7 +101,6 @@ require("lazy").setup({
                         cmd = "codex",
                         model = "gpt-5.4-mini",
                         reasoning_effort = "low",
-                        timeout_ms = 60000,
                         isolate_home = true,
                         disable_skills = true,
                     },
