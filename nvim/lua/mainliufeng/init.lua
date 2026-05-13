@@ -101,6 +101,7 @@ require("lazy").setup({
                         cmd = "codex",
                         model = "gpt-5.5",
                         reasoning_effort = "none",
+                        timeout_ms = 60000,
                     },
                 },
             })
