@@ -28,6 +28,13 @@ fi
 
 "$HOME/dotfiles/codex/apply-app-font.sh"
 
+mkdir -p "$codex_dir/agents"
+for agent_file in "$HOME/dotfiles/codex/agents/"*.toml; do
+  [ -e "$agent_file" ] || continue
+  ln -sfn "$agent_file" "$codex_dir/agents/$(basename "$agent_file")"
+  echo "[codex] linked agent: $(basename "$agent_file")"
+done
+
 #ln -svfn ~/dotfiles/codex/prompts ~/.codex/prompts
 mkdir -p ~/.codex/skills
 #rsync -a ~/dotfiles/codex/skills/ ~/.codex/skills/

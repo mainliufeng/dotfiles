@@ -16,6 +16,7 @@ Expand and correct this file as migration proceeds.
 | commit | local repo | codex, claude-code, hermes | all | default | keep |
 | archlinux-desktop-ops | local repo | codex | archlinux | default | Arch Linux / Hyprland only; skip on macOS |
 | iteration-drift-guard | local repo | codex, claude-code | all | default | general guardrail for long AI-assisted engineering iterations |
+| spark | local repo | codex | all | default | GPT-5.3 Codex Spark fast subagent trigger |
 | frontend-design | github / anthropics/skills | codex, claude-code | all | default | keep; verify source vs local runtime copy |
 | docx | github / anthropics/skills | codex | archlinux | default | install only on Arch Linux / Codex CLI; macOS Codex App uses built-in Documents plugin and skips this row |
 | pdf | github / anthropics/skills | codex | all | default | review-needed; keep only for non-DOCX PDF operations |
