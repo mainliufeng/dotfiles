@@ -100,7 +100,7 @@ require("lazy").setup({
                     codex = {
                         cmd = "codex",
                         model = "gpt-5.3-codex-spark",
-                        reasoning_effort = "none",
+                        reasoning_effort = "low",
                         timeout_ms = 60000,
                     },
                 },
