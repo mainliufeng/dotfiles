@@ -25,6 +25,13 @@ local function run(args, on_exit)
     end)
 end
 
+local function jump_to_item(item)
+    local filename = root_dir() .. "/" .. item.path
+    vim.cmd.edit(vim.fn.fnameescape(filename))
+    vim.api.nvim_win_set_cursor(0, { item.start, 0 })
+    vim.cmd.normal({ "zz", bang = true })
+end
+
 function M.index(opts)
     opts = opts or {}
     local root = root_dir()
@@ -82,42 +89,62 @@ local function make_picker(query, items)
                 if not selection then
                     return
                 end
-                vim.cmd.edit(vim.fn.fnameescape(selection.filename))
-                vim.api.nvim_win_set_cursor(0, { selection.lnum, 0 })
-                vim.cmd.normal({ "zz", bang = true })
+                jump_to_item(selection.value)
             end)
             return true
         end,
     }):find()
 end
 
-function M.search()
-    local default = vim.fn.expand("<cword>")
-    vim.ui.input({ prompt = "Semantic search > ", default = default }, function(query)
-        if not query or query == "" then
+local function search_items(query, limit, on_items)
+    if not query or query == "" then
+        return
+    end
+    local root = root_dir()
+    notify("Searching " .. root)
+    run({ "--root", root, "search", "--auto-index", "--json", "--limit", tostring(limit), query }, function(result)
+        if result.code ~= 0 then
+            notify((result.stderr ~= "" and result.stderr or result.stdout), vim.log.levels.ERROR)
             return
         end
 
-        local root = root_dir()
-        notify("Searching " .. root)
-        run({ "--root", root, "search", "--auto-index", "--json", "--limit", "30", query }, function(result)
-            if result.code ~= 0 then
-                notify((result.stderr ~= "" and result.stderr or result.stdout), vim.log.levels.ERROR)
-                return
-            end
+        local ok, items = pcall(vim.json.decode, result.stdout)
+        if not ok or type(items) ~= "table" then
+            notify("Could not parse search results", vim.log.levels.ERROR)
+            return
+        end
+        if #items == 0 then
+            notify("No semantic matches")
+            return
+        end
+        on_items(items)
+    end)
+end
 
-            local ok, items = pcall(vim.json.decode, result.stdout)
-            if not ok or type(items) ~= "table" then
-                notify("Could not parse search results", vim.log.levels.ERROR)
-                return
-            end
-            if #items == 0 then
-                notify("No semantic matches")
-                return
-            end
+function M.search()
+    local default = vim.fn.expand("<cword>")
+    vim.ui.input({ prompt = "Semantic search > ", default = default }, function(query)
+        search_items(query, 30, function(items)
             make_picker(query, items)
         end)
     end)
+end
+
+function M.open(query)
+    local function open_query(input)
+        search_items(input, 1, function(items)
+            local item = items[1]
+            jump_to_item(item)
+            notify(("Opened %s:%d  %.3f"):format(item.path, item.start, tonumber(item.score) or 0))
+        end)
+    end
+
+    if query and query ~= "" then
+        open_query(query)
+        return
+    end
+
+    vim.ui.input({ prompt = "Open semantic match > ", default = vim.fn.expand("<cword>") }, open_query)
 end
 
 function M.status()
@@ -132,6 +159,9 @@ function M.setup()
     vim.api.nvim_create_user_command("CodeRagSearch", function()
         M.search()
     end, {})
+    vim.api.nvim_create_user_command("CodeRagOpen", function(opts)
+        M.open(opts.args)
+    end, { nargs = "*" })
     vim.api.nvim_create_user_command("CodeRagIndex", function()
         M.index()
     end, {})
