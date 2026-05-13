@@ -56,7 +56,8 @@ function M.index(opts)
     end)
 end
 
-local function make_picker(query, items)
+local function make_picker(query, items, opts)
+    opts = opts or {}
     local pickers = require("telescope.pickers")
     local finders = require("telescope.finders")
     local conf = require("telescope.config").values
@@ -64,7 +65,7 @@ local function make_picker(query, items)
     local action_state = require("telescope.actions.state")
 
     pickers.new({}, {
-        prompt_title = "Semantic code search: " .. query,
+        prompt_title = (opts.code_only and "Semantic code search: " or "Semantic search: ") .. query,
         finder = finders.new_table({
             results = items,
             entry_maker = function(item)
@@ -96,13 +97,19 @@ local function make_picker(query, items)
     }):find()
 end
 
-local function search_items(query, limit, on_items)
+local function search_items(query, limit, opts, on_items)
     if not query or query == "" then
         return
     end
+    opts = opts or {}
     local root = root_dir()
     notify("Searching " .. root)
-    run({ "--root", root, "search", "--auto-index", "--json", "--limit", tostring(limit), query }, function(result)
+    local args = { "--root", root, "search", "--auto-index", "--json", "--limit", tostring(limit) }
+    if opts.code_only then
+        table.insert(args, "--code-only")
+    end
+    table.insert(args, query)
+    run(args, function(result)
         if result.code ~= 0 then
             notify((result.stderr ~= "" and result.stderr or result.stdout), vim.log.levels.ERROR)
             return
@@ -121,18 +128,19 @@ local function search_items(query, limit, on_items)
     end)
 end
 
-function M.search()
+function M.search(opts)
+    opts = opts or { code_only = true }
     local default = vim.fn.expand("<cword>")
     vim.ui.input({ prompt = "Semantic search > ", default = default }, function(query)
-        search_items(query, 30, function(items)
-            make_picker(query, items)
+        search_items(query, 30, opts, function(items)
+            make_picker(query, items, opts)
         end)
     end)
 end
 
 function M.open(query)
     local function open_query(input)
-        search_items(input, 1, function(items)
+        search_items(input, 1, { code_only = true }, function(items)
             local item = items[1]
             jump_to_item(item)
             notify(("Opened %s:%d  %.3f"):format(item.path, item.start, tonumber(item.score) or 0))
@@ -157,7 +165,10 @@ end
 
 function M.setup()
     vim.api.nvim_create_user_command("CodeRagSearch", function()
-        M.search()
+        M.search({ code_only = true })
+    end, {})
+    vim.api.nvim_create_user_command("CodeRagSearchAll", function()
+        M.search({ code_only = false })
     end, {})
     vim.api.nvim_create_user_command("CodeRagOpen", function(opts)
         M.open(opts.args)

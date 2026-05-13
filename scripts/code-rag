@@ -97,6 +97,101 @@ SKIP_EXTS = {
     ".zip",
 }
 
+DOC_EXTS = {
+    ".adoc",
+    ".markdown",
+    ".md",
+    ".mdx",
+    ".org",
+    ".rst",
+    ".tex",
+    ".txt",
+}
+
+DOC_DIRS = {
+    ".codex",
+    ".claude",
+    ".github",
+    ".hermes",
+    "doc",
+    "docs",
+    "documentation",
+    "examples",
+    "notes",
+    "plans",
+    "research",
+    "skills",
+}
+
+DOC_NAMES = {
+    "agents.md",
+    "changelog",
+    "changelog.md",
+    "claude.md",
+    "license",
+    "license.md",
+    "readme",
+    "readme.md",
+    "skill.md",
+}
+
+CODE_EXTS = {
+    ".astro",
+    ".bash",
+    ".c",
+    ".cc",
+    ".clj",
+    ".cljs",
+    ".cmake",
+    ".cpp",
+    ".cs",
+    ".css",
+    ".dart",
+    ".el",
+    ".ex",
+    ".exs",
+    ".fish",
+    ".go",
+    ".graphql",
+    ".h",
+    ".hh",
+    ".hpp",
+    ".html",
+    ".java",
+    ".jl",
+    ".js",
+    ".jsx",
+    ".kt",
+    ".kts",
+    ".lua",
+    ".m",
+    ".mm",
+    ".php",
+    ".pl",
+    ".proto",
+    ".py",
+    ".r",
+    ".rb",
+    ".rs",
+    ".scala",
+    ".scss",
+    ".sh",
+    ".sql",
+    ".svelte",
+    ".swift",
+    ".templ",
+    ".tf",
+    ".toml",
+    ".ts",
+    ".tsx",
+    ".vim",
+    ".vue",
+    ".yaml",
+    ".yml",
+    ".zig",
+    ".zsh",
+}
+
 QUERY_EXPANSIONS = {
     "添加": "add append insert create",
     "安装": "install setup",
@@ -126,6 +221,9 @@ QUERY_EXPANSIONS = {
     "键": "key keymap mapping shortcut",
     "快捷键": "keymap shortcut mapping",
     "预览": "preview render",
+    "代码": "code source implementation function class method handler route",
+    "对接": "integration adapter connect callback webhook handler route endpoint api client server",
+    "回调": "callback webhook handler route endpoint receiver",
 }
 
 
@@ -188,6 +286,20 @@ def should_skip(path: Path, root: Path) -> bool:
     except OSError:
         return True
     return b"\0" in head
+
+
+def is_code_path(path: str) -> bool:
+    rel = Path(path)
+    parts = {part.lower() for part in rel.parts[:-1]}
+    name = rel.name.lower()
+    suffix = rel.suffix.lower()
+    if name in DOC_NAMES or suffix in DOC_EXTS:
+        return False
+    if parts & DOC_DIRS:
+        return False
+    if suffix in CODE_EXTS:
+        return True
+    return suffix == "" and name not in DOC_NAMES
 
 
 def list_repo_files(root: Path) -> list[Path]:
@@ -444,7 +556,7 @@ def index_root(root: Path, model: str, force: bool = False) -> dict[str, Any]:
     }
 
 
-def search(root: Path, model: str, query: str, limit: int, auto_index: bool, refresh: bool) -> list[dict[str, Any]]:
+def search(root: Path, model: str, query: str, limit: int, auto_index: bool, refresh: bool, code_only: bool) -> list[dict[str, Any]]:
     if refresh or not meta_path(root, model).exists() or not vectors_path(root, model).exists():
         if not auto_index and not refresh:
             raise SystemExit(f"missing index for {root}; run: code-rag index --root {root}")
@@ -463,7 +575,12 @@ def search(root: Path, model: str, query: str, limit: int, auto_index: bool, ref
     expanded_query = expand_query(query)
     query_vector = embed_query(embedder, expanded_query)
     scores = (vectors @ query_vector) + lexical_boosts(chunks, query_terms(expanded_query))
-    top_n = min(limit, len(scores))
+    if code_only:
+        code_mask = np.asarray([is_code_path(chunk.get("path", "")) for chunk in chunks], dtype=bool)
+        scores = np.where(code_mask, scores, -np.inf)
+
+    finite_count = int(np.isfinite(scores).sum())
+    top_n = min(limit, finite_count)
     if top_n <= 0:
         return []
     indices = np.argpartition(-scores, top_n - 1)[:top_n]
@@ -501,7 +618,7 @@ def format_stats(stats: dict[str, Any]) -> str:
 
 def cmd_search(args: argparse.Namespace) -> int:
     root = find_root(args.root)
-    results = search(root, args.model, args.query, args.limit, args.auto_index, args.refresh)
+    results = search(root, args.model, args.query, args.limit, args.auto_index, args.refresh, args.code_only)
     if args.json:
         print(json.dumps(results, ensure_ascii=False))
     else:
@@ -556,6 +673,7 @@ def build_parser() -> argparse.ArgumentParser:
     search_parser.add_argument("--json", action="store_true")
     search_parser.add_argument("--auto-index", action="store_true", help="Create the index if it is missing.")
     search_parser.add_argument("--refresh", action="store_true", help="Refresh changed files before searching.")
+    search_parser.add_argument("--code-only", action="store_true", help="Prefer implementation search by excluding docs.")
     search_parser.set_defaults(func=cmd_search)
 
     status_parser = subparsers.add_parser("status", help="Show index status.")
