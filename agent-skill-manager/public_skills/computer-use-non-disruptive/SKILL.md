@@ -1,6 +1,6 @@
 ---
-name: computer-use-non-disruptive
-description: Use before any Computer Use / @Computer / desktop app GUI operation, especially on macOS with Spaces/workspaces, multiple windows, background apps, or when the user asks not to be interrupted. Enforces non-disruptive Computer Use: do not switch workspace/window, do not activate apps, and prefer app accessibility-tree element operations.
+name: "computer-use-non-disruptive"
+description: "Use before any Computer Use / @Computer / desktop app GUI operation, especially on macOS with Spaces/workspaces, multiple windows, background apps, or when the user asks not to be interrupted. Enforces non-disruptive Computer Use: do not switch workspace/window, do not activate apps, and prefer app accessibility-tree element operations."
 ---
 
 # Computer Use Non-Disruptive Guard
@@ -106,4 +106,3 @@ If it is not the intended window, stop and report the returned title/URL and the
 
 Prefer targets where the app has only one window, or where the intended window is already the app's most recent/key accessibility window.
 ```
-
