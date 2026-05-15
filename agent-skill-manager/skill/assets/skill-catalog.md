@@ -24,6 +24,7 @@ Expand and correct this file as migration proceeds.
 | remotion | github / remotion-dev/skills | codex | all | default | candidate |
 | tapestry | github / michalparkola/tapestry-skills-for-claude-code | codex, claude-code | all | default | keep; verify source vs local runtime copy |
 | humanizer-zh | github / op7418/Humanizer-zh | codex, hermes | all | default | github source confirmed; install for codex + hermes |
+| gpt-image-2 | github / ConardLi/garden-skills/tree/main/skills/gpt-image-2 | codex, hermes | all | default | GPT Image 2 prompt/image workflow skill; install under Hermes creative category |
 | gstack | github / garrytan/gstack | codex, claude-code | all | special:gstack | special flow |
 | notebooklm | github / teng-lin/notebooklm-py | codex, hermes | all | special:notebooklm | pipx CLI + managed local skill |
 | impeccable | github / pbakaus/impeccable | codex | all | special:impeccable | codex skill bundle from upstream repo |
