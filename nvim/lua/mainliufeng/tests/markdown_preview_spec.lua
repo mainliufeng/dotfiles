@@ -44,7 +44,7 @@ function M.run()
 
     local original_executable = vim.fn.executable
     vim.fn.executable = function(cmd)
-        if cmd == "gtk-launch" or cmd == "xdg-open" or cmd == "gio" then
+        if cmd == "google-chrome-stable" or cmd == "gtk-launch" or cmd == "xdg-open" then
             return 1
         end
         return 0
@@ -54,8 +54,23 @@ function M.run()
     vim.fn.executable = original_executable
 
     assert(
-        vim.deep_equal(browser, { "gtk-launch", "google-chrome.xorg", "file:///tmp/page.html" }),
-        "preview opener should prefer the Chrome Xorg desktop entry over xdg-open"
+        vim.deep_equal(browser, { "google-chrome-stable", "--ozone-platform=x11", "file:///tmp/page.html" }),
+        "preview opener should prefer a direct Linux Chrome command over desktop launchers"
+    )
+
+    vim.fn.executable = function(cmd)
+        if cmd == "gtk-launch" or cmd == "xdg-open" or cmd == "gio" then
+            return 1
+        end
+        return 0
+    end
+
+    local linux_fallback = preview._browser_command("file:///tmp/page.html", { sysname = "Linux" })
+    vim.fn.executable = original_executable
+
+    assert(
+        vim.deep_equal(linux_fallback, { "xdg-open", "file:///tmp/page.html" }),
+        "preview opener should fall back to the Linux system opener before gtk-launch"
     )
 
     vim.fn.executable = function(cmd)

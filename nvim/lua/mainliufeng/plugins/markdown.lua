@@ -21,6 +21,10 @@ local function write_temp_file(lines, suffix)
     return path
 end
 
+local function chrome_args(target)
+    return { "--ozone-platform=x11", target }
+end
+
 local function browser_command(target, opts)
     opts = opts or {}
     local sysname = opts.sysname or vim.loop.os_uname().sysname
@@ -32,13 +36,14 @@ local function browser_command(target, opts)
         }
     else
         candidates = {
-            { cmd = "gtk-launch", args = { "google-chrome.xorg", target } },
-            { cmd = "google-chrome-stable", args = { target } },
-            { cmd = "google-chrome", args = { target } },
-            { cmd = "chromium", args = { target } },
-            { cmd = "chromium-browser", args = { target } },
+            { cmd = "google-chrome-stable", args = chrome_args(target) },
+            { cmd = "google-chrome", args = chrome_args(target) },
+            { cmd = "google-chrome-unstable", args = chrome_args(target) },
+            { cmd = "chromium", args = chrome_args(target) },
+            { cmd = "chromium-browser", args = chrome_args(target) },
             { cmd = "xdg-open", args = { target } },
             { cmd = "gio", args = { "open", target } },
+            { cmd = "gtk-launch", args = { "google-chrome.xorg", target } },
         }
     end
 
