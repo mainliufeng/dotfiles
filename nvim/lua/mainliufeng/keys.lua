@@ -94,6 +94,16 @@ require "which-key".add({
         harpoon.ui:toggle_quick_menu(harpoon:list())
     end, desc = "Harpoon" },
 })
+
+require "which-key".add({
+    { "<space>G", group = "Git" },
+    { "<space>Gs", "<cmd>Gst<cr>", desc = "Status" },
+    { "<space>Gu", "<cmd>Gup<cr>", desc = "Pull rebase" },
+    { "<space>Gp", "<cmd>Gp<cr>", desc = "Push" },
+    { "<space>Gd", "<cmd>Gd<cr>", desc = "Diff" },
+    { "<space>Gl", "<cmd>Glg<cr>", desc = "Log stat" },
+})
+
 require "which-key".add({
     {
         "<space>t",

@@ -2,6 +2,35 @@ local iter = require("plenary.iterators")
 local scan = require("plenary.scandir")
 local path = require("plenary.path")
 
+local git_aliases = {
+    Gst = {
+        args = "status",
+        desc = "git status",
+    },
+    Gup = {
+        args = "pull --rebase",
+        desc = "git pull --rebase",
+    },
+    Gp = {
+        args = "push",
+        desc = "git push",
+    },
+    Gd = {
+        args = "diff",
+        desc = "git diff",
+    },
+    Glg = {
+        args = "log --stat",
+        desc = "git log --stat",
+    },
+}
+
+for name, alias in pairs(git_aliases) do
+    vim.api.nvim_create_user_command(name, function()
+        vim.cmd("Git " .. alias.args)
+    end, { desc = alias.desc })
+end
+
 local function get_repos(base_dirs)
     return iter.iter(base_dirs)
         :map(function(base_dir)
