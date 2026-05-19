@@ -20,16 +20,15 @@ Use this when a skill has no special install doc.
 Good:
 
 ```text
-~/.hermes/skills/local/content-creator/
-  SKILL.md -> ~/dotfiles-private/agent-skill-manager/private_skills/content-creator/SKILL.md
-  references/ -> ~/dotfiles-private/agent-skill-manager/private_skills/content-creator/references
-  assets/ -> ~/dotfiles-private/agent-skill-manager/private_skills/content-creator/assets
+~/.hermes/skills/local/knowledge/
+  SKILL.md -> ~/dotfiles-private/agent-skill-manager/private_skills/knowledge/SKILL.md
+  references/ -> ~/dotfiles-private/agent-skill-manager/private_skills/knowledge/references
 ```
 
 Bad:
 
 ```text
-~/.hermes/skills/local/content-creator -> ~/dotfiles-private/agent-skill-manager/private_skills/content-creator
+~/.hermes/skills/local/knowledge -> ~/dotfiles-private/agent-skill-manager/private_skills/knowledge
 ```
 
 The same rule applies to private skills like `knowledge`.
