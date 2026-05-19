@@ -100,6 +100,7 @@ require "which-key".add({
     { "<space>Gs", "<cmd>Gst<cr>", desc = "Status" },
     { "<space>Gu", "<cmd>Gup<cr>", desc = "Pull rebase" },
     { "<space>Gp", "<cmd>Gp<cr>", desc = "Push" },
+    { "<space>Go", "<cmd>Gout<cr>", desc = "Last output" },
     { "<space>Gd", "<cmd>Gd<cr>", desc = "Diff" },
     { "<space>Gl", "<cmd>Glg<cr>", desc = "Log stat" },
 })
