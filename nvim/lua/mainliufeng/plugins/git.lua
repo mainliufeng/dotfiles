@@ -9,7 +9,72 @@ local function notify(message, level)
 end
 
 local function git_root()
-    return vim.fs.root(0, { ".git" }) or vim.loop.cwd()
+    local cwd = vim.fn.getcwd()
+    return vim.fs.root(cwd, { ".git" }) or cwd
+end
+
+local function git_dir(root)
+    local result = vim.system({ "git", "-C", root, "rev-parse", "--absolute-git-dir" }, {
+        text = true,
+        env = vim.tbl_extend("force", vim.fn.environ(), {
+            GIT_TERMINAL_PROMPT = "0",
+        }),
+    }):wait()
+
+    if result.code ~= 0 then
+        local output = vim.trim(((result.stderr or "") .. "\n" .. (result.stdout or "")))
+        return nil, output ~= "" and output or "not a git repository"
+    end
+
+    return vim.trim(result.stdout), nil
+end
+
+local function get_buffer_var(buffer, name)
+    local ok, value = pcall(vim.api.nvim_buf_get_var, buffer, name)
+    if ok then
+        return true, value
+    end
+
+    return false, nil
+end
+
+local function restore_buffer_var(buffer, name, had_value, value)
+    if had_value then
+        vim.api.nvim_buf_set_var(buffer, name, value)
+    else
+        pcall(vim.api.nvim_buf_del_var, buffer, name)
+    end
+end
+
+local function run_fugitive(args)
+    local root = git_root()
+    local dir, err = git_dir(root)
+
+    if dir == nil then
+        notify(("Git failed in %s: %s"):format(vim.fn.fnamemodify(root, ":~:."), err), vim.log.levels.ERROR)
+        return
+    end
+
+    local buffer = vim.api.nvim_get_current_buf()
+    local had_git_dir, previous_git_dir = get_buffer_var(buffer, "git_dir")
+
+    vim.api.nvim_buf_set_var(buffer, "git_dir", dir)
+
+    local ok, command_err = pcall(function()
+        if args == nil or args == "" then
+            vim.cmd("Git")
+        else
+            vim.cmd("Git " .. args)
+        end
+    end)
+
+    if vim.api.nvim_buf_is_valid(buffer) then
+        restore_buffer_var(buffer, "git_dir", had_git_dir, previous_git_dir)
+    end
+
+    if not ok then
+        notify(tostring(command_err), vim.log.levels.ERROR)
+    end
 end
 
 local function split_output(text)
@@ -275,7 +340,7 @@ local function run_git_async(args, title)
 end
 
 vim.api.nvim_create_user_command("Gst", function()
-    vim.cmd("Git")
+    run_fugitive()
 end, { desc = "git status" })
 
 vim.api.nvim_create_user_command("Gup", function()
@@ -338,7 +403,7 @@ local git_aliases = {
 
 for name, alias in pairs(git_aliases) do
     vim.api.nvim_create_user_command(name, function()
-        vim.cmd("Git " .. alias.args)
+        run_fugitive(alias.args)
     end, { desc = alias.desc })
 end
 
