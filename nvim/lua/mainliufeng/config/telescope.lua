@@ -40,7 +40,7 @@ require('telescope').setup {
             hidden_files = true, -- default: false
             theme = "dropdown",
             order_by = "asc",
-            search_by = "title",
+            search_by = { "title", "path" },
             sync_with_nvim_tree = true, -- default false
             -- default for on_project_selected = find project files
             on_project_selected = function(prompt_bufnr)

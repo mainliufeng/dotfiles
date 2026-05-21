@@ -19,6 +19,13 @@ local function copy_file_path()
     vim.notify(("Copied file path: %s"):format(path), vim.log.levels.INFO, { title = "Copy file path" })
 end
 
+local function open_project_picker()
+    require("telescope").extensions.project.project({
+        display_type = "two-segment",
+        hide_workspace = true,
+    })
+end
+
 local terminal = require("mainliufeng.config.terminal")
 
 -- 跳-word
@@ -80,7 +87,7 @@ keymap("n", "<F12>", cmd "lua require'dap'.step_out()")
 require "which-key".add({
     { "<space>?", "<cmd>Telescope keymaps<CR>", desc = "Search keymaps" },
     { "<space>;", "<cmd>Telescope commands<CR>", desc = "Commands" },
-    { "<space>p", "<cmd>Telescope project<CR>", desc = "Projects" },
+    { "<space>p", open_project_picker, desc = "Projects" },
     { "<space>g", "<cmd>Telescope live_grep<cr>", desc = "Live grep" },
     { "<space>o", "<cmd>CodeQuick<cr>", desc = "Code quick" },
     { "<space>r", "<cmd>CodeRagSearch<cr>", desc = "Semantic code search" },
