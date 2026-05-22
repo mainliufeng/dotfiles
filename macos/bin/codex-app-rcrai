@@ -10,6 +10,7 @@ codex_app="${CODEX_APP_PATH:-/Applications/Codex.app}"
 rcrai_codex_home="${RCRAI_CODEX_HOME:-$HOME/.codex-rcrai}"
 rcrai_base_url="${RCRAI_OPENAI_BASE_URL:-https://eng-coding.speaklyai.com/v1}"
 rcrai_model="${RCRAI_CODEX_MODEL:-gpt-5.3-codex}"
+rcrai_private_env="${RCRAI_ENV_FILE:-$HOME/dotfiles-private/rcrai/env.sh}"
 
 show_alert() {
   local message="$1"
@@ -24,9 +25,14 @@ if [[ ! -d "$codex_app" ]]; then
   exit 1
 fi
 
+if [[ -z "${RCRAI_OPENAI_API_KEY:-}" && -r "$rcrai_private_env" ]]; then
+  # Finder/Spotlight launches do not inherit shell rc files, so load the private fallback.
+  source "$rcrai_private_env"
+fi
+
 if [[ -z "${RCRAI_OPENAI_API_KEY:-}" ]]; then
   echo "[codex-rcrai] missing RCRAI_OPENAI_API_KEY" >&2
-  show_alert "RCRAI_OPENAI_API_KEY is not set. Set it in launchd or start this app from an environment that exports it."
+  show_alert "RCRAI_OPENAI_API_KEY is not set. Put it in $rcrai_private_env, set it in launchd, or start this app from an environment that exports it."
   exit 1
 fi
 

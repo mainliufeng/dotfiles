@@ -56,7 +56,9 @@ Defaults:
 - `OPENAI_API_KEY`: copied from `RCRAI_OPENAI_API_KEY`
 
 Because Finder, Spotlight, and Dock apps inherit environment variables from
-launchd rather than the interactive shell, set the key with:
+launchd rather than the interactive shell, the launcher falls back to
+`~/dotfiles-private/rcrai/env.sh` when `RCRAI_OPENAI_API_KEY` is missing. To
+temporarily override the key, set it with:
 
 ```bash
 launchctl setenv RCRAI_OPENAI_API_KEY '...'
