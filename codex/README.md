@@ -18,6 +18,31 @@ Codex App 的内置 terminal/code font 由 `~/.codex/.codex-global-state.json` �
 `spark` 使用 `gpt-5.3-codex-spark` 做快速、低风险的 subagent 任务；配合 `spark`
 skill，可在 Codex App 中用 `$spark` 触发它。
 
+## Proxy launcher
+
+On macOS, `macos/link.sh` links `macos/bin/codex-app-proxy` into
+`~/.local/bin`. It launches Codex with explicit proxy environment variables for
+the local Clash Verge port:
+
+```bash
+codex-app-proxy --check
+codex-app-proxy
+codex-app-proxy --cli --version
+```
+
+`macos/link.sh` also links `macos/apps/Codex Proxy.app` into
+`~/Applications/Codex Proxy.app`, so it can be launched from Finder, Spotlight,
+or the Dock without typing the command each time.
+
+Defaults:
+
+- `HTTP_PROXY` / `HTTPS_PROXY`: `http://127.0.0.1:7897`
+- `ALL_PROXY`: `socks5://127.0.0.1:7897`
+- `NO_PROXY`: `localhost,127.0.0.1,::1`
+
+Override with `CODEX_PROXY_PORT`, `CODEX_HTTP_PROXY`, `CODEX_ALL_PROXY`, or
+`CODEX_NO_PROXY` when needed.
+
 配置默认启用 Chrome DevTools MCP server，并指向由 `scripts/start-chrome-remote` 启动的 Chrome/Chromium 实例：
 
 ```bash

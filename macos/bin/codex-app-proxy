@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+proxy_host="${CODEX_PROXY_HOST:-127.0.0.1}"
+proxy_port="${CODEX_PROXY_PORT:-7897}"
+http_proxy_url="${CODEX_HTTP_PROXY:-http://${proxy_host}:${proxy_port}}"
+all_proxy_url="${CODEX_ALL_PROXY:-socks5://${proxy_host}:${proxy_port}}"
+no_proxy_value="${CODEX_NO_PROXY:-localhost,127.0.0.1,::1}"
+codex_app="${CODEX_APP_PATH:-/Applications/Codex.app}"
+codex_cli="${CODEX_CLI_PATH:-${codex_app}/Contents/Resources/codex}"
+
+export_proxy_env() {
+  export HTTP_PROXY="$http_proxy_url"
+  export HTTPS_PROXY="$http_proxy_url"
+  export ALL_PROXY="$all_proxy_url"
+  export NO_PROXY="$no_proxy_value"
+  export http_proxy="$http_proxy_url"
+  export https_proxy="$http_proxy_url"
+  export all_proxy="$all_proxy_url"
+  export no_proxy="$no_proxy_value"
+  export CODEX_HTTP_PROXY="$http_proxy_url"
+  export CODEX_ALL_PROXY="$all_proxy_url"
+  export CODEX_NO_PROXY="$no_proxy_value"
+}
+
+check_proxy() {
+  nc -z -G 2 "$proxy_host" "$proxy_port" >/dev/null 2>&1
+}
+
+usage() {
+  cat <<'EOF'
+Usage:
+  codex-app-proxy             Launch Codex.app with Clash proxy env
+  codex-app-proxy --cli ...   Run Codex CLI with Clash proxy env
+  codex-app-proxy --check     Check whether the configured proxy port is open
+  codex-app-proxy --print-env Print the proxy env that would be applied
+
+Environment overrides:
+  CODEX_PROXY_HOST, CODEX_PROXY_PORT, CODEX_HTTP_PROXY, CODEX_ALL_PROXY,
+  CODEX_NO_PROXY, CODEX_APP_PATH, CODEX_CLI_PATH
+EOF
+}
+
+case "${1:-}" in
+  -h|--help)
+    usage
+    exit 0
+    ;;
+  --check)
+    if check_proxy; then
+      echo "[codex] proxy reachable: ${proxy_host}:${proxy_port}"
+      exit 0
+    fi
+    echo "[codex] proxy not reachable: ${proxy_host}:${proxy_port}" >&2
+    exit 1
+    ;;
+  --print-env)
+    cat <<EOF
+HTTP_PROXY=${http_proxy_url}
+HTTPS_PROXY=${http_proxy_url}
+ALL_PROXY=${all_proxy_url}
+NO_PROXY=${no_proxy_value}
+http_proxy=${http_proxy_url}
+https_proxy=${http_proxy_url}
+all_proxy=${all_proxy_url}
+no_proxy=${no_proxy_value}
+CODEX_HTTP_PROXY=${http_proxy_url}
+CODEX_ALL_PROXY=${all_proxy_url}
+CODEX_NO_PROXY=${no_proxy_value}
+EOF
+    exit 0
+    ;;
+  --cli)
+    shift
+    if [[ ! -x "$codex_cli" ]]; then
+      echo "[codex] Codex CLI not found: $codex_cli" >&2
+      exit 1
+    fi
+    if ! check_proxy; then
+      echo "[codex] warning: proxy not reachable: ${proxy_host}:${proxy_port}" >&2
+    fi
+    export_proxy_env
+    exec "$codex_cli" "$@"
+    ;;
+esac
+
+if [[ ! -d "$codex_app" ]]; then
+  echo "[codex] Codex.app not found: $codex_app" >&2
+  exit 1
+fi
+
+if ! check_proxy; then
+  echo "[codex] warning: proxy not reachable: ${proxy_host}:${proxy_port}" >&2
+fi
+
+exec open -na "$codex_app" \
+  --env "HTTP_PROXY=${http_proxy_url}" \
+  --env "HTTPS_PROXY=${http_proxy_url}" \
+  --env "ALL_PROXY=${all_proxy_url}" \
+  --env "NO_PROXY=${no_proxy_value}" \
+  --env "http_proxy=${http_proxy_url}" \
+  --env "https_proxy=${http_proxy_url}" \
+  --env "all_proxy=${all_proxy_url}" \
+  --env "no_proxy=${no_proxy_value}" \
+  --env "CODEX_HTTP_PROXY=${http_proxy_url}" \
+  --env "CODEX_ALL_PROXY=${all_proxy_url}" \
+  --env "CODEX_NO_PROXY=${no_proxy_value}" \
+  "$@"
