@@ -43,6 +43,28 @@ Defaults:
 Override with `CODEX_PROXY_PORT`, `CODEX_HTTP_PROXY`, `CODEX_ALL_PROXY`, or
 `CODEX_NO_PROXY` when needed.
 
+## Rcrai app launcher
+
+`macos/link.sh` also installs `~/Applications/Codex Rcrai.app`. It launches the
+same Codex.app binary with a separate `CODEX_HOME` and maps
+`RCRAI_OPENAI_API_KEY` to `OPENAI_API_KEY` only for that app instance.
+
+Defaults:
+
+- `CODEX_HOME`: `~/.codex-rcrai`
+- `OPENAI_BASE_URL`: `https://eng-coding.speaklyai.com/v1`
+- `OPENAI_API_KEY`: copied from `RCRAI_OPENAI_API_KEY`
+
+Because Finder, Spotlight, and Dock apps inherit environment variables from
+launchd rather than the interactive shell, set the key with:
+
+```bash
+launchctl setenv RCRAI_OPENAI_API_KEY '...'
+```
+
+Then launch `Codex Rcrai.app`. The launcher creates
+`~/.codex-rcrai/config.toml` on first run and never writes the API key to disk.
+
 配置默认启用 Chrome DevTools MCP server，并指向由 `scripts/start-chrome-remote` 启动的 Chrome/Chromium 实例：
 
 ```bash

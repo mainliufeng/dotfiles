@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+launcher="$HOME/dotfiles/macos/bin/codex-app-rcrai"
+
+if [[ ! -x "$launcher" ]]; then
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  dotfiles_root="$(cd "$script_dir/../../../../.." && pwd)"
+  launcher="$dotfiles_root/macos/bin/codex-app-rcrai"
+fi
+
+if [[ ! -x "$launcher" ]]; then
+  osascript -e 'display alert "Codex Rcrai launcher was not found or is not executable."'
+  exit 1
+fi
+
+exec "$launcher"

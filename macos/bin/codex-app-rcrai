@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+proxy_host="${CODEX_PROXY_HOST:-127.0.0.1}"
+proxy_port="${CODEX_PROXY_PORT:-7897}"
+http_proxy_url="${CODEX_HTTP_PROXY:-http://${proxy_host}:${proxy_port}}"
+all_proxy_url="${CODEX_ALL_PROXY:-socks5://${proxy_host}:${proxy_port}}"
+no_proxy_value="${CODEX_NO_PROXY:-localhost,127.0.0.1,::1}"
+codex_app="${CODEX_APP_PATH:-/Applications/Codex.app}"
+rcrai_codex_home="${RCRAI_CODEX_HOME:-$HOME/.codex-rcrai}"
+rcrai_base_url="${RCRAI_OPENAI_BASE_URL:-https://eng-coding.speaklyai.com/v1}"
+rcrai_model="${RCRAI_CODEX_MODEL:-gpt-5.3-codex}"
+
+show_alert() {
+  local message="$1"
+  if command -v osascript >/dev/null 2>&1; then
+    osascript -e "display alert \"Codex Rcrai\" message \"${message//\"/\\\"}\"" || true
+  fi
+}
+
+if [[ ! -d "$codex_app" ]]; then
+  echo "[codex-rcrai] Codex.app not found: $codex_app" >&2
+  show_alert "Codex.app was not found at $codex_app."
+  exit 1
+fi
+
+if [[ -z "${RCRAI_OPENAI_API_KEY:-}" ]]; then
+  echo "[codex-rcrai] missing RCRAI_OPENAI_API_KEY" >&2
+  show_alert "RCRAI_OPENAI_API_KEY is not set. Set it in launchd or start this app from an environment that exports it."
+  exit 1
+fi
+
+mkdir -p "$rcrai_codex_home"
+runtime_config="$rcrai_codex_home/config.toml"
+
+if [[ ! -e "$runtime_config" ]]; then
+  cat >"$runtime_config" <<EOF
+model_provider = "openai"
+model = "$rcrai_model"
+model_reasoning_effort = "high"
+openai_base_url = "$rcrai_base_url"
+
+[features]
+unified_exec = true
+shell_snapshot = true
+steer = true
+multi_agent = true
+memories = false
+chronicle = false
+
+[projects."$HOME"]
+trust_level = "trusted"
+
+[memories]
+generate_memories = false
+use_memories = false
+EOF
+  chmod 600 "$runtime_config"
+  echo "[codex-rcrai] created config: $runtime_config"
+fi
+
+if ! nc -z -G 2 "$proxy_host" "$proxy_port" >/dev/null 2>&1; then
+  echo "[codex-rcrai] warning: proxy not reachable: ${proxy_host}:${proxy_port}" >&2
+fi
+
+exec open -na "$codex_app" \
+  --env "CODEX_HOME=${rcrai_codex_home}" \
+  --env "OPENAI_API_KEY=${RCRAI_OPENAI_API_KEY}" \
+  --env "OPENAI_BASE_URL=${rcrai_base_url}" \
+  --env "HTTP_PROXY=${http_proxy_url}" \
+  --env "HTTPS_PROXY=${http_proxy_url}" \
+  --env "ALL_PROXY=${all_proxy_url}" \
+  --env "NO_PROXY=${no_proxy_value}" \
+  --env "http_proxy=${http_proxy_url}" \
+  --env "https_proxy=${http_proxy_url}" \
+  --env "all_proxy=${all_proxy_url}" \
+  --env "no_proxy=${no_proxy_value}" \
+  --env "CODEX_HTTP_PROXY=${http_proxy_url}" \
+  --env "CODEX_ALL_PROXY=${all_proxy_url}" \
+  --env "CODEX_NO_PROXY=${no_proxy_value}"
