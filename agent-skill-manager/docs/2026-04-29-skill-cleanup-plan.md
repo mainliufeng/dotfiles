@@ -179,35 +179,44 @@ catalog 变更：
 
 ## 浏览器访问类 Skill 优先级
 
-目标：明确优先用哪个，减少 `agent-browser`、`web-access`、`webapp-testing`、gstack browse、Chrome DevTools MCP、Playwright 类 skill 互相抢规则。
+目标：明确优先用哪个，减少 `agent-browser`、`web-access`、`webapp-testing`、gstack browse、Chrome DevTools MCP、Playwright、Computer Use 类 skill 互相抢规则。
 
 ### 默认优先级
 
-1. **gstack `browse` / `qa` / `qa-only`**
-   - 优先用于网页浏览、网页测试、截图、本地 web app dogfood、视觉 QA。
-   - 这符合当前 AGENTS 中的 gstack 规则。
+0. **`chrome-access-routing`**
+   - 先判断目标表面：macOS 真实 Chrome / 已打开标签页 / Chrome 插件状态 / localhost app / 生产 URL / Linux headless / 登录态页面。
+   - 不要因为 Chrome DevTools MCP 端口失败就放弃；优先尝试下一条可行通道。
 
-2. **gstack `design-review` / `benchmark` / `canary`**
+1. **macOS 真实 Chrome：Computer Use / Chrome 插件通道**
+   - 用户明确让 agent 看当前 Chrome、已打开页面、插件是否 connected、真实登录态或桌面状态时，优先用 Computer Use 的 `Google Chrome` app 状态。
+   - 如果当前 session 暴露了 Chrome Extension tab-control 工具，再用插件通道。
+   - Chrome DevTools MCP 只在 `127.0.0.1:9222` 已监听并且确实需要 DevTools/console/network 时使用。
+
+2. **gstack `browse` / `qa` / `qa-only`**
+   - 当任务不需要用户真实 Chrome 会话或当前可见窗口时，用于网页浏览、网页测试、截图、本地 web app dogfood、视觉 QA。
+
+3. **gstack `design-review` / `benchmark` / `canary`**
    - 用于更专门的前端设计 QA、性能回归、部署后巡检。
 
-3. **`web-access`**
-   - 用于需要真实登录态、中文平台、反爬页面、社交媒体、动态渲染页面、用户 Chrome 历史/书签辅助定位的任务。
-   - 当 gstack browse 无法拿到目标内容，或任务明确需要用户日常 Chrome 登录态时使用。
+4. **`web-access`**
+   - Linux / 远程 / 非 GUI 环境下优先用于联网读取、搜索、页面抓取和网络交互。
+   - 也用于中文平台、反爬页面、社交媒体、动态渲染页面，或 gstack browse 无法拿到目标内容时。
 
-4. **`webapp-testing`**
+5. **`webapp-testing`**
    - 建议停用或不再安装。
    - 原因：本地 web app 浏览、截图和 QA 已由 gstack `browse` / `qa` 覆盖；继续保留会增加触发歧义。
 
-5. **`agent-browser`**
+6. **`agent-browser`**
    - 建议停用或不再安装。
-   - 原因：它和 gstack browse / web-access 重叠，且当前 AGENTS 已明确偏向 gstack browse。
+   - 原因：它和 chrome-access-routing / gstack browse / web-access 重叠。
 
-6. **Chrome DevTools MCP 直接工具**
+7. **Chrome DevTools MCP 直接工具**
    - 不作为默认浏览器访问方式。
-   - 只有在 gstack / web-access 都不适合，且任务明确需要 DevTools 层能力时临时使用。
+   - 只有在端口可用、gstack / web-access / Computer Use 都不适合，且任务明确需要 DevTools 层能力时临时使用。
 
 ### 建议保留
 
+- `chrome-access-routing`
 - gstack browse/qa 系列
 - `web-access`
 

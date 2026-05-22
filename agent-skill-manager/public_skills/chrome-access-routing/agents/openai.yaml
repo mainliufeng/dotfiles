@@ -1,0 +1,4 @@
+interface:
+  display_name: "Chrome Access Routing"
+  short_description: "Route Chrome access safely"
+  default_prompt: "Use $chrome-access-routing to choose the best route for Chrome or browser access. On macOS prefer Computer Use for real visible Chrome windows, then extension/plugin tools, Browser/headless routes, and CDP only when 127.0.0.1:9222 is available. On Linux prefer web-access/headless/curl routes. If one route fails, name it and try another viable route before giving up."
