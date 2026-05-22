@@ -10,6 +10,7 @@ shell_snapshot = true
 steer = true
 web_search_request = true
 multi_agent = true
+goals = true
 memories = false
 chronicle = false
 
