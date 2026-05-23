@@ -54,6 +54,9 @@ Defaults:
 - `CODEX_HOME`: `~/.codex-rcrai`
 - `OPENAI_BASE_URL`: `https://eng-coding.speaklyai.com/v1`
 - `OPENAI_API_KEY`: copied from `RCRAI_OPENAI_API_KEY`
+- App proxy: `--proxy-server=http://127.0.0.1:7897`
+- `HTTP_PROXY` / `HTTPS_PROXY`: `http://127.0.0.1:7897`
+- `ALL_PROXY`: `socks5://127.0.0.1:7897`
 
 Because Finder, Spotlight, and Dock apps inherit environment variables from
 launchd rather than the interactive shell, the launcher falls back to
@@ -66,6 +69,8 @@ launchctl setenv RCRAI_OPENAI_API_KEY '...'
 
 Then launch `Codex Rcrai.app`. The launcher creates
 `~/.codex-rcrai/config.toml` on first run and never writes the API key to disk.
+Override the Clash port or proxy URLs with `CODEX_PROXY_PORT`,
+`CODEX_HTTP_PROXY`, `CODEX_ALL_PROXY`, or `CODEX_APP_PROXY_SERVER` when needed.
 
 配置默认启用 Chrome DevTools MCP server，并指向由 `scripts/start-chrome-remote` 启动的 Chrome/Chromium 实例：
 
