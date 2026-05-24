@@ -3,7 +3,8 @@ set -euo pipefail
 
 LABEL="com.mainliufeng.telegram-codex-gateway"
 PLIST_NAME="$LABEL.plist"
-DOTFILES_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+DOTFILES_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
 MODULE_DIR="$DOTFILES_ROOT/telegram-codex-gateway"
 MOBIUS_REPO_DEFAULT="$HOME/Code/self/mobius"
 ENV_FILE_DEFAULT="$HOME/.config/telegram-codex-gateway.env"
