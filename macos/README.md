@@ -9,6 +9,7 @@ Observed on this Mac when the layout was created:
 - Installed casks: `alfred`, `clash-verge-rev`, `codex-app`, `font-hack-nerd-font`, `ghostty`, `hammerspoon`, `neovide-app`
 - Applications present: `Alfred 5.app`, `Clash Verge.app`, `Codex.app`, `Ghostty.app`, `Google Chrome.app`, `Hammerspoon.app`, `Neovide.app`
 - Codex CLI: `/Applications/Codex.app/Contents/Resources/codex`
+- Happy CLI: installed by the common `npm` module with `npm install -g happy`
 
 Use the root entrypoints:
 
