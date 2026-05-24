@@ -1,0 +1,322 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+LABEL="com.mainliufeng.telegram-codex-gateway"
+PLIST_NAME="$LABEL.plist"
+DOTFILES_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+MODULE_DIR="$DOTFILES_ROOT/telegram-codex-gateway"
+MOBIUS_REPO_DEFAULT="$HOME/Code/self/mobius"
+ENV_FILE_DEFAULT="$HOME/.config/telegram-codex-gateway.env"
+LOCAL_ROOT="${TELEGRAM_CODEX_GATEWAY_HOME:-$HOME/.local/share/telegram-codex-gateway}"
+LOCAL_RELEASE_FILE="$LOCAL_ROOT/release.json"
+RUNNER="$MODULE_DIR/bin/telegram-codex-gateway-run"
+LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
+PLIST_PATH="$LAUNCH_AGENTS_DIR/$PLIST_NAME"
+LOG_DIR="$HOME/.local/state/telegram-codex-gateway"
+GLOBAL_BIN_DIR="$HOME/.local/bin"
+GLOBAL_CMD_PATH="$GLOBAL_BIN_DIR/telegram-codex-gateway"
+
+usage() {
+  cat <<'USAGE'
+Usage: telegram-codex-gateway <command> [args]
+
+Commands:
+  install-local [mobius-repo]   Build the service in the mobius workspace
+  install-launchd               Install the macOS LaunchAgent plist
+  deploy [mobius-repo]          install-local + install-launchd + restart if env is ready
+  doctor                        Check local install/env/launchd status
+  release                       Print local installed release metadata
+
+  start                         Start or kickstart the LaunchAgent
+  stop                          Stop the LaunchAgent
+  restart                       Restart the LaunchAgent
+  status                        Show launchd status
+  logs [n]                      Show recent logs (default: 120)
+  follow                        Follow service logs
+
+  health                        GET /healthz
+  jobs                          GET /jobs
+  sessions                      GET /sessions
+
+  env-path                      Print env file path
+  env-edit                      Open env file in $EDITOR
+  jobs-path                     Print jobs file path from env
+  jobs-edit                     Open jobs file in $EDITOR
+  help                          Show this help
+USAGE
+}
+
+env_file() {
+  echo "${TELEGRAM_CODEX_GATEWAY_ENV_FILE:-$ENV_FILE_DEFAULT}"
+}
+
+read_env_value() {
+  local key="$1"
+  local file
+  file="$(env_file)"
+  [[ -f "$file" ]] || return 0
+  awk -F= -v key="$key" '$1==key { sub(/^[^=]*=/, ""); gsub(/^"|"$/, ""); print; exit }' "$file"
+}
+
+api_base() {
+  local host port
+  host="$(read_env_value TG_GATEWAY_HTTP_HOST)"
+  port="$(read_env_value TG_GATEWAY_HTTP_PORT)"
+  [[ -z "$host" ]] && host="127.0.0.1"
+  [[ -z "$port" ]] && port="7408"
+  echo "http://${host}:${port}"
+}
+
+env_ready() {
+  local token
+  token="$(read_env_value TG_GATEWAY_BOT_TOKEN)"
+  [[ -n "$token" && "$token" != *replace_me* && "$token" != "<telegram_bot_token>" ]]
+}
+
+require_macos() {
+  if [[ "$(uname -s)" != "Darwin" ]]; then
+    echo "[telegram-codex-gateway] this dotfiles wrapper manages the macOS launchd install only" >&2
+    exit 1
+  fi
+}
+
+workspace_from_release() {
+  if [[ -f "$LOCAL_RELEASE_FILE" ]]; then
+    node -e 'const fs=require("fs"); const p=process.argv[1]; console.log(JSON.parse(fs.readFileSync(p, "utf8")).workspaceRoot || "")' "$LOCAL_RELEASE_FILE"
+    return 0
+  fi
+  echo "${MOBIUS_REPO:-$MOBIUS_REPO_DEFAULT}"
+}
+
+require_local_install() {
+  local ws_root
+  ws_root="$(workspace_from_release)"
+  if [[ ! -f "$ws_root/apps/telegram-codex-gateway/service/dist/server.js" ]]; then
+    echo "[telegram-codex-gateway] service build not found in: $ws_root" >&2
+    echo "run: telegram-codex-gateway install-local ${MOBIUS_REPO:-$MOBIUS_REPO_DEFAULT}" >&2
+    exit 1
+  fi
+}
+
+write_default_env() {
+  local file
+  file="$(env_file)"
+  if [[ -f "$file" ]]; then
+    return 0
+  fi
+  mkdir -p "$(dirname "$file")" "$HOME/.mobius/telegram-codex-gateway"
+  cat >"$file" <<EOF
+TG_GATEWAY_BOT_TOKEN=123456:replace_me
+TG_GATEWAY_PROVIDER=codex-sdk
+CODEX_PATH=$HOME/.local/bin/codex
+AGENT_CWD=${MOBIUS_REPO:-$MOBIUS_REPO_DEFAULT}
+TG_GATEWAY_ALLOWED_CHAT_IDS=
+TG_GATEWAY_HTTP_HOST=127.0.0.1
+TG_GATEWAY_HTTP_PORT=7408
+TG_GATEWAY_CRON_FILE=$HOME/.mobius/telegram-codex-gateway/jobs.json
+TG_GATEWAY_CRON_TIMEZONE=Asia/Shanghai
+TG_GATEWAY_WATCHDOG_INTERVAL_SEC=15
+TG_GATEWAY_SLEEP_RESUME_GAP_SEC=90
+TG_GATEWAY_POLL_STALE_SEC=90
+EOF
+  chmod 600 "$file"
+  echo "[telegram-codex-gateway] created env template: $file"
+}
+
+write_release() {
+  local ws_root="$1"
+  local now commit branch
+  now="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+  commit="$(git -C "$ws_root" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+  branch="$(git -C "$ws_root" branch --show-current 2>/dev/null || echo unknown)"
+  mkdir -p "$LOCAL_ROOT"
+  cat >"$LOCAL_RELEASE_FILE" <<JSON
+{
+  "installedAt": "$now",
+  "workspaceRoot": "$ws_root",
+  "branch": "$branch",
+  "commit": "$commit",
+  "serviceDist": "$ws_root/apps/telegram-codex-gateway/service/dist/server.js",
+  "launchAgent": "$PLIST_PATH",
+  "globalCommand": "$GLOBAL_CMD_PATH"
+}
+JSON
+}
+
+cmd_install_local() {
+  local ws_root="${1:-${MOBIUS_REPO:-$MOBIUS_REPO_DEFAULT}}"
+  ws_root="${ws_root/#\~/$HOME}"
+  if [[ ! -f "$ws_root/pnpm-workspace.yaml" || ! -f "$ws_root/apps/telegram-codex-gateway/service/package.json" ]]; then
+    echo "[telegram-codex-gateway] invalid mobius workspace: $ws_root" >&2
+    exit 1
+  fi
+  command -v pnpm >/dev/null || { echo "pnpm is required" >&2; exit 1; }
+  command -v node >/dev/null || { echo "node is required" >&2; exit 1; }
+
+  mkdir -p "$LOCAL_ROOT"
+
+  echo "[telegram-codex-gateway] building from workspace: $ws_root"
+  (
+    cd "$ws_root"
+    pnpm_config_verify_deps_before_run=false pnpm --filter @mobius/agent-bridge build
+    pnpm_config_verify_deps_before_run=false pnpm --filter @mobius/telegram-codex-gateway-service build
+  )
+
+  mkdir -p "$GLOBAL_BIN_DIR"
+  ln -sfn "$MODULE_DIR/bin/telegram-codex-gateway" "$GLOBAL_CMD_PATH"
+  write_default_env
+  write_release "$ws_root"
+
+  echo "[telegram-codex-gateway] service build ready: $ws_root/apps/telegram-codex-gateway/service/dist/server.js"
+  echo "[telegram-codex-gateway] global command installed: $GLOBAL_CMD_PATH"
+}
+
+cmd_install_launchd() {
+  require_macos
+  mkdir -p "$LAUNCH_AGENTS_DIR" "$LOG_DIR"
+  chmod +x "$RUNNER" "$MODULE_DIR/bin/telegram-codex-gateway"
+  sed \
+    -e "s#__LABEL__#$LABEL#g" \
+    -e "s#__RUNNER__#$RUNNER#g" \
+    -e "s#__WORKDIR__#$HOME#g" \
+    -e "s#__LOG_DIR__#$LOG_DIR#g" \
+    "$MODULE_DIR/launchd/$PLIST_NAME" >"$PLIST_PATH"
+  plutil -lint "$PLIST_PATH" >/dev/null
+  echo "[telegram-codex-gateway] launch agent installed: $PLIST_PATH"
+}
+
+cmd_deploy() {
+  cmd_install_local "${1:-${MOBIUS_REPO:-$MOBIUS_REPO_DEFAULT}}"
+  cmd_install_launchd
+  if env_ready; then
+    cmd_restart
+    cmd_health || true
+  else
+    echo "[telegram-codex-gateway] env is not ready; edit $(env_file), then run: telegram-codex-gateway start"
+  fi
+}
+
+cmd_start() {
+  require_macos
+  require_local_install
+  if ! env_ready; then
+    echo "[telegram-codex-gateway] TG_GATEWAY_BOT_TOKEN is not configured in $(env_file)" >&2
+    exit 1
+  fi
+  cmd_install_launchd >/dev/null
+  if launchctl print "gui/$UID/$LABEL" >/dev/null 2>&1; then
+    launchctl kickstart -k "gui/$UID/$LABEL"
+  else
+    launchctl bootstrap "gui/$UID" "$PLIST_PATH"
+  fi
+  sleep 1
+  cmd_status || true
+}
+
+cmd_stop() {
+  require_macos
+  launchctl bootout "gui/$UID" "$PLIST_PATH" >/dev/null 2>&1 || true
+}
+
+cmd_restart() {
+  cmd_stop
+  cmd_start
+}
+
+cmd_status() {
+  require_macos
+  launchctl print "gui/$UID/$LABEL"
+}
+
+cmd_logs() {
+  local lines="${1:-120}"
+  touch "$LOG_DIR/service.log" "$LOG_DIR/error.log"
+  echo "== service.log =="
+  tail -n "$lines" "$LOG_DIR/service.log"
+  echo "== error.log =="
+  tail -n "$lines" "$LOG_DIR/error.log"
+}
+
+cmd_follow() {
+  touch "$LOG_DIR/service.log" "$LOG_DIR/error.log"
+  tail -f "$LOG_DIR/service.log" "$LOG_DIR/error.log"
+}
+
+cmd_health() {
+  curl -fsS "$(api_base)/healthz"
+  echo
+}
+
+cmd_jobs() {
+  curl -fsS "$(api_base)/jobs"
+  echo
+}
+
+cmd_sessions() {
+  curl -fsS "$(api_base)/sessions"
+  echo
+}
+
+cmd_jobs_path() {
+  local jobs_file
+  jobs_file="$(read_env_value TG_GATEWAY_CRON_FILE)"
+  [[ -z "$jobs_file" ]] && jobs_file="$HOME/.mobius/telegram-codex-gateway/jobs.json"
+  echo "$jobs_file"
+}
+
+cmd_doctor() {
+  echo "local_root=$LOCAL_ROOT"
+  echo "workspace=$(workspace_from_release)"
+  echo "global_command=$GLOBAL_CMD_PATH"
+  [[ -f "$GLOBAL_CMD_PATH" ]] && echo "global_command_target=$(readlink "$GLOBAL_CMD_PATH" || true)"
+  [[ -f "$LOCAL_RELEASE_FILE" ]] && cat "$LOCAL_RELEASE_FILE" || echo "release_metadata=(missing)"
+  command -v node >/dev/null && echo "node=$(command -v node)"
+  command -v pnpm >/dev/null && echo "pnpm=$(command -v pnpm)"
+  command -v codex >/dev/null && echo "codex=$(command -v codex)"
+  echo "env_file=$(env_file)"
+  if env_ready; then
+    echo "env_ready=yes"
+  else
+    echo "env_ready=no"
+  fi
+  if [[ -f "$PLIST_PATH" ]]; then
+    echo "launch_agent=$PLIST_PATH"
+  else
+    echo "launch_agent=(missing)"
+  fi
+  launchctl print "gui/$UID/$LABEL" >/dev/null 2>&1 && echo "launchd=loaded" || echo "launchd=not-loaded"
+}
+
+main() {
+  local cmd="${1:-help}"
+  shift || true
+  case "$cmd" in
+    install-local) cmd_install_local "$@" ;;
+    install-launchd) cmd_install_launchd "$@" ;;
+    deploy) cmd_deploy "$@" ;;
+    doctor) cmd_doctor "$@" ;;
+    release) cat "$LOCAL_RELEASE_FILE" ;;
+    start) cmd_start "$@" ;;
+    stop) cmd_stop "$@" ;;
+    restart) cmd_restart "$@" ;;
+    status) cmd_status "$@" ;;
+    logs) cmd_logs "$@" ;;
+    follow) cmd_follow "$@" ;;
+    health) cmd_health "$@" ;;
+    jobs) cmd_jobs "$@" ;;
+    sessions) cmd_sessions "$@" ;;
+    env-path) env_file ;;
+    env-edit) "${EDITOR:-nvim}" "$(env_file)" ;;
+    jobs-path) cmd_jobs_path ;;
+    jobs-edit)
+      jobs_file="$(cmd_jobs_path)"
+      mkdir -p "$(dirname "$jobs_file")"
+      [[ -f "$jobs_file" ]] || printf '{"jobs":[]}\n' >"$jobs_file"
+      "${EDITOR:-nvim}" "$jobs_file"
+      ;;
+    help|-h|--help) usage ;;
+    *) echo "unknown command: $cmd" >&2; usage; exit 1 ;;
+  esac
+}
+
+main "$@"

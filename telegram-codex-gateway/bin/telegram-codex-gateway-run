@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+LOCAL_ROOT="${TELEGRAM_CODEX_GATEWAY_HOME:-$HOME/.local/share/telegram-codex-gateway}"
+LOCAL_RELEASE_FILE="$LOCAL_ROOT/release.json"
+ENV_FILE="${TELEGRAM_CODEX_GATEWAY_ENV_FILE:-$HOME/.config/telegram-codex-gateway.env}"
+MOBIUS_REPO_DEFAULT="$HOME/Code/self/mobius"
+
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo "[telegram-codex-gateway] env file missing: $ENV_FILE" >&2
+  exit 1
+fi
+
+set -a
+# shellcheck source=/dev/null
+source "$ENV_FILE"
+set +a
+
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+
+if [[ -z "${CODEX_PATH:-}" && -x "$HOME/.local/bin/codex" ]]; then
+  export CODEX_PATH="$HOME/.local/bin/codex"
+fi
+
+workspace="${MOBIUS_REPO:-}"
+if [[ -z "$workspace" && -f "$LOCAL_RELEASE_FILE" ]]; then
+  workspace="$(node -e 'const fs=require("fs"); const p=process.argv[1]; console.log(JSON.parse(fs.readFileSync(p, "utf8")).workspaceRoot || "")' "$LOCAL_RELEASE_FILE")"
+fi
+workspace="${workspace:-$MOBIUS_REPO_DEFAULT}"
+
+cd "$workspace"
+exec node apps/telegram-codex-gateway/service/dist/server.js
