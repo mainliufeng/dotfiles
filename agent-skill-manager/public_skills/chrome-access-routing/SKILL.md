@@ -1,6 +1,6 @@
 ---
 name: chrome-access-routing
-description: Route Chrome and browser-access tasks across macOS, Linux, Chrome Extension, Computer Use, Chrome DevTools Protocol, Browser, web-access, and headless/browser MCP tools. Use when the user asks Codex to open, inspect, control, screenshot, QA, or debug Chrome/browser pages, especially when one access method fails and another should be tried before giving up.
+description: Route Chrome and browser-access tasks across macOS, Linux, Chrome Extension, Computer Use, Chrome DevTools Protocol, Browser, web-access, and headless/browser MCP tools. Use when the user asks Codex to open, inspect, control, screenshot, QA, or debug Chrome/browser pages, especially Google Search Console/GSC, logged-in Google services, authenticated dashboards, the user's already-open Chrome tab, or cases where one browser access method fails and another should be tried before giving up.
 ---
 
 # Chrome Access Routing
@@ -15,17 +15,35 @@ Use this skill to choose the right browser-access route instead of assuming a si
 2. Prefer the least disruptive route that can observe the needed evidence.
 3. If one route fails, name the failed route and try the next reasonable route before asking the user to repair configuration.
 4. Do not confuse different connection states. A Chrome Extension popup showing `Connected` does not mean Chrome DevTools Protocol is listening on `127.0.0.1:9222`, and a DevTools failure does not prove Computer Use or the extension is unavailable.
-5. When using Computer Use on macOS, also use `computer-use-non-disruptive` if available. Call `get_app_state` first, verify the returned window/title/URL, and avoid switching workspaces or raising windows unless the user explicitly allows disruption.
+5. Do not confuse Chrome Extension profile state with the user's real visible Chrome state. If an extension/headless route shows Google account chooser, signed-out, blocked, empty shell, or a different profile, that is only evidence about that route.
+6. When using Computer Use on macOS, also use `computer-use-non-disruptive` if available. Call `get_app_state` first, verify the returned window/title/URL, and avoid switching workspaces or raising windows unless the user explicitly allows disruption.
 
 ## macOS Priority
 
 For the user's Mac, prefer this order for visible Chrome pages:
 
 1. **Computer Use for Google Chrome** when the user wants Codex to look at or operate the currently visible/real Chrome window. Use `get_app_state` first. This works even when Chrome DevTools Protocol is not enabled.
-2. **Chrome Extension / Chrome plugin tools** when tools such as tab listing, tab claiming, screenshots, DOM reads, or Playwright-like control are actually exposed in the current tool list.
-3. **Browser / in-app browser tools** for local app QA when the target URL is known and the user does not specifically need their real Chrome profile, cookies, extensions, or already-open tabs.
-4. **Chrome DevTools Protocol** only when CDP tools are exposed and Chrome is listening on the expected debugging port, commonly `127.0.0.1:9222`. If this fails with `Failed to fetch browser webSocket URL`, explain that CDP is not enabled and try Computer Use or another route.
-5. **Shell/curl/static inspection** only for non-visual checks such as HTTP status, sitemap, robots, metadata, build output, and generated HTML.
+2. **Computer Use for authenticated Google/GSC/dashboard state** when the task depends on the user's real login, cookies, current profile, already-open tab, or a screenshot/user statement that the page is open. This includes Google Search Console / GSC, Google Analytics, Vercel dashboards, Gmail, account chooser disputes, and automation follow-ups where the user says they are already logged in.
+3. **Chrome Extension / Chrome plugin tools** when tools such as tab listing, tab claiming, screenshots, DOM reads, or Playwright-like control are exposed and the task does not need the real visible Chrome login state, or after Computer Use confirms the intended Chrome profile/window is not available.
+4. **Browser / in-app browser tools** for local app QA when the target URL is known and the user does not specifically need their real Chrome profile, cookies, extensions, or already-open tabs.
+5. **Chrome DevTools Protocol** only when CDP tools are exposed and Chrome is listening on the expected debugging port, commonly `127.0.0.1:9222`. If this fails with `Failed to fetch browser webSocket URL`, explain that CDP is not enabled and try Computer Use or another route.
+6. **Shell/curl/static inspection** only for non-visual checks such as HTTP status, sitemap, robots, metadata, build output, and generated HTML.
+
+## Authenticated Google / GSC Rule
+
+For macOS tasks involving Google Search Console, GSC, Google account login state, or a user-visible Google dashboard:
+
+1. Start with Computer Use:
+
+   ```json
+   {"app":"Google Chrome"}
+   ```
+
+2. Read the returned Chrome window title, URL, visible account, selected resource, and page text before opening new tabs or using extension/headless tools.
+3. If Computer Use sees the intended logged-in page, treat that as the source of truth for login state.
+4. If a Chrome Extension, Browser, web-access, or headless route says `account chooser`, `signed out`, `ChatGPT Atlas blocked`, empty shell, or login required while the user says Chrome is open/logged in, immediately switch to Computer Use for Google Chrome before reporting a login blocker.
+5. Use extension/headless routes only as supplements after the real Chrome state is known, for example to read structured DOM, open extra tabs, or run static site checks.
+6. For recurring automations such as Quick Image Kit GSC checks, if GSC cannot be read via extension/headless but Computer Use can see the logged-in Search Console page, continue the GSC check through Computer Use instead of notifying that GSC is unavailable.
 
 ## Linux / Remote Priority
 
@@ -41,6 +59,7 @@ For Linux, SSH, containers, or remote hosts, prefer non-GUI routes first:
 Use this diagnosis language:
 
 - `Chrome Extension connected` means the browser extension is present and connected to Codex, but the agent still needs matching callable tools in the current session.
+- `Chrome Extension signed out` means only the extension-controlled profile appears signed out. On macOS, confirm real Google Chrome with Computer Use before concluding the user is signed out.
 - `Chrome DevTools Protocol unavailable` means the debugging endpoint is not listening, usually because Chrome was not launched with `--remote-debugging-port=9222`.
 - `Computer Use available` means Codex can inspect and operate the app UI through accessibility/screenshot state, but it may be less precise than DOM/Playwright/CDP for console, network, and structured DOM assertions.
 
@@ -54,7 +73,8 @@ When a browser task starts, reason internally with:
 Need to inspect/control Chrome or a web page.
 First choose the route by surface:
 - macOS real Chrome/current tab: use Computer Use get_app_state first.
-- Authenticated/profile-dependent Chrome tab: try Chrome extension/plugin tools if exposed; otherwise Computer Use.
+- GSC / Google Search Console / Google login / user says already open or logged in: use Computer Use for Google Chrome first; extension/headless signed-out state is not authoritative.
+- Authenticated/profile-dependent Chrome tab that is not user-visible and not a Google/GSC login dispute: Chrome extension/plugin tools may be used, but switch to Computer Use on mismatch.
 - Local app QA where real Chrome is not required: use Browser/in-app browser or headless browser.
 - Linux/remote/non-GUI: use web-access/headless/curl before desktop assumptions.
 - CDP only if DevTools tools are exposed and 127.0.0.1:9222 is listening.
