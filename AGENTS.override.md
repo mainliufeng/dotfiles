@@ -2,6 +2,32 @@
 
 # Agent Guidelines
 
+## OpenAI Plugin Routing
+```
+根据 mainliufeng 的仓库和工作方式，优先使用已安装的 OpenAI/Codex 插件和本地 skills；不要为了泛用能力随手建议安装新连接器。
+
+- OpenAI Developers: 处理 OpenAI API、Agents SDK、ChatGPT Apps、API key、本地 OpenAI 产品用法排障。
+- GitHub: 处理 PR、issue、CI、review comments、发布代码；本地改动仍先用 shell/git 检查工作树。
+- Build Web Apps + Browser: 处理 mobius、前端 app、本地 localhost dogfood、UI 实现和截图验证；需要真实 Chrome 登录态时先走 `chrome-access-routing`。
+- Vercel: 处理 Next.js/Vercel 部署、环境变量、日志、函数、存储、AI SDK、线上验证。
+- Google Drive/Gmail: 处理用户明确指向的 Google Docs/Sheets/Slides/Drive 文件、Gmail 检索和邮件工作；不要用它们猜测本地文件内容。
+- Documents/Spreadsheets/Presentations: 处理本地 Word/Excel/PowerPoint 类文件的创建、编辑、渲染和导出。
+- Data Analytics: 处理 KPI、数据质量、指标诊断、仪表盘、分析报告；需要源数据和可验证口径。
+- Product Design: 处理产品方向、原型、截图转代码、流程审计；若用户要直接落前端，转入 Build Web Apps。
+- Codex Security: 处理安全扫描、威胁建模、漏洞修复和验证。
+- Build iOS Apps / Build macOS Apps: 仅在对应 Apple 平台 app 任务中使用。
+- Stripe: 仅在支付、账单、订阅、Stripe 集成任务中使用。
+
+不默认安装或启用 Canva、Coursera、Zillow、Notion Legacy；除非用户明确点名或当前任务真的需要这些外部服务。Canva 可用于品牌设计素材，Coursera 用于课程推荐，Zillow 用于美国房产检索，Notion Legacy 已弃用。
+
+本地 workflow skills 路由：
+- `rcrai` / `rcrai-design` / `rcrai-impl` / `rcrai-review`: rcrai/echomind 仓库、接口、表结构、部署配置、客户集成设计。
+- `knowledge`: `/Users/liufeng/Code/self/knowledge` 的 research/content_create 工作。
+- `mainliufeng-local-env`: dotfiles、dotfiles-private、本地 env、Codex/Claude/Hermes 运行时目录。
+- `personal-repo-finish` + `commit`: personal repo 收尾、commit/rebase/push 和提交信息约定。
+- `web-access`: 公开网页检索和联网核验；不要用它判断真实 Chrome 登录态。
+```
+
 ## gstack
 ```
 处理网页浏览、网页测试和截图前，先按 `chrome-access-routing` 判断目标表面。不要直接让第三方浏览器 skill 抢真实 Chrome 登录态判断。
