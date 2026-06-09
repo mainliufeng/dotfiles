@@ -56,6 +56,7 @@ This can operate an app/window that is not in the user's current active workspac
 - Best case: the target app has only one window, or the target window is already the app's most recent/key accessibility window.
 - If the returned tree is not the intended window, stop. Do not switch workspace to find it.
 - Some apps are blocked by safety policy. Example observed: Ghostty / `com.mitchellh.ghostty`.
+- Installing software, clicking App Store `Get` / `Install`, approving system prompts, changing VPN/network state, or granting permissions can affect the user's machine beyond the current window. Treat these as side-effectful actions even when the click target is visible.
 
 ## Required Workflow
 
@@ -72,6 +73,7 @@ This can operate an app/window that is not in the user's current active workspac
    - what window/title/URL was returned
    - that Computer Use can only target app-level recent/key accessibility windows
    - that it cannot directly specify workspace/window
+7. Before any side-effectful desktop action such as app installation, login approval, permission grant, VPN connect/disconnect, or payment/account change, ask for explicit confirmation unless the user already gave that exact approval in the current turn.
 
 ## Hard Prohibitions
 
