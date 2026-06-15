@@ -148,9 +148,11 @@ export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 # JINA_CLI_END
 
 
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:$HOME/.lmstudio/bin"
-# End of LM Studio CLI section
+# LM Studio CLI
+case ":$PATH:" in
+  *":$HOME/.lmstudio/bin:"*) ;;
+  *) export PATH="$PATH:$HOME/.lmstudio/bin" ;;
+esac
 
 
 # Android SDK
