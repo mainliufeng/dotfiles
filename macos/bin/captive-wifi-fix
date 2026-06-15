@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+service="Wi-Fi"
+quit_clash=0
+dry_run=0
+
+usage() {
+  cat <<'EOF'
+Usage: captive-wifi-fix [options]
+
+Reset macOS Wi-Fi DNS and proxy settings so captive portals can finish login.
+
+Options:
+  --service NAME   Network service to reset (default: Wi-Fi)
+  --quit-clash     Ask Clash Verge to quit after resetting network settings
+  --dry-run        Print commands without running them
+  -h, --help       Show this help
+EOF
+}
+
+run() {
+  printf '+'
+  printf ' %q' "$@"
+  printf '\n'
+  if [[ "$dry_run" != "1" ]]; then
+    "$@"
+  fi
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --service)
+      service="${2:-}"
+      if [[ -z "$service" ]]; then
+        echo "missing value for --service" >&2
+        exit 2
+      fi
+      shift 2
+      ;;
+    --quit-clash)
+      quit_clash=1
+      shift
+      ;;
+    --dry-run)
+      dry_run=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "unknown option: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+if ! networksetup -listallnetworkservices | sed '1d' | grep -Fxq "$service"; then
+  echo "network service not found: $service" >&2
+  echo "available services:" >&2
+  networksetup -listallnetworkservices >&2
+  exit 1
+fi
+
+echo "Resetting captive-portal-sensitive settings for $service..."
+run networksetup -setdnsservers "$service" Empty
+run networksetup -setwebproxystate "$service" off
+run networksetup -setsecurewebproxystate "$service" off
+run networksetup -setsocksfirewallproxystate "$service" off
+run networksetup -setautoproxystate "$service" off
+run networksetup -setproxyautodiscovery "$service" off
+
+if [[ "$quit_clash" == "1" ]]; then
+  echo "Quitting Clash Verge if it is running..."
+  if [[ "$dry_run" == "1" ]]; then
+    echo "+ osascript -e 'tell application \"Clash Verge\" to quit' || true"
+    echo "+ pkill -f 'Clash Verge|clash-verge|verge-mihomo' || true"
+  else
+    osascript -e 'tell application "Clash Verge" to quit' >/dev/null 2>&1 || true
+    sleep 1
+    pkill -f 'Clash Verge|clash-verge|verge-mihomo' >/dev/null 2>&1 || true
+  fi
+fi
+
+echo
+echo "Done. Reconnect to the guest Wi-Fi, then open:"
+echo "  http://neverssl.com"
+echo
+echo "After the portal succeeds, you can reopen Clash Verge and enable System Proxy/TUN again."
