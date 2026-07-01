@@ -10,6 +10,7 @@ app_proxy_server="${CODEX_APP_PROXY_SERVER:-http://${proxy_host}:${proxy_port}}"
 app_proxy_bypass_list="${CODEX_APP_PROXY_BYPASS_LIST:-localhost;127.0.0.1;::1;eng-coding.speaklyai.com}"
 codex_app="${CODEX_APP_PATH:-/Applications/Codex.app}"
 rcrai_codex_home="${RCRAI_CODEX_HOME:-$HOME/.codex-rcrai}"
+rcrai_user_data_dir="${RCRAI_CODEX_USER_DATA_DIR:-$HOME/Library/Application Support/Codex Rcrai}"
 rcrai_base_url="${RCRAI_OPENAI_BASE_URL:-https://eng-coding.speaklyai.com/v1}"
 rcrai_model="${RCRAI_CODEX_MODEL:-gpt-5.3-codex}"
 rcrai_private_env="${RCRAI_ENV_FILE:-$HOME/dotfiles-private/rcrai/env.sh}"
@@ -39,6 +40,7 @@ if [[ -z "${RCRAI_OPENAI_API_KEY:-}" ]]; then
 fi
 
 mkdir -p "$rcrai_codex_home"
+mkdir -p "$rcrai_user_data_dir"
 runtime_config="$rcrai_codex_home/config.toml"
 
 if [[ ! -e "$runtime_config" ]]; then
@@ -87,5 +89,6 @@ exec open -na "$codex_app" \
   --env "CODEX_ALL_PROXY=${all_proxy_url}" \
   --env "CODEX_NO_PROXY=${no_proxy_value}" \
   --args \
+  "--user-data-dir=${rcrai_user_data_dir}" \
   "--proxy-server=${app_proxy_server}" \
   "--proxy-bypass-list=${app_proxy_bypass_list}"

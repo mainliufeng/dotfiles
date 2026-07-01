@@ -46,12 +46,14 @@ Override with `CODEX_PROXY_PORT`, `CODEX_HTTP_PROXY`, `CODEX_ALL_PROXY`, or
 ## Rcrai app launcher
 
 `macos/link.sh` also installs `~/Applications/Codex Rcrai.app`. It launches the
-same Codex.app binary with a separate `CODEX_HOME` and maps
-`RCRAI_OPENAI_API_KEY` to `OPENAI_API_KEY` only for that app instance.
+same Codex.app binary with a separate `CODEX_HOME` and a separate Electron user
+data directory, then maps `RCRAI_OPENAI_API_KEY` to `OPENAI_API_KEY` only for
+that app instance.
 
 Defaults:
 
 - `CODEX_HOME`: `~/.codex-rcrai`
+- Electron user data: `~/Library/Application Support/Codex Rcrai`
 - `OPENAI_BASE_URL`: `https://eng-coding.speaklyai.com/v1`
 - `OPENAI_API_KEY`: copied from `RCRAI_OPENAI_API_KEY`
 - App proxy: `--proxy-server=http://127.0.0.1:7897`
@@ -69,8 +71,10 @@ launchctl setenv RCRAI_OPENAI_API_KEY '...'
 
 Then launch `Codex Rcrai.app`. The launcher creates
 `~/.codex-rcrai/config.toml` on first run and never writes the API key to disk.
-Override the Clash port or proxy URLs with `CODEX_PROXY_PORT`,
-`CODEX_HTTP_PROXY`, `CODEX_ALL_PROXY`, or `CODEX_APP_PROXY_SERVER` when needed.
+Override the isolated runtime paths with `RCRAI_CODEX_HOME` or
+`RCRAI_CODEX_USER_DATA_DIR`. Override the Clash port or proxy URLs with
+`CODEX_PROXY_PORT`, `CODEX_HTTP_PROXY`, `CODEX_ALL_PROXY`, or
+`CODEX_APP_PROXY_SERVER` when needed.
 
 配置默认启用 Chrome DevTools MCP server，并指向由 `scripts/start-chrome-remote` 启动的 Chrome/Chromium 实例：
 
