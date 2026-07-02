@@ -17,6 +17,7 @@ Expand and correct this file as migration proceeds.
 | archlinux-desktop-ops | local repo | codex | archlinux | default | Arch Linux / Hyprland only; skip on macOS |
 | chrome-access-routing | local repo | codex | all | default | route Chrome/browser access across Computer Use, Chrome extension, CDP, Browser, web-access, and headless fallbacks |
 | computer-use-non-disruptive | local repo | codex | macos | default | guardrail for Codex App Computer Use on macOS Spaces/focus; read before desktop GUI operations |
+| engineering-contract-guard | local repo | codex, claude-code | all | default | lightweight API/interface compatibility preflight; replaces broad workflow packs for contract safety |
 | iteration-drift-guard | local repo | codex, claude-code | all | default | general guardrail for long AI-assisted engineering iterations |
 | spark | local repo | codex | all | default | GPT-5.3 Codex Spark fast subagent trigger |
 | frontend-design | github / anthropics/skills | codex, claude-code | all | default | keep; verify source vs local runtime copy |
@@ -26,7 +27,7 @@ Expand and correct this file as migration proceeds.
 | tapestry | github / michalparkola/tapestry-skills-for-claude-code | codex, claude-code | all | default | keep; verify source vs local runtime copy |
 | humanizer-zh | github / op7418/Humanizer-zh | codex, hermes | all | default | github source confirmed; install for codex + hermes |
 | gpt-image-2 | github / ConardLi/garden-skills/tree/main/skills/gpt-image-2 | codex, hermes | all | default | GPT Image 2 prompt/image workflow skill; install under Hermes creative category |
-| gstack | github / garrytan/gstack | codex, claude-code | all | special:gstack | special flow |
+| gstack | github / garrytan/gstack | claude-code | all | special:gstack | keep off Codex auto-discovery; use as manual/reference workflow or invoke via explicit tooling only |
 | notebooklm | github / teng-lin/notebooklm-py | codex, hermes | all | special:notebooklm | pipx CLI + managed local skill |
 | impeccable | github / pbakaus/impeccable | codex | all | special:impeccable | codex skill bundle from upstream repo |
 | web-access | github / eze-is/web-access | codex, hermes | all | default | github source confirmed; install for codex + hermes |

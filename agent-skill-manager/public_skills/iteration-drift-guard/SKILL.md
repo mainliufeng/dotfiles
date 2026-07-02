@@ -1,6 +1,6 @@
 ---
 name: iteration-drift-guard
-description: 通用工程迭代防跑偏守卫。每当你在长期迭代的代码库里编码、review、调试或规划改动时都应使用，尤其是发生仓库迁移/拆分、连续修同类 bug、prototype 转 production、本地联调补丁、AI 反复生成代码、架构边界变模糊，或用户提到“跑偏”“越改越乱”“codex一直在写”“连续修 bug”“迁移”“重构”“联调”“fix after fix”“migration”“refactor”“local integration”“gone off track”等场景。它要求实现前做一次简短的边界、不变量、正式入口、归属和测试闭环检查，避免补丁堆叠成架构漂移。
+description: 通用工程迭代防跑偏守卫。用于长期迭代、迁移/拆分、连续修同类 bug、prototype 转 production、本地联调补丁、AI 反复生成代码、架构边界变模糊，或用户提到“跑偏”“越改越乱”“codex一直在写”“连续修 bug”“迁移”“重构”“联调”“fix after fix”“migration”“refactor”“local integration”“gone off track”等场景。它要求实现前做一次简短的边界、不变量、正式入口、归属和测试闭环检查，避免补丁堆叠成架构漂移。单纯 API/DTO/schema/Swagger/gateway 兼容性检查优先使用 engineering-contract-guard。
 ---
 
 # Iteration Drift Guard
@@ -10,6 +10,8 @@ description: 通用工程迭代防跑偏守卫。每当你在长期迭代的代�
 用这个 skill 防止长期 AI 辅助开发中，代码越改越偏。
 
 这不是完整设计流程，而是一个轻量守卫：在编码、review、调试前，如果项目已经出现漂移迹象，先做一次短检查，再决定能不能继续落代码。
+
+如果问题主要是 API、DTO、schema、Swagger、gateway、SDK/client contract 或字段兼容性，优先使用 `engineering-contract-guard`。本 skill 只处理更广义的范围漂移、职责归属、正式入口和测试闭环问题。
 
 常见漂移迹象：
 

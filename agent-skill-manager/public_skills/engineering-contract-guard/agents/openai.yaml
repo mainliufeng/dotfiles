@@ -1,0 +1,4 @@
+interface:
+  display_name: "Engineering Contract Guard"
+  short_description: "API contract preflight guardrail"
+  default_prompt: "Use engineering-contract-guard before changing APIs, DTOs, schemas, Swagger docs, gateway routes, or cross-service contracts."

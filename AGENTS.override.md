@@ -2,6 +2,7 @@
 
 # Agent Guidelines
 
+
 ## OpenAI Plugin Routing
 ```
 根据 mainliufeng 的仓库和工作方式，优先使用已安装的 OpenAI/Codex 插件和本地 skills；不要为了泛用能力随手建议安装新连接器。
@@ -28,17 +29,33 @@
 - `web-access`: 公开网页检索和联网核验；不要用它判断真实 Chrome 登录态。
 ```
 
+
+## Skill Conflict Policy
+```
+本地 skill 冲突处理：
+- 用户明确要求和当前 repo 的 AGENTS.md 永远优先。
+- `rcrai` / `rcrai-design` / `rcrai-impl` / `rcrai-review` 仍然负责 rcrai/echomind 仓库的组织级流程、基础服务联动、DB、配置、网关、Swagger/API 文档。
+- `engineering-contract-guard` 是轻量契约前置检查。涉及 API、DTO、request/response schema、Swagger/OpenAPI、gateway route、SDK/client contract、跨服务接口边界或 `space_id`/`tenant_id`/`bid` 等隔离字段时使用；它不接管整体实现流程。
+- `iteration-drift-guard` 只用于长期迭代、迁移、边界漂移、连续修 bug、prototype 转 production 等场景；单纯接口契约问题优先用 `engineering-contract-guard`。
+- gstack 和 superpowers 不挂到 `~/.codex/skills` 作为默认自动发现 skill。gstack 只作为专项/手动工具使用，例如 review、investigate、qa、plan-eng-review；superpowers 只用于大型新功能或用户明确要求的完整方法论流程。
+- Addy Osmani / Matt Pocock 等外部 skill pack 只作为参考来源，不整包安装进 Codex 自动发现目录。
+- 多个 skill 同时匹配时，使用最窄的一组，并在执行前说明顺序；不要让多个大流程 skill 同时主导同一个任务。
+```
+
+
 ## gstack
 ```
 处理网页浏览、网页测试和截图前，先按 `chrome-access-routing` 判断目标表面。不要直接让第三方浏览器 skill 抢真实 Chrome 登录态判断。
 
+Codex 默认不把 gstack 挂到 `~/.codex/skills`，避免 gstack 的大流程/专项技能自动抢占普通编码任务。只有用户明确要求启用 gstack Codex skills 时，才运行 `cd ~/gstack && ./setup --host codex`，并说明这会重新引入广泛自动发现。
+
 - 如果任务需要用户当前 macOS Chrome 窗口、真实标签页、真实登录态、Google Search Console / GSC、Google 账号会话、authenticated dashboard、Chrome 插件状态或可见桌面状态，必须先走 `chrome-access-routing`；在 macOS 上它会优先用 Computer Use 检查 `Google Chrome`。
 - Chrome Extension、gstack `browse`、Browser、web-access 或 headless 路径看到的 signed-out / account chooser / blocked / empty shell，只能代表那条路由，不代表用户真实 Chrome 未登录；必须回到 `chrome-access-routing` 再判断。
-- 如果任务不需要用户真实 Chrome、真实会话或桌面窗口，才优先使用 gstack 的 `browse` 及相关 QA skills 处理网页浏览、网页测试、截图、本地 web app dogfood 和视觉 QA。
+- 如果任务不需要用户真实 Chrome、真实会话或桌面窗口，可以在用户明确要求 gstack 或需要其专项 QA 流程时手动使用 gstack 的 `browse` / `qa`；普通本地 web app dogfood 优先用当前可用的 Browser、Chrome DevTools 或项目自带测试工具。
 - `web-access` 负责公开网页检索、抓取和联网资料核验；不要用它判断用户当前 macOS Chrome 的登录状态。
 - 不要使用 `mcp__claude-in-chrome__*` 工具。
 
-可用的 gstack skills：
+gstack 作为手动/专项参考时，可用技能包括：
 - `office-hours`
 - `plan-ceo-review`
 - `plan-eng-review`
@@ -67,5 +84,5 @@
 - `unfreeze`
 - `gstack-upgrade`
 
-如果 gstack skills 没有生效，运行：`cd ~/gstack && ./setup --host codex`
+如果需要临时使用 gstack，优先读取 `~/gstack/.agents/skills/<skill>/SKILL.md` 作为参考或按用户明确指令手动启用；不要因为普通编码任务自动安装到 Codex runtime。
 ```

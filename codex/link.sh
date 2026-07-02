@@ -40,13 +40,17 @@ mkdir -p ~/.codex/skills
 #rsync -a ~/dotfiles/codex/skills/ ~/.codex/skills/
 
 superpowers_dir="$HOME/.codex/superpowers"
-if [ -d "$superpowers_dir" ]; then
-  if [ ! -d "$superpowers_dir/.git" ]; then
-    rm -rf "$superpowers_dir"
-    git clone https://github.com/obra/superpowers.git "$superpowers_dir"
+if [ "${DOTFILES_CODEX_ENABLE_SUPERPOWERS:-0}" = "1" ]; then
+  if [ -d "$superpowers_dir" ]; then
+    if [ ! -d "$superpowers_dir/.git" ]; then
+      rm -rf "$superpowers_dir"
+      git clone https://github.com/obra/superpowers.git "$superpowers_dir"
+    else
+      git -C "$superpowers_dir" pull
+    fi
   else
-    git -C "$superpowers_dir" pull
+    git clone https://github.com/obra/superpowers.git "$superpowers_dir"
   fi
 else
-  git clone https://github.com/obra/superpowers.git "$superpowers_dir"
+  echo "[codex] superpowers auto-install disabled; set DOTFILES_CODEX_ENABLE_SUPERPOWERS=1 to refresh it"
 fi
