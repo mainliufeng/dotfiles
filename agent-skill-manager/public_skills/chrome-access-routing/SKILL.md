@@ -61,6 +61,7 @@ Use this diagnosis language:
 - `Chrome Extension connected` means the browser extension is present and connected to Codex, but the agent still needs matching callable tools in the current session.
 - `Chrome Extension signed out` means only the extension-controlled profile appears signed out. On macOS, confirm real Google Chrome with Computer Use before concluding the user is signed out.
 - `Chrome DevTools Protocol unavailable` means the debugging endpoint is not listening, usually because Chrome was not launched with `--remote-debugging-port=9222`.
+- `Computer Use cgWindowNotFound` means Computer Use could not find a visible Chrome window to inspect. This is route-specific evidence only; it does not prove the Chrome process is absent, the user is signed out, or the target tab does not exist. On macOS, check whether Chrome is running and whether a visible window is available before concluding the task is blocked.
 - `Computer Use available` means Codex can inspect and operate the app UI through accessibility/screenshot state, but it may be less precise than DOM/Playwright/CDP for console, network, and structured DOM assertions.
 
 Do not stop after a single failure unless the user only asked for that route. Report route-specific failure and continue with the next viable route.
