@@ -20,6 +20,7 @@ Expand and correct this file as migration proceeds.
 | engineering-contract-guard | local repo | codex, claude-code | all | default | lightweight API/interface compatibility preflight; replaces broad workflow packs for contract safety |
 | iteration-drift-guard | local repo | codex, claude-code | all | default | general guardrail for long AI-assisted engineering iterations |
 | spark | local repo | codex | all | default | GPT-5.3 Codex Spark fast subagent trigger |
+| vercel-design | local repo | codex | all | default | getdesign.md Vercel DESIGN.md reference for frontend UI design |
 | frontend-design | github / anthropics/skills | codex, claude-code | all | default | keep; verify source vs local runtime copy |
 | docx | github / anthropics/skills | codex | archlinux | default | install only on Arch Linux / Codex CLI; macOS Codex App uses built-in Documents plugin and skips this row |
 | pdf | github / anthropics/skills | codex | all | default | review-needed; keep only for non-DOCX PDF operations |
