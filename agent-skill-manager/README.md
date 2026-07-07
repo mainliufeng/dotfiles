@@ -1,17 +1,20 @@
 # agent-skill-manager
 
-A markdown-driven replacement for the old `agent_config/` flow.
+A registry-driven replacement for the old `agent_config/` flow.
 
-Goal: install one manager skill into Codex, Claude Code, and Hermes. That skill then acts as the control plane for installing, updating, auditing, and comparing the rest of your skills, and for syncing runtime instruction docs such as `AGENTS.md` and `CLAUDE.md`.
+Goal: install one manager skill into Codex and Hermes, then use a fixed script to sync the configured skill registry into runtime skill directories. The manager skill remains the planning and review interface; `bin/skill-manager` performs the filesystem work.
 
 This repo now owns the manager skill, public local skills, and runtime doc catalogs that previously lived under `agent_config/`.
 
 ## Layout
 
 - `skill/` — the actual reusable skill that gets linked into each agent runtime
-- `setup.sh` — installs the manager skill itself via symlinks
+- `setup.sh` — bootstraps the manager skill itself
+- `bin/skill-manager` — syncs and audits configured skills for Codex and Hermes
+- `skill/assets/registries/public-skills.tsv` — machine-readable public skill registry
+- `~/dotfiles-private/agent-skill-manager/assets/registries/private-skills.tsv` — optional private machine-readable registry
 - `skill/assets/targets.md` — runtime locations and target notes
-- `skill/assets/skill-catalog.md` — public human-maintained list of managed skills
+- `skill/assets/skill-catalog.md` — legacy human-readable public catalog
 - `public_skills/` — public local skill source directories managed by this repo
 - `~/dotfiles-private/agent-skill-manager/assets/private-skill-catalog.md` — optional private overlay catalog
 - `skill/assets/agent-doc-catalog.md` — markdown source of truth for runtime instruction docs
@@ -23,37 +26,49 @@ This repo now owns the manager skill, public local skills, and runtime doc catal
 
 ## Usage
 
-Install the manager skill everywhere we currently support:
+Bootstrap the manager skill everywhere we currently support:
 
 ```bash
 ~/dotfiles/agent-skill-manager/setup.sh
 ```
 
-Install only one target:
+Bootstrap only one target:
 
 ```bash
 ~/dotfiles/agent-skill-manager/setup.sh --target hermes
 ~/dotfiles/agent-skill-manager/setup.sh --target codex
 ```
 
-Preview only:
+Sync all configured skills:
 
 ```bash
-~/dotfiles/agent-skill-manager/setup.sh --dry-run
+~/dotfiles/agent-skill-manager/bin/skill-manager sync
+```
+
+Audit all configured skills:
+
+```bash
+~/dotfiles/agent-skill-manager/bin/skill-manager audit
+```
+
+Preview sync only:
+
+```bash
+~/dotfiles/agent-skill-manager/bin/skill-manager sync --dry-run
 ```
 
 Runtime note:
 
-- `setup.sh` only links the manager skill itself into each runtime.
-- Skill installation, updates, audits, and runtime doc sync are executed in dialog through the manager skill.
+- `setup.sh` only bootstraps the manager skill itself.
+- `bin/skill-manager sync` installs the configured registry into Codex and Hermes.
+- `bin/skill-manager audit` checks the configured registry without touching unrelated runtime skills.
 - Public local skills live under `~/dotfiles/agent-skill-manager/public_skills/`.
 - Hermes caveat: do **not** install ordinary local/private skills by making `~/.hermes/skills/<category>/<skill-name>` a whole-directory symlink. For Hermes local/private skills, the installed path should be a real directory that contains `SKILL.md` plus any needed subdirs as internal symlinks or copies.
-- The manager skill bootstrap symlink created by `setup.sh` is a narrow exception for the manager skill itself, not a template for all Hermes local skills.
+- Broad/manual packs such as `gstack` and `mattpocock-skills` are linked into `~/.local/share/agent-skill-manager/skills/` but are not installed into Codex auto-discovery.
 
 ## Current status
 
 - Codex: supported
-- Claude Code: supported
 - Hermes: supported
 
 ## Migration status
@@ -61,4 +76,4 @@ Runtime note:
 1. Public local skills now live under `public_skills/`.
 2. Runtime docs are described by markdown catalogs and fragments in this repo.
 3. Private overlays stay in `~/dotfiles-private/agent-skill-manager/`.
-4. Remaining work is catalog completeness and workflow polish, not ownership transfer from `agent_config/`.
+4. The machine-readable TSV registries are now the execution source of truth; the Markdown catalogs remain as human-readable migration notes until fully retired.

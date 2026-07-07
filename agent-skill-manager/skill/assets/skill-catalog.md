@@ -6,29 +6,30 @@ Expand and correct this file as migration proceeds.
 ## Columns
 - `skill`: canonical skill name
 - `source`: where the skill comes from
-- `targets`: desired runtimes
+- `targets`: desired runtimes; legacy human-readable notes only
 - `platforms`: `all`, `macos`, or `archlinux`
 - `mode`: `default` means use target default install doc; `special:<name>` means read a matching file under `assets/special-installs/`
 - `status`: migration note
 
 | skill | source | targets | platforms | mode | status |
 |---|---|---|---|---|---|
-| commit | local repo | codex, claude-code, hermes | all | default | keep |
+| commit | local repo | codex, hermes | all | default | keep |
 | archlinux-desktop-ops | local repo | codex | archlinux | default | Arch Linux / Hyprland only; skip on macOS |
 | chrome-access-routing | local repo | codex | all | default | route Chrome/browser access across Computer Use, Chrome extension, CDP, Browser, web-access, and headless fallbacks |
 | computer-use-non-disruptive | local repo | codex | macos | default | guardrail for Codex App Computer Use on macOS Spaces/focus; read before desktop GUI operations |
-| engineering-contract-guard | local repo | codex, claude-code | all | default | lightweight API/interface compatibility preflight; replaces broad workflow packs for contract safety |
-| iteration-drift-guard | local repo | codex, claude-code | all | default | general guardrail for long AI-assisted engineering iterations |
+| engineering-contract-guard | local repo | codex | all | default | lightweight API/interface compatibility preflight; replaces broad workflow packs for contract safety |
+| iteration-drift-guard | local repo | codex | all | default | general guardrail for long AI-assisted engineering iterations |
 | spark | local repo | codex | all | default | GPT-5.3 Codex Spark fast subagent trigger |
 | vercel-design | local repo | codex | all | default | getdesign.md Vercel DESIGN.md reference for frontend UI design |
-| frontend-design | github / anthropics/skills | codex, claude-code | all | default | keep; verify source vs local runtime copy |
+| frontend-design | github / anthropics/skills | codex | all | default | keep; verify source vs local runtime copy |
 | docx | github / anthropics/skills | codex | archlinux | default | install only on Arch Linux / Codex CLI; macOS Codex App uses built-in Documents plugin and skips this row |
 | pdf | github / anthropics/skills | codex | all | default | review-needed; keep only for non-DOCX PDF operations |
 | remotion | github / remotion-dev/skills | codex | all | default | candidate |
-| tapestry | github / michalparkola/tapestry-skills-for-claude-code | codex, claude-code | all | default | keep; verify source vs local runtime copy |
+| tapestry | github / michalparkola/tapestry-skills-for-claude-code | codex | all | default | keep; verify source vs local runtime copy |
 | humanizer-zh | github / op7418/Humanizer-zh | codex, hermes | all | default | github source confirmed; install for codex + hermes |
 | gpt-image-2 | github / ConardLi/garden-skills/tree/main/skills/gpt-image-2 | codex, hermes | all | default | GPT Image 2 prompt/image workflow skill; install under Hermes creative category |
-| gstack | github / garrytan/gstack | claude-code | all | special:gstack | keep off Codex auto-discovery; use as manual/reference workflow or invoke via explicit tooling only |
+| gstack | github / garrytan/gstack | library | all | special:gstack | keep off Codex auto-discovery; use as manual/reference workflow or invoke via explicit tooling only |
+| mattpocock-skills | github / mattpocock/skills | library | all | special:manual-pack | keep off Codex auto-discovery; route through local router skills |
 | notebooklm | github / teng-lin/notebooklm-py | codex, hermes | all | special:notebooklm | pipx CLI + managed local skill |
 | impeccable | github / pbakaus/impeccable | codex | all | special:impeccable | codex skill bundle from upstream repo |
 | web-access | github / eze-is/web-access | codex, hermes | all | default | github source confirmed; install for codex + hermes |
@@ -41,8 +42,9 @@ Expand and correct this file as migration proceeds.
 
 ## Migration notes
 
-- `default` mode means: read the target-specific install-default doc and apply that behavior.
-- `special:*` means there is enough nuance that the agent must read the named special-install document first.
+- Execution now comes from `assets/registries/public-skills.tsv`; this Markdown table is retained for human-readable migration notes.
+- `default` mode means the corresponding registry row uses a standard adapter.
+- `special:*` means the corresponding registry row uses a non-standard adapter or manual-pack policy.
 - `archlinux` platform means the skill is only for the Arch Linux laptop. Skip it on macOS.
 - Do not list pure runtime built-ins that never need installation, such as Codex App's system `skill-creator`.
 - macOS-only Codex App replacements should be modeled by omitting the macOS install row. Prefer an `archlinux` external-install row with a status note when macOS should use an app-provided plugin instead.

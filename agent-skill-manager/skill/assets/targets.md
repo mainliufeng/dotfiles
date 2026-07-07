@@ -7,14 +7,8 @@ This file describes where each runtime currently expects skills to live.
 - Style: mostly flat directory per skill
 - Notes:
   - Some upstream installers are Codex-native
-  - Existing runtime may contain generated gstack subskills
-
-## claude-code
-- Runtime skill dir: `~/.claude/skills`
-- Style: flat directory per skill
-- Notes:
-  - Historically shares many skills with Codex, but not all
-  - Some special installs may have Claude-specific bootstrap steps
+  - The official Codex user skill location is `$HOME/.agents/skills`, but this machine currently manages the legacy/app runtime path `~/.codex/skills`
+  - Do not use `.agents/skills`, `.agent/skills`, or `~/.codex/skills` as a cold library path
 
 ## hermes
 - Runtime skill dir: `~/.hermes/skills`
@@ -24,3 +18,9 @@ This file describes where each runtime currently expects skills to live.
   - `SKILL.md` must remain readable in the installed path
   - Category `DESCRIPTION.md` files may be needed
 
+## cold library
+- Library dir: `~/.local/share/agent-skill-manager/skills`
+- Style: flat symlink registry
+- Notes:
+  - Every configured skill or pack gets a stable library link here first
+  - Manual packs such as `gstack` and `mattpocock-skills` stay here and do not enter runtime auto-discovery

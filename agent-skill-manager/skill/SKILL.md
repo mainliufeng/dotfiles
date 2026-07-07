@@ -1,16 +1,16 @@
 ---
 name: agent-skill-manager
-description: Install, update, audit, and compare skills across Codex, Claude Code, and Hermes using a single markdown-maintained control skill.
+description: Install, update, audit, and compare skills across Codex and Hermes using the local skill registry and fixed sync script.
 ---
 
 # agent-skill-manager
 
 Use this skill when the user wants to:
-- install skills for one or more agent runtimes
+- install skills for Codex or Hermes
 - update already-installed skills
-- compare skill coverage across runtimes
+- compare skill coverage across Codex and Hermes
 - audit drift between the catalog and runtime directories
-- sync runtime instruction docs such as `AGENTS.md` or `CLAUDE.md`
+- sync runtime instruction docs such as `AGENTS.md`
 - compare or audit rendered runtime docs against the markdown source catalog
 - bootstrap skills on a fresh machine
 
@@ -18,13 +18,12 @@ Use this skill when the user wants to:
 
 Before taking action, read these files in this order:
 1. `assets/targets.md`
-2. `assets/skill-catalog.md`
-3. If it exists, `~/dotfiles-private/agent-skill-manager/assets/private-skill-catalog.md`
-4. `assets/agent-doc-catalog.md` when the request touches runtime docs
-5. If it exists, `~/dotfiles-private/agent-skill-manager/assets/private-agent-doc-catalog.md`
-6. `assets/install-defaults/<target>.md` for each requested target
-7. `assets/special-installs/<skill>.md` if the catalog marks that skill as special
-8. `assets/verification/<target>.md` before finalizing
+2. `assets/registries/public-skills.tsv`
+3. If it exists, `~/dotfiles-private/agent-skill-manager/assets/registries/private-skills.tsv`
+4. `assets/skill-catalog.md` when you need human-readable migration notes
+5. If it exists, `~/dotfiles-private/agent-skill-manager/assets/private-skill-catalog.md` when you need human-readable migration notes
+6. `assets/agent-doc-catalog.md` when the request touches runtime docs
+7. If it exists, `~/dotfiles-private/agent-skill-manager/assets/private-agent-doc-catalog.md`
 
 ## Core behavior
 
@@ -38,16 +37,17 @@ Before taking action, read these files in this order:
    - compare-docs
 2. Determine which targets are in scope:
    - codex
-   - claude-code
    - hermes
 3. Detect the current platform:
    - `macos` when `uname -s` is `Darwin`
    - `archlinux` only when Linux `/etc/os-release` reports Arch or Arch-like
 4. Read the relevant markdown catalogs and build a concrete action plan.
 5. Skip catalog rows whose `platforms` value does not match the current platform, unless the value is `all`.
-6. Show a short dry-run summary before making changes.
-7. Execute using the local filesystem and shell tools.
-8. Verify using the target verification docs and render rules.
+6. Prefer the fixed script over hand-written install commands:
+   - `~/dotfiles/agent-skill-manager/bin/skill-manager sync --dry-run`
+   - `~/dotfiles/agent-skill-manager/bin/skill-manager sync`
+   - `~/dotfiles/agent-skill-manager/bin/skill-manager audit`
+7. Verify using script output and runtime checks.
 9. Report:
    - installed
    - updated
@@ -59,29 +59,28 @@ Before taking action, read these files in this order:
 
 ## Important rules
 
-- Do not assume all runtimes use the same skill directory layout.
+- Do not assume Codex and Hermes use the same skill directory layout.
 - Do not assume all catalog entries apply on all machines. Respect the `platforms` column.
 - Treat `archlinux` as the only Linux platform currently managed by this catalog; do not broaden it to generic Linux without updating the catalog first.
-- Do not check or install pure runtime built-ins. If a platform's runtime already includes a skill, omit that platform from the install row.
-- Prefer the target's default install doc unless a special-install doc exists.
-- Treat the public catalog plus the private catalog overlay (when present) as the source of truth.
-- A private skill listed in `~/dotfiles-private/agent-skill-manager/assets/private-skill-catalog.md` is considered registered and may be installed without extra confirmation.
+- Do not check or install pure runtime built-ins. If a platform's runtime already includes a skill, omit that platform from the registry row.
+- Treat `assets/registries/public-skills.tsv` plus the private registry overlay as the execution source of truth.
+- Treat old Markdown catalogs as human-readable notes, not install instructions.
+- A private skill listed in `~/dotfiles-private/agent-skill-manager/assets/registries/private-skills.tsv` is considered registered and may be installed without extra confirmation.
 - Treat `assets/agent-doc-catalog.md` plus `~/dotfiles-private/agent-skill-manager/assets/private-agent-doc-catalog.md` as the source of truth for runtime docs when the user asks to sync them.
 - If a skill is missing from both catalogs, stop and ask the user whether to add it.
 - If a requested fragment or doc profile is missing from both public and private doc catalogs, stop and ask before inventing it.
 - When a path or runtime assumption looks stale, inspect the live machine before changing anything.
-- For installs: default to missing-only behavior unless the user asked for reinstall.
-- For updates: refresh existing installs but do not silently add new catalog entries unless requested.
+- For installs and updates: run the fixed sync script rather than manually recreating adapter behavior.
 - For doc sync: render from markdown fragments and profiles instead of hand-editing generated runtime files.
-- Public local skills resolve from `~/dotfiles/agent-skill-manager/public_skills/<skill-name>` unless a public catalog entry says otherwise.
-- Private local skills resolve from `~/dotfiles-private/agent-skill-manager/private_skills/<skill-name>` unless a private overlay explicitly says otherwise.
+- Public and private skill sources are defined by the registry `source_path`.
+- The cold library is `~/.local/share/agent-skill-manager/skills/`; manual packs live there but do not enter Codex auto-discovery.
 - For Hermes local/private installs, never make `~/.hermes/skills/<category>/<skill-name>` itself a directory symlink; create a real installed directory there and symlink or copy `SKILL.md` plus needed subdirs inside it.
 - If Hermes shows warnings or `hermes skills list` omits a skill that exists in source, inspect whether the installed path is a top-level directory symlink before changing the source skill.
 
 ## Current scope
 
 This first version is intentionally conservative:
-- the manager skill itself is linked by `~/dotfiles/agent-skill-manager/setup.sh`
-- the rest of the catalog is managed by agent execution using these docs
+- the manager skill itself can be bootstrapped by `~/dotfiles/agent-skill-manager/setup.sh`
+- the rest of the registry is installed by `~/dotfiles/agent-skill-manager/bin/skill-manager`
 - runtime instruction docs are also managed in dialog from markdown catalogs and fragments
 - third-party imported skills should be normalized to direct GitHub sources whenever upstream repos exist

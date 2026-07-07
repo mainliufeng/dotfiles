@@ -7,7 +7,6 @@ This file defines the runtime instruction documents that agent-skill-manager can
 | target | output |
 | --- | --- |
 | codex | `~/.codex/AGENTS.md` |
-| claude-code | `~/.claude/CLAUDE.md` |
 
 ## Fragment Sources
 
@@ -19,7 +18,6 @@ This file defines the runtime instruction documents that agent-skill-manager can
 | target | fragments |
 | --- | --- |
 | codex | `base`, `gstack` |
-| claude-code | `base`, `gstack` |
 
 ## Project Overrides
 

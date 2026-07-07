@@ -1,0 +1,28 @@
+id	adapter	source_path	codex	hermes	hermes_category	platforms	clone_url	notes
+agent-skill-manager	single	~/dotfiles/agent-skill-manager/skill	active	active	meta	all		manager skill bootstrap and scripted sync control plane
+commit	single	~/dotfiles/agent-skill-manager/public_skills/commit	active	active	meta	all		emoji commit template
+archlinux-desktop-ops	single	~/dotfiles/agent-skill-manager/public_skills/archlinux-desktop-ops	active	none		archlinux		Arch Linux / Hyprland only
+chrome-access-routing	single	~/dotfiles/agent-skill-manager/public_skills/chrome-access-routing	active	none		all		browser and Chrome route arbiter
+computer-use-non-disruptive	single	~/dotfiles/agent-skill-manager/public_skills/computer-use-non-disruptive	active	none		macos		non-disruptive Computer Use guardrail
+engineering-contract-guard	single	~/dotfiles/agent-skill-manager/public_skills/engineering-contract-guard	active	none		all		API and contract preflight
+iteration-drift-guard	single	~/dotfiles/agent-skill-manager/public_skills/iteration-drift-guard	active	none		all		long iteration drift guard
+spark	single	~/dotfiles/agent-skill-manager/public_skills/spark	active	none		all		fast subagent trigger
+vercel-design	single	~/dotfiles/agent-skill-manager/public_skills/vercel-design	active	none		all		Vercel-style frontend design guidance
+frontend-design	single	~/Code/source/agent-skills/anthropics-skills/skills/frontend-design	active	none		all		Anthropic frontend design skill
+docx	single	~/Code/source/agent-skills/anthropics-skills/skills/docx	active	none		archlinux		macOS Codex App uses built-in Documents plugin
+pdf	single	~/Code/source/agent-skills/anthropics-skills/skills/pdf	active	none		all		PDF operations skill
+remotion	single	~/Code/source/agent-skills/remotion-skills/skills/remotion	active	none		all		Remotion best practices
+tapestry	single	~/dotfiles/.codex/skills/tapestry	active	none		all		content extraction and action planning
+humanizer-zh	single	~/Code/source/agent-skills/Humanizer-zh	active	active	creative	all		Chinese humanizer
+gpt-image-2	single	~/Code/source/agent-skills/garden-skills/skills/gpt-image-2	active	active	creative	all		GPT Image 2 workflow
+gstack	manual_pack	~/gstack	manual	none		all	https://github.com/garrytan/gstack.git	manual/reference only; do not auto-discover in Codex
+mattpocock-skills	manual_pack	~/Code/source/mattpocock-skills	manual	none		all	https://github.com/mattpocock/skills.git	manual/reference only; route through local router skills
+notebooklm	tool_plus_skill	~/dotfiles/agent-skill-manager/public_skills/notebooklm	active	active	research	all		requires notebooklm CLI outside skill sync
+impeccable	single	~/Code/source/agent-skills/impeccable/.agents/skills/impeccable	active	none		all		current Codex install shape; companion bundle not enabled
+web-access	single	~/Code/source/agent-skills/web-access	active	active	research	all		public web access skill
+dbskill	bundle_children	~/Code/source/dbskill	active	active		all	https://github.com/dontbesilent2025/dbskill.git	dontbesilent skill bundle under skills/*
+last30days	single	~/Code/source/agent-skills/last30days-skill/skills/last30days	none	active	research	all		Hermes research skill
+chirp	single	~/Code/source/agent-skills/chirp	none	active	social-media	all		Hermes social media skill
+md2wechat	single	~/Code/source/agent-skills/md2wechat-skill/skills/md2wechat	none	active	social-media	all		Hermes social media skill
+xhs-note-creator	single	~/Code/source/agent-skills/xhs-note-creator	none	active	social-media	all		Hermes social media skill
+xiaohongshu-ops	single	~/Code/source/agent-skills/xiaohongshu-ops-skill	none	active	social-media	all		Hermes social media skill

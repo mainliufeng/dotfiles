@@ -11,16 +11,14 @@ Current policy:
 3. Do not leave generated `gstack*` entries under `~/.codex/skills`.
 4. If the user explicitly asks to re-enable gstack as Codex skills, run the upstream setup and document that it reintroduces broad auto-discovery.
 
-## claude-code
-Current known approach:
-1. Ensure source checkout exists at `~/.claude/skills/gstack` or another confirmed Claude-compatible source checkout
-2. Run:
-   ```bash
-   cd <gstack-source> && ./setup
-   ```
-3. Verify Claude-facing skills appear under `~/.claude/skills`
+## library
+
+Current policy:
+1. Keep the upstream checkout at `~/gstack`.
+2. Link it into the cold library as `~/.local/share/agent-skill-manager/skills/gstack`.
+3. Do not expose generated `gstack*` skills to Codex unless the user explicitly asks to re-enable broad auto-discovery.
 
 ## Notes
 - Do not replace this with a naive symlink unless upstream behavior is understood.
 - For Codex, the expected default verification is absence from `~/.codex/skills`, not presence.
-- After Claude install/update, verify representative subskills such as `browse`, `qa`, `review`, or `office-hours`.
+- If temporarily using gstack, read the specific upstream skill from `~/gstack/.agents/skills/<skill>/SKILL.md`.
