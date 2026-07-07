@@ -14,9 +14,9 @@ This repo now owns the manager skill, public local skills, and runtime doc catal
 - `skill/assets/registries/public-skills.tsv` — machine-readable public skill registry
 - `~/dotfiles-private/agent-skill-manager/assets/registries/private-skills.tsv` — optional private machine-readable registry
 - `skill/assets/targets.md` — runtime locations and target notes
-- `skill/assets/skill-catalog.md` — legacy human-readable public catalog
+- `skill/assets/skill-migration-notes.md` — legacy human-readable migration notes
 - `public_skills/` — public local skill source directories managed by this repo
-- `~/dotfiles-private/agent-skill-manager/assets/private-skill-catalog.md` — optional private overlay catalog
+- `~/dotfiles-private/agent-skill-manager/assets/private-skill-migration-notes.md` — optional private migration notes
 - `skill/assets/agent-doc-catalog.md` — markdown source of truth for runtime instruction docs
 - `~/dotfiles-private/agent-skill-manager/assets/private-agent-doc-catalog.md` — optional private overlay for runtime docs
 - `skill/assets/agent-doc-fragments/` — reusable fragments for rendered runtime docs
@@ -76,4 +76,4 @@ Runtime note:
 1. Public local skills now live under `public_skills/`.
 2. Runtime docs are described by markdown catalogs and fragments in this repo.
 3. Private overlays stay in `~/dotfiles-private/agent-skill-manager/`.
-4. The machine-readable TSV registries are now the execution source of truth; the Markdown catalogs remain as human-readable migration notes until fully retired.
+4. The machine-readable TSV registries are the only skill execution source of truth; Markdown skill files under `*migration-notes.md` are non-authoritative notes.

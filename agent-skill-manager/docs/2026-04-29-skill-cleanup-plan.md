@@ -6,11 +6,18 @@
 
 状态：已按本文范围实施。本文同时作为本轮清理记录。
 
+注意：本文是 2026-04-29 的历史快照。当前 skill 安装/审计执行源已经迁移到 TSV registry：
+
+- 公共 registry: `~/dotfiles/agent-skill-manager/skill/assets/registries/public-skills.tsv`
+- 私有 registry: `~/dotfiles-private/agent-skill-manager/assets/registries/private-skills.tsv`
+
+文中的 “catalog” 和 `skill-catalog.md` 均指旧迁移阶段说法，不再代表当前执行源。
+
 ## 原则
 
 - 不重写 `content-creator`、`knowledge`、`rcrai-*` 等已有 skill 内容。
 - 优先减少默认可用 skill 数量，避免重复触发和旧副本抢规则。
-- `agent-skill-manager` 的 catalog 是安装 source of truth。
+- `agent-skill-manager` 的 TSV registry 是安装 source of truth。
 - `dotfiles-private/agent-skill-manager/private_skills/` 是私有 skill source of truth。
 - 旧运行时目录只在确认不再作为 source of truth 后清理。
 
@@ -38,7 +45,7 @@
 
 目标：`superpowers` 不再安装到任何工具，观察不使用该 skill 时 GPT-5.5 的自然表现。
 
-当前 catalog 条目：
+旧 catalog 条目：
 
 ```md
 | superpowers | upstream bootstrap | codex, claude-code | special:superpowers | special flow |
@@ -46,7 +53,7 @@
 
 计划：
 
-1. 从 `~/dotfiles/agent-skill-manager/skill/assets/skill-catalog.md` 的 active table 中移除 `superpowers`。
+1. 从旧 `~/dotfiles/agent-skill-manager/skill/assets/skill-catalog.md` 的 active table 中移除 `superpowers`。
 2. 删除 `skill/assets/special-installs/superpowers.md` 和 `skill/assets/agent-doc-fragments/superpowers.md`，避免以后误恢复 bootstrap prompt。
 3. 清理或停用 runtime 中已安装的 superpowers：
    - `~/.codex/superpowers/`
@@ -56,13 +63,13 @@
 
 验收：
 
-- catalog 中没有 active `superpowers` 安装目标。
+- 当前 TSV registry 中没有 active `superpowers` 安装目标。
 - Codex / Claude Code 的 runtime docs 不再要求 bootstrap superpowers。
 - 新会话中不会自动触发 superpowers skill。
 
 ## content-research-writer 清理
 
-核对结果：`content-research-writer` 不在当前 `agent-skill-manager` public catalog，也不在 private catalog；不属于当前 source of truth。
+核对结果：`content-research-writer` 不在当前 `agent-skill-manager` public registry，也不在 private registry；不属于当前 source of truth。
 
 发现的旧副本 / 运行时副本：
 
@@ -83,7 +90,7 @@
 验收：
 
 - `find` 不再能在 runtime / backup 目录里找到 `content-research-writer`。
-- catalog 中没有该 skill。
+- 当前 TSV registry 中没有该 skill。
 
 ## 删除 amap-jsapi-skill
 

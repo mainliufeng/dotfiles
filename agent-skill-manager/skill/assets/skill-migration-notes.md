@@ -1,12 +1,13 @@
-# Skill Catalog
+# Skill Migration Notes
 
-This is the human-maintained list of skills that agent-skill-manager should manage.
-Expand and correct this file as migration proceeds.
+This is a non-authoritative migration note for the old Markdown catalog.
+Do not use this file to decide what to install.
+The executable skill registry is `assets/registries/public-skills.tsv`.
 
 ## Columns
 - `skill`: canonical skill name
 - `source`: where the skill comes from
-- `targets`: desired runtimes; legacy human-readable notes only
+- `targets`: legacy desired runtimes from the migration note
 - `platforms`: `all`, `macos`, or `archlinux`
 - `mode`: `default` means use target default install doc; `special:<name>` means read a matching file under `assets/special-installs/`
 - `status`: migration note
@@ -51,4 +52,5 @@ Expand and correct this file as migration proceeds.
 - This file is intentionally markdown instead of YAML so it stays easy to edit during migration.
 - Former OpenClaw-import skills should be switched to direct GitHub sources whenever an upstream repo exists.
 - Public local skills resolve from `~/dotfiles/agent-skill-manager/public_skills/<skill-name>`.
-- Private-only skills live in `~/dotfiles-private/agent-skill-manager/assets/private-skill-catalog.md` and are part of the manager's full source of truth when that file exists.
+- Private-only executable registry rows live in `~/dotfiles-private/agent-skill-manager/assets/registries/private-skills.tsv`.
+- Private Markdown migration context, if needed, lives in `~/dotfiles-private/agent-skill-manager/assets/private-skill-migration-notes.md`.
