@@ -20,10 +20,8 @@ Before taking action, read these files in this order:
 1. `assets/targets.md`
 2. `assets/registries/public-skills.tsv`
 3. If it exists, `~/dotfiles-private/agent-skill-manager/assets/registries/private-skills.tsv`
-4. `assets/skill-migration-notes.md` only when you need old migration context
-5. If it exists, `~/dotfiles-private/agent-skill-manager/assets/private-skill-migration-notes.md` only when you need old migration context
-6. `assets/agent-doc-catalog.md` when the request touches runtime docs
-7. If it exists, `~/dotfiles-private/agent-skill-manager/assets/private-agent-doc-catalog.md`
+4. `assets/agent-doc-catalog.md` when the request touches runtime docs
+5. If it exists, `~/dotfiles-private/agent-skill-manager/assets/private-agent-doc-catalog.md`
 
 ## Core behavior
 
@@ -42,7 +40,7 @@ Before taking action, read these files in this order:
    - `macos` when `uname -s` is `Darwin`
    - `archlinux` only when Linux `/etc/os-release` reports Arch or Arch-like
 4. Read the relevant TSV registries and build a concrete action plan.
-5. Skip catalog rows whose `platforms` value does not match the current platform, unless the value is `all`.
+5. Skip registry rows whose `platforms` value does not match the current platform, unless the value is `all`.
 6. Prefer the fixed script over hand-written install commands:
    - `~/dotfiles/agent-skill-manager/bin/skill-manager sync --dry-run`
    - `~/dotfiles/agent-skill-manager/bin/skill-manager sync`
@@ -60,14 +58,13 @@ Before taking action, read these files in this order:
 ## Important rules
 
 - Do not assume Codex and Hermes use the same skill directory layout.
-- Do not assume all catalog entries apply on all machines. Respect the `platforms` column.
-- Treat `archlinux` as the only Linux platform currently managed by this catalog; do not broaden it to generic Linux without updating the catalog first.
+- Do not assume all registry entries apply on all machines. Respect the `platforms` column.
+- Treat `archlinux` as the only Linux platform currently managed by this registry; do not broaden it to generic Linux without updating the registry first.
 - Do not check or install pure runtime built-ins. If a platform's runtime already includes a skill, omit that platform from the registry row.
 - Treat `assets/registries/public-skills.tsv` plus the private registry overlay as the execution source of truth.
-- Treat `*skill-migration-notes.md` files as non-authoritative notes, not catalogs and not install instructions.
 - A private skill listed in `~/dotfiles-private/agent-skill-manager/assets/registries/private-skills.tsv` is considered registered and may be installed without extra confirmation.
 - Treat `assets/agent-doc-catalog.md` plus `~/dotfiles-private/agent-skill-manager/assets/private-agent-doc-catalog.md` as the source of truth for runtime docs when the user asks to sync them.
-- If a skill is missing from both catalogs, stop and ask the user whether to add it.
+- If a skill is missing from both registries, stop and ask the user whether to add it.
 - If a requested fragment or doc profile is missing from both public and private doc catalogs, stop and ask before inventing it.
 - When a path or runtime assumption looks stale, inspect the live machine before changing anything.
 - For installs and updates: run the fixed sync script rather than manually recreating adapter behavior.
