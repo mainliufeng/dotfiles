@@ -8,7 +8,13 @@ all_proxy_url="${CODEX_ALL_PROXY:-socks5://${proxy_host}:${proxy_port}}"
 no_proxy_value="${CODEX_NO_PROXY:-localhost,127.0.0.1,::1,eng-coding.speaklyai.com}"
 app_proxy_server="${CODEX_APP_PROXY_SERVER:-http://${proxy_host}:${proxy_port}}"
 app_proxy_bypass_list="${CODEX_APP_PROXY_BYPASS_LIST:-localhost;127.0.0.1;::1;eng-coding.speaklyai.com}"
-codex_app="${CODEX_APP_PATH:-/Applications/Codex.app}"
+if [[ -n "${CODEX_APP_PATH:-}" ]]; then
+  codex_app="$CODEX_APP_PATH"
+elif [[ -d /Applications/ChatGPT.app ]]; then
+  codex_app="/Applications/ChatGPT.app"
+else
+  codex_app="/Applications/Codex.app"
+fi
 rcrai_codex_home="${RCRAI_CODEX_HOME:-$HOME/.codex-rcrai}"
 rcrai_user_data_dir="${RCRAI_CODEX_USER_DATA_DIR:-$HOME/Library/Application Support/Codex Rcrai}"
 rcrai_base_url="${RCRAI_OPENAI_BASE_URL:-https://eng-coding.speaklyai.com/v1}"
@@ -23,8 +29,8 @@ show_alert() {
 }
 
 if [[ ! -d "$codex_app" ]]; then
-  echo "[codex-rcrai] Codex.app not found: $codex_app" >&2
-  show_alert "Codex.app was not found at $codex_app."
+  echo "[codex-rcrai] Codex host app not found: $codex_app" >&2
+  show_alert "The Codex host app was not found at $codex_app."
   exit 1
 fi
 

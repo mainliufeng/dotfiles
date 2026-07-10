@@ -46,9 +46,10 @@ Override with `CODEX_PROXY_PORT`, `CODEX_HTTP_PROXY`, `CODEX_ALL_PROXY`, or
 ## Rcrai app launcher
 
 `macos/link.sh` also installs `~/Applications/Codex Rcrai.app`. It launches the
-same Codex.app binary with a separate `CODEX_HOME` and a separate Electron user
-data directory, then maps `RCRAI_OPENAI_API_KEY` to `OPENAI_API_KEY` only for
-that app instance.
+installed Codex host app (preferring `/Applications/ChatGPT.app` and falling
+back to the legacy `/Applications/Codex.app`) with a separate `CODEX_HOME` and
+a separate Electron user data directory, then maps `RCRAI_OPENAI_API_KEY` to
+`OPENAI_API_KEY` only for that app instance.
 
 Defaults:
 
