@@ -1,5 +1,8 @@
 model = "gpt-5.5"
 model_reasoning_effort = "high"
+personality = "pragmatic"
+model_verbosity = "low"
+model_reasoning_summary = "concise"
 web_search = "live"
 
 notify = ["/Users/liufeng/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
