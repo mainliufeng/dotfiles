@@ -1,0 +1,26 @@
+{
+  "layout": "hub-spoke",
+  "width": 1200,
+  "height": 1500,
+  "title": "Agent 性能属于整条请求链",
+  "subtitle": "中心是一次成功任务，周边是 Harness、API 与 Inference 的协同优化",
+  "center": {
+    "title": "成功任务",
+    "subtitle": "更低延迟与成本"
+  },
+  "groups": [
+    {"id": "harness", "title": "Harness", "color": "#42D6B5"},
+    {"id": "api", "title": "API", "color": "#FFB85C"},
+    {"id": "inference", "title": "Inference", "color": "#9B7BFF"}
+  ],
+  "cards": [
+    {"id": "socket", "group": "harness", "angle": -65, "title": "持久连接", "body": "只发送新增输入"},
+    {"id": "prefix", "group": "harness", "angle": -20, "title": "稳定前缀", "body": "保留缓存命中"},
+    {"id": "delta", "group": "api", "angle": 25, "title": "增量 Tokenize", "body": "避免重复处理"},
+    {"id": "safety", "group": "api", "angle": 70, "title": "并行安全检查", "body": "隐藏等待时间"},
+    {"id": "routing", "group": "inference", "angle": 115, "title": "缓存感知路由", "body": "回到已有状态"},
+    {"id": "kv", "group": "inference", "angle": 160, "title": "KV 分层", "body": "热状态留在显存"},
+    {"id": "spec", "group": "inference", "angle": 205, "title": "推测式解码", "body": "批量验证候选"},
+    {"id": "code", "group": "harness", "angle": 250, "title": "Code Mode", "body": "压缩工具往返"}
+  ]
+}

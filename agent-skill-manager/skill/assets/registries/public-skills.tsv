@@ -8,6 +8,7 @@ engineering-contract-guard	single	~/dotfiles/agent-skill-manager/public_skills/e
 iteration-drift-guard	single	~/dotfiles/agent-skill-manager/public_skills/iteration-drift-guard	active	none		all		long iteration drift guard
 spark	single	~/dotfiles/agent-skill-manager/public_skills/spark	active	none		all		fast subagent trigger
 vercel-design	single	~/dotfiles/agent-skill-manager/public_skills/vercel-design	active	none		all		Vercel-style frontend design guidance
+draw-technical-diagrams	single	~/dotfiles/agent-skill-manager/public_skills/draw-technical-diagrams	active	none		all		precise technical diagram selection, specification, rendering, and validation
 frontend-design	single	~/Code/source/agent-skills/anthropics-skills/skills/frontend-design	active	none		all		Anthropic frontend design skill
 docx	single	~/Code/source/agent-skills/anthropics-skills/skills/docx	active	none		archlinux		macOS Codex App uses built-in Documents plugin
 pdf	single	~/Code/source/agent-skills/anthropics-skills/skills/pdf	active	none		all		PDF operations skill

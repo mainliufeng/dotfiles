@@ -1,0 +1,33 @@
+{
+  "layout": "comparison",
+  "width": 1600,
+  "height": 860,
+  "title": "HTTPS 全量请求 vs WebSocket 增量续接",
+  "panels": [
+    {
+      "title": "HTTPS：每轮重新请求",
+      "color": "#FFB85C",
+      "mode": "segmented-bars",
+      "rows": [
+        {"label": "第 1 轮", "segments": [{"label": "连接", "state": "muted", "weight": 2}, {"label": "Prompt", "state": "new", "weight": 3}]},
+        {"label": "第 2 轮", "segments": [{"label": "连接", "state": "muted", "weight": 2}, {"label": "重传历史", "state": "amber", "weight": 3}, {"label": "新增", "state": "new", "weight": 2}]},
+        {"label": "第 3 轮", "segments": [{"label": "连接", "state": "muted", "weight": 2}, {"label": "重传历史（增长）", "state": "amber", "weight": 5}, {"label": "新增", "state": "new", "weight": 2}]}
+      ],
+      "footer": "重复握手 + 重传完整上下文"
+    },
+    {
+      "title": "WebSocket：连接持续复用",
+      "color": "#42D6B5",
+      "mode": "persistent-spine",
+      "handshake": "只握手一次",
+      "events": [{"label": "Δ 1"}, {"label": "Δ 2"}, {"label": "Δ 3"}],
+      "footer": "一次连接 + 等量增量"
+    }
+  ],
+  "legend": [
+    {"label": "连接建立", "state": "muted"},
+    {"label": "重复载荷", "state": "amber"},
+    {"label": "新增载荷", "state": "new"},
+    {"label": "只传增量", "state": "cached"}
+  ]
+}

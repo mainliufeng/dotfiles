@@ -1,0 +1,4 @@
+interface:
+  display_name: "Technical Diagram Engineering"
+  short_description: "Draw precise technical diagrams from structured specs"
+  default_prompt: "Use $draw-technical-diagrams to turn this technical explanation into a precise, publication-ready diagram."

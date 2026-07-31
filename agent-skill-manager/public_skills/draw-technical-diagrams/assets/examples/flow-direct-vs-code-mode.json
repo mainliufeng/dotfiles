@@ -1,0 +1,37 @@
+{
+  "layout": "flow",
+  "width": 1600,
+  "height": 1260,
+  "title": "Direct Tool Calls vs Code Mode",
+  "subtitle": "前者让模型参与每一轮；后者把确定性编排留在运行时，只回传压缩结果",
+  "groups": [
+    {"id": "direct", "title": "DIRECT TOOL CALLS", "x": 50, "y": 140, "w": 700, "h": 1060, "color": "violet"},
+    {"id": "code", "title": "CODE MODE", "x": 850, "y": 140, "w": 700, "h": 1060, "color": "teal"}
+  ],
+  "nodes": [
+    {"id": "d-llm-1", "label": "LLM 判断", "x": 120, "y": 230, "w": 250, "h": 100, "stroke": "violet"},
+    {"id": "d-tool-a", "label": "调用工具 A", "x": 120, "y": 380, "w": 250, "h": 100, "stroke": "amber"},
+    {"id": "d-llm-2", "label": "LLM 再判断", "x": 120, "y": 530, "w": 250, "h": 100, "stroke": "violet"},
+    {"id": "d-tool-b", "label": "调用工具 B", "x": 120, "y": 680, "w": 250, "h": 100, "stroke": "amber"},
+    {"id": "d-llm-3", "label": "LLM 再判断", "x": 120, "y": 830, "w": 250, "h": 100, "stroke": "violet"},
+    {"id": "d-context", "label": "上下文持续增长", "body": "Prompt + Result A + Result B", "x": 450, "y": 320, "w": 240, "h": 670, "stroke": "coral"},
+    {"id": "c-llm", "label": "LLM 写程序", "body": "一次模型判断", "x": 910, "y": 230, "w": 280, "h": 120, "stroke": "violet"},
+    {"id": "c-script", "label": "生成脚本", "body": "选择、循环、过滤", "x": 910, "y": 410, "w": 280, "h": 120, "stroke": "blue"},
+    {"id": "c-runtime", "label": "JS Runtime", "body": "Tool A / B / C", "x": 910, "y": 590, "w": 280, "h": 150, "stroke": "amber"},
+    {"id": "c-compact", "label": "压缩结果", "body": "filter + join", "x": 910, "y": 810, "w": 280, "h": 120, "stroke": "teal"},
+    {"id": "c-context", "label": "上下文保持小", "body": "Prompt + Compact Result", "x": 1270, "y": 360, "w": 220, "h": 570, "stroke": "teal"}
+  ],
+  "edges": [
+    {"from": "d-llm-1", "to": "d-tool-a", "from_port": "bottom", "to_port": "top"},
+    {"from": "d-tool-a", "to": "d-llm-2", "from_port": "bottom", "to_port": "top"},
+    {"from": "d-llm-2", "to": "d-tool-b", "from_port": "bottom", "to_port": "top"},
+    {"from": "d-tool-b", "to": "d-llm-3", "from_port": "bottom", "to_port": "top"},
+    {"from": "d-tool-a", "to": "d-context", "from_port": "right", "to_port": "left", "color": "coral"},
+    {"from": "d-tool-b", "to": "d-context", "from_port": "right", "to_port": "left", "color": "coral"},
+    {"from": "d-llm-3", "to": "d-context", "from_port": "right", "to_port": "left", "color": "coral"},
+    {"from": "c-llm", "to": "c-script", "from_port": "bottom", "to_port": "top"},
+    {"from": "c-script", "to": "c-runtime", "from_port": "bottom", "to_port": "top"},
+    {"from": "c-runtime", "to": "c-compact", "from_port": "bottom", "to_port": "top"},
+    {"from": "c-compact", "to": "c-context", "from_port": "right", "to_port": "left", "color": "teal"}
+  ]
+}
