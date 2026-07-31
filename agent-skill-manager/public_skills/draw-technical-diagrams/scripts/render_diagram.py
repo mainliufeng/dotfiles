@@ -255,16 +255,227 @@ def render_hub_spoke(spec: dict, width: int, height: int, theme: dict) -> list[s
         else:
             tx = card_cx + dx * 0.15
             ty = y if vy > 0 else y + card_h
-        midx, midy = (sx + tx) / 2, (sy + ty) / 2
-        path = f"M{sx:.1f},{sy:.1f} Q{midx:.1f},{midy:.1f} {tx:.1f},{ty:.1f}"
+        distance = max(1.0, math.hypot(tx - sx, ty - sy))
+        ux, uy = (tx - sx) / distance, (ty - sy) / distance
+        tangent_x, tangent_y = -uy, ux
+        curve = max(-0.32, min(0.32, float(item.get("curve", 0.16))))
+        bend = distance * curve
+        control_1_x = sx + ux * distance * 0.22 + tangent_x * bend
+        control_1_y = sy + uy * distance * 0.22 + tangent_y * bend
+        control_2_x = tx - ux * distance * 0.28 + tangent_x * bend * 0.18
+        control_2_y = ty - uy * distance * 0.28 + tangent_y * bend * 0.18
+        path = (
+            f"M{sx:.1f},{sy:.1f} "
+            f"C{control_1_x:.1f},{control_1_y:.1f} "
+            f"{control_2_x:.1f},{control_2_y:.1f} "
+            f"{tx:.1f},{ty:.1f}"
+        )
         out.append(
-            f'<path d="{path}" fill="none" stroke="{color}" stroke-width="5" '
+            f'<path data-route="organic-cubic" data-curve="{curve:.2f}" '
+            f'd="{path}" fill="none" stroke="{color}" stroke-width="5" '
             f'stroke-dasharray="12 12" marker-end="url(#{marker_for_color(theme, color)})" opacity=".9"/>'
         )
     for index, (item, (x, y, _)) in enumerate(zip(cards, positions)):
         group = group_map.get(item.get("group"), {})
         color = group.get("color", theme["teal"])
         out.append(card(x, y, card_w, card_h, item.get("title", ""), item.get("body", ""), fill=theme["surface"], stroke=color, theme=theme, node_id=item.get("id", f"card-{index}")))
+    return out
+
+
+def mini_visual(kind: str, x: float, y: float, w: float, h: float, color: str, theme: dict) -> str:
+    """Render a compact semantic illustration inside an annotated callout."""
+    parts = [f'<g data-mini-visual="{esc(kind)}">']
+    line = theme["line"]
+    surface = theme["background"]
+
+    def box(bx: float, by: float, bw: float, bh: float, fill: str = surface, stroke: str = line, radius: float = 8) -> None:
+        parts.append(
+            f'<rect x="{bx:.1f}" y="{by:.1f}" width="{bw:.1f}" height="{bh:.1f}" '
+            f'rx="{radius:.1f}" fill="{fill}" stroke="{stroke}" stroke-width="2"/>'
+        )
+
+    if kind == "candidate":
+        box(x + w * .35, y + 4, w * .3, 25, color, color)
+        for index in range(5):
+            bx = x + w * .16 + index * w * .15
+            box(bx, y + 48, w * .09, 22, theme["teal"] if index < 3 else theme["surface_alt"], color, 5)
+        parts.append(f'<path d="M{x + w * .5:.1f},{y + 29:.1f} V{y + 44:.1f}" stroke="{color}" stroke-width="3"/>')
+    elif kind == "compute":
+        for offset in (0.05, 0.56):
+            bx = x + w * offset
+            box(bx, y + 6, w * .37, h - 12, theme["background"], color, 12)
+            for row in range(2):
+                box(bx + w * .11, y + 22 + row * 35, w * .15, 24, theme["surface_alt"], color, 6)
+        parts.append(
+            f'<path d="M{x + w * .42:.1f},{y + h / 2:.1f} H{x + w * .55:.1f}" '
+            f'stroke="{color}" stroke-width="3" marker-end="url(#{marker_for_color(theme, color)})"/>'
+        )
+    elif kind == "websocket":
+        for row in range(3):
+            ry = y + 8 + row * 27
+            box(x + 2, ry, w * (.46 + row * .08), 17, theme["surface_alt"], color, 4)
+        parts.append(f'<path d="M{x + w * .72:.1f},{y + 8:.1f} V{y + h - 8:.1f}" stroke="{color}" stroke-width="4"/>')
+        for row in range(3):
+            parts.append(f'<circle cx="{x + w * .82 + row * 23:.1f}" cy="{y + 28 + row * 20:.1f}" r="7" fill="{theme["teal"]}"/>')
+    elif kind == "token-growth":
+        for row in range(3):
+            ry = y + 8 + row * 27
+            base_w = w * (.48 + row * .13)
+            box(x + 2, ry, base_w, 18, theme["coral"], color, 5)
+            box(x + 2 + base_w, ry, w * .12, 18, theme["teal"], color, 5)
+    elif kind == "memory":
+        segment_w = (w - 8) / 6
+        colors = [theme["violet"], theme["teal"], theme["teal"], theme["amber"], theme["coral"], theme["surface_alt"]]
+        for index, fill in enumerate(colors):
+            box(x + 4 + index * segment_w, y + h * .34, segment_w - 3, 31, fill, color, 3)
+        parts.append(f'<path d="M{x + w * .24:.1f},{y + h * .34 + 31:.1f} V{y + h - 4:.1f}" stroke="{theme["teal"]}" stroke-width="3"/>')
+        parts.append(f'<path d="M{x + w * .72:.1f},{y + h * .34 + 31:.1f} V{y + h - 4:.1f}" stroke="{theme["coral"]}" stroke-width="3"/>')
+    elif kind == "catalog":
+        for row in range(3):
+            box(x + 4, y + 5 + row * 27, w * .31, 20, color if row == 2 else theme["surface_alt"], color, 5)
+        for row in range(3):
+            for col in range(4):
+                box(x + w * .48 + col * 29, y + 6 + row * 27, 20, 18, theme["amber"], color, 4)
+        parts.append(
+            f'<path d="M{x + w * .35:.1f},{y + h * .62:.1f} C{x + w * .43:.1f},{y + h * .92:.1f} '
+            f'{x + w * .58:.1f},{y + h * .92:.1f} {x + w * .63:.1f},{y + h * .72:.1f}" '
+            f'fill="none" stroke="{theme["teal"]}" stroke-width="3" marker-end="url(#arrow-teal)"/>'
+        )
+    elif kind == "routing":
+        box(x + 4, y + h * .35, w * .25, 40, color, color, 8)
+        for row in range(3):
+            by = y + 5 + row * 35
+            box(x + w * .62, by, w * .32, 26, theme["surface_alt"], color, 6)
+            parts.append(
+                f'<path d="M{x + w * .29:.1f},{y + h * .55:.1f} '
+                f'C{x + w * .42:.1f},{y + h * .55:.1f} {x + w * .48:.1f},{by + 13:.1f} {x + w * .61:.1f},{by + 13:.1f}" '
+                f'fill="none" stroke="{color}" stroke-width="2.5"/>'
+            )
+    elif kind == "timeline":
+        for row, fill in enumerate((theme["coral"], theme["teal"])):
+            ry = y + 16 + row * 43
+            box(x + 6, ry, w * (.58 + row * .23), 27, fill, fill, 5)
+            parts.append(f'<path d="M{x + w * .88:.1f},{ry - 3:.1f} V{ry + 33:.1f}" stroke="{line}" stroke-width="2" stroke-dasharray="4 4"/>')
+    elif kind == "delta":
+        box(x + 2, y + h * .37, w * .16, 30, theme["teal"], color, 6)
+        box(x + w * .27, y + h * .28, w * .25, 47, theme["surface_alt"], color, 8)
+        for index in range(5):
+            box(x + w * .63 + index * 29, y + h * .38, 20, 25, theme["teal"], color, 5)
+        parts.append(f'<path d="M{x + w * .18:.1f},{y + h * .52:.1f} H{x + w * .26:.1f}" stroke="{color}" stroke-width="3"/>')
+        parts.append(f'<path d="M{x + w * .52:.1f},{y + h * .52:.1f} H{x + w * .61:.1f}" stroke="{color}" stroke-width="3"/>')
+    elif kind == "code":
+        centers = [x + w * .08, x + w * .34, x + w * .65, x + w * .92]
+        for index, cx2 in enumerate(centers):
+            if index == 2:
+                box(cx2 - 34, y + 8, 68, h - 16, theme["surface_alt"], color, 12)
+                for branch in range(3):
+                    parts.append(f'<circle cx="{cx2:.1f}" cy="{y + 22 + branch * 28:.1f}" r="7" fill="{theme["amber"]}"/>')
+            else:
+                box(cx2 - 25, y + h * .35, 50, 35, color if index in (1, 3) else theme["surface_alt"], color, 8)
+            if index < len(centers) - 1:
+                parts.append(f'<path d="M{cx2 + 28:.1f},{y + h * .52:.1f} H{centers[index + 1] - 29:.1f}" stroke="{color}" stroke-width="3"/>')
+    else:
+        box(x + 4, y + 8, w - 8, h - 16, theme["surface_alt"], color, 12)
+
+    parts.append("</g>")
+    return "".join(parts)
+
+
+def annotated_callout(item: dict, theme: dict, color: str) -> str:
+    x, y, w, h = (float(item[key]) for key in ("x", "y", "w", "h"))
+    title_h = 48
+    body_h = 46 if item.get("body") else 10
+    visual_y = y + title_h + body_h
+    visual_h = max(58.0, h - title_h - body_h - 16)
+    return "".join(
+        [
+            f'<g data-node-id="{esc(item["id"])}" data-bbox="{x:.1f},{y:.1f},{w:.1f},{h:.1f}" filter="url(#shadow)">',
+            f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="22" '
+            f'fill="{theme["surface"]}" stroke="{color}" stroke-width="2.5"/>',
+            f'<circle cx="{x + 25:.1f}" cy="{y + 29:.1f}" r="7" fill="{color}"/>',
+            text_block(x + 43, y + 30, item["title"], width=w - 62, size=24, fill=theme["text"], weight=800, anchor="start", max_lines=1),
+            text_block(x + 22, y + 72, item.get("body", ""), width=w - 44, size=16, fill=theme["muted"], anchor="start", max_lines=2),
+            mini_visual(item.get("visual", "pipeline"), x + 24, visual_y, w - 48, visual_h, color, theme),
+            "</g>",
+        ]
+    )
+
+
+def render_annotated_hub(spec: dict, width: int, height: int, theme: dict) -> list[str]:
+    """Render a central semantic wheel surrounded by independent mini-diagrams."""
+    out: list[str] = []
+    title = spec.get("title", "")
+    if title:
+        out.append(text_block(width / 2, 42, title, width=width - 100, size=34, fill=theme["text"], weight=800, max_lines=1))
+    cx = float(spec.get("center", {}).get("x", width / 2))
+    cy = float(spec.get("center", {}).get("y", height / 2))
+    outer = float(spec.get("center", {}).get("radius", min(width, height) * .22))
+    inner = outer * .46
+    items = spec.get("callouts", [])
+    palette = [theme["violet"], theme["blue"], theme["coral"], theme["amber"], theme["teal"]]
+
+    # First solve all geometry. Connectors are drawn before panels so no line can
+    # visually cut through a mini-diagram even when a route approaches a corner.
+    connector_parts: list[str] = []
+    count = max(1, len(items))
+    item_geometry: list[dict] = []
+    for index, item in enumerate(items):
+        color = theme.get(item.get("color", ""), item.get("color", palette[index % len(palette)]))
+        x, y, w, h = (float(item[key]) for key in ("x", "y", "w", "h"))
+        panel_cx, panel_cy = x + w / 2, y + h / 2
+        dx, dy = panel_cx - cx, panel_cy - cy
+        wheel_angle = (math.degrees(math.atan2(dy, dx)) + 90) % 360
+        item_geometry.append({"item": item, "color": color, "angle": wheel_angle})
+        if abs(dx / max(w, 1)) > abs(dy / max(h, 1)):
+            tx = x - 15 if dx > 0 else x + w + 15
+            ty = panel_cy
+        else:
+            tx = panel_cx
+            ty = y - 15 if dy > 0 else y + h + 15
+        distance_from_center = max(1.0, math.hypot(tx - cx, ty - cy))
+        ux, uy = (tx - cx) / distance_from_center, (ty - cy) / distance_from_center
+        sx, sy = cx + ux * (outer + 8), cy + uy * (outer + 8)
+        route_distance = max(1.0, math.hypot(tx - sx, ty - sy))
+        tangent_x, tangent_y = -uy, ux
+        curve = max(-0.34, min(0.34, float(item.get("curve", 0.12))))
+        bend = route_distance * curve
+        c1x = sx + ux * route_distance * .24 + tangent_x * bend
+        c1y = sy + uy * route_distance * .24 + tangent_y * bend
+        c2x = tx - ux * route_distance * .24 + tangent_x * bend * .24
+        c2y = ty - uy * route_distance * .24 + tangent_y * bend * .24
+        connector_parts.append(
+            f'<path data-edge-id="hub-{esc(item["id"])}" data-item-id="{esc(item["id"])}" data-route="annotated-cubic" '
+            f'd="M{sx:.1f},{sy:.1f} C{c1x:.1f},{c1y:.1f} {c2x:.1f},{c2y:.1f} {tx:.1f},{ty:.1f}" '
+            f'fill="none" stroke="{color}" stroke-width="4" stroke-dasharray="11 10" '
+            f'stroke-linecap="round" marker-end="url(#{marker_for_color(theme, color)})"/>'
+        )
+    out.extend(connector_parts)
+
+    # Center wheel and callouts are independent drawings, layered over routes.
+    sorted_geometry = sorted(item_geometry, key=lambda value: value["angle"])
+    for index, geometry in enumerate(sorted_geometry):
+        item = geometry["item"]
+        color = geometry["color"]
+        angle = geometry["angle"]
+        previous_angle = sorted_geometry[index - 1]["angle"]
+        next_angle = sorted_geometry[(index + 1) % count]["angle"]
+        previous_gap = (angle - previous_angle) % 360
+        next_gap = (next_angle - angle) % 360
+        a0 = angle - previous_gap / 2
+        a1 = angle + next_gap / 2
+        out.append(
+            f'<path data-wheel-id="{esc(item["id"])}" d="{ring_sector_path(cx, cy, inner, outer, a0 + 1, a1 - 1)}" '
+            f'fill="{color}" opacity=".94" stroke="{theme["background"]}" stroke-width="3"/>'
+        )
+        lx, ly = polar(cx, cy, (inner + outer) / 2, angle)
+        out.append(text_block(lx, ly, item.get("short", item["title"]), width=92, size=15, fill=theme["text"], weight=800, max_lines=2))
+    out.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{inner - 6:.1f}" fill="{theme["surface"]}" stroke="{theme["text"]}" stroke-width="4"/>')
+    center = spec.get("center", {})
+    out.append(text_block(cx, cy - 12, center.get("title", ""), width=inner * 1.5, size=30, fill=theme["text"], weight=800, max_lines=2))
+    out.append(text_block(cx, cy + 43, center.get("subtitle", ""), width=inner * 1.55, size=17, fill=theme["muted"], max_lines=2))
+    for index, item in enumerate(items):
+        color = theme.get(item.get("color", ""), item.get("color", palette[index % len(palette)]))
+        out.append(annotated_callout(item, theme, color))
     return out
 
 
@@ -573,6 +784,8 @@ def render(spec: dict) -> str:
     parts = svg_header(width, height, theme, spec.get("title", "technical diagram"))
     if layout == "hub-spoke":
         parts.extend(render_hub_spoke(spec, width, height, theme))
+    elif layout == "annotated-hub":
+        parts.extend(render_annotated_hub(spec, width, height, theme))
     elif layout == "comparison":
         parts.extend(render_comparison(spec, width, height, theme))
     elif layout == "token-prefix":

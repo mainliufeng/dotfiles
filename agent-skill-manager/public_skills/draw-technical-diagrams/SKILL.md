@@ -14,7 +14,7 @@ Build diagrams in two stages: derive a semantic specification, then render it wi
 3. Select one layout family using [layout-selection.md](references/layout-selection.md).
 4. Write a diagram specification before writing SVG, Mermaid, or an image prompt. Follow [spec-writing.md](references/spec-writing.md).
 5. Render:
-   - Use `scripts/render_diagram.py` for `hub-spoke`, `comparison`, `token-prefix`, and port-routed `flow` diagrams.
+   - Use `scripts/render_diagram.py` for `hub-spoke`, `annotated-hub`, `comparison`, `token-prefix`, and port-routed `flow` diagrams.
    - Use Mermaid for ordinary sequence, state, and small acyclic flow diagrams. Follow [mermaid-and-sequence.md](references/mermaid-and-sequence.md).
    - Use an image model only for covers, scene metaphors, or decorative illustration. Follow [cover-prompts.md](references/cover-prompts.md).
 6. Export an editable source plus PNG. Never ship SVG as the only article asset.
@@ -58,6 +58,7 @@ python3 ~/.codex/skills/draw-technical-diagrams/scripts/validate_diagram.py \
 Use the example specifications as structure references:
 
 - `assets/examples/hub-spoke-agent-runtime.json`
+- `assets/examples/annotated-hub-agent-optimizations.json`
 - `assets/examples/comparison-transport.json`
 - `assets/examples/token-prefix-cache.json`
 - `assets/examples/flow-agent-loop.json`
@@ -67,6 +68,7 @@ Use the example specifications as structure references:
 
 - Attach every directed connector to an explicit source and target port.
 - Put the arrow tip on the target boundary; never use a floating triangle as an arrow.
+- Match connector geometry to meaning: organic cubic curves for explanatory expansion, orthogonal lines for process routing, and straight lines only for strict radial or measurement relationships.
 - Route return loops through a dedicated outer gutter.
 - Keep one dominant reading path. Treat secondary paths as branches, not equal-weight spaghetti.
 - Keep node labels short. Move explanation into a caption or article body.

@@ -5,6 +5,7 @@ Choose the layout from the relationship that must become obvious.
 | Reader question | Layout family | Preferred renderer | Avoid |
 |---|---|---|---|
 | What surrounds or optimizes one core system? | Hub-spoke | Deterministic SVG `hub-spoke` | Force-directed graph, image generation |
+| How do several detailed mechanisms explain one central system? | Annotated hub with mini-diagrams | Deterministic SVG `annotated-hub` | Text-only cards, one giant graph |
 | How do two approaches differ under the same dimensions? | Side-by-side comparison | Deterministic SVG `comparison` or explicit `flow` panels | Two unrelated illustrations |
 | What changes over repeated calls or time? | Timeline / segmented bars | Deterministic SVG `comparison` | Generic flowchart |
 | Which prompt tokens are reused, appended, or invalidated? | Token strip / matrix | Deterministic SVG `token-prefix` | Mermaid |
@@ -17,6 +18,8 @@ Choose the layout from the relationship that must become obvious.
 ## Selection heuristics
 
 - Use `hub-spoke` only when the center is semantically privileged. Do not use it for an ordinary chain.
+- Use `annotated-hub` when each outer item needs its own explanatory mini-diagram. Lay out the center and all mini-diagrams first, reserve connector corridors, then add curved routes.
+- Use smooth cubic curves for radial explanation links. Reserve straight radial lines for measurement, strict symmetry, or intentionally mechanical network topology.
 - Use `comparison` only when both sides answer the same question. Align equivalent dimensions horizontally.
 - Use `token-prefix` when position matters more than component identity.
 - Use `flow` when edge topology matters more than chronological message timing.

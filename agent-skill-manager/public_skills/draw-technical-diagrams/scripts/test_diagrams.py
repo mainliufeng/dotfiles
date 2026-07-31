@@ -50,6 +50,33 @@ class DiagramRendererTests(unittest.TestCase):
         self.assertEqual(done_edge.attrib["stroke"], renderer.DEFAULT_THEME["coral"])
         self.assertEqual(done_edge.attrib["marker-end"], "url(#arrow-coral)")
 
+    def test_hub_spokes_use_nonzero_organic_curves(self) -> None:
+        path = SKILL_DIR / "assets" / "examples" / "hub-spoke-agent-runtime.json"
+        svg = renderer.render(json.loads(path.read_text(encoding="utf-8")))
+        root = ET.fromstring(svg)
+        spokes = root.findall(".//{http://www.w3.org/2000/svg}path[@data-route='organic-cubic']")
+        self.assertEqual(len(spokes), 8)
+        for spoke in spokes:
+            self.assertIn(" C", spoke.attrib["d"])
+            self.assertNotEqual(float(spoke.attrib["data-curve"]), 0.0)
+
+    def test_annotated_hub_has_independent_visuals_and_curved_routes(self) -> None:
+        path = SKILL_DIR / "assets" / "examples" / "annotated-hub-agent-optimizations.json"
+        svg = renderer.render(json.loads(path.read_text(encoding="utf-8")))
+        root = ET.fromstring(svg)
+        callouts = root.findall(".//{http://www.w3.org/2000/svg}g[@data-node-id]")
+        visuals = root.findall(".//{http://www.w3.org/2000/svg}g[@data-mini-visual]")
+        routes = root.findall(".//{http://www.w3.org/2000/svg}path[@data-route='annotated-cubic']")
+        sectors = root.findall(".//{http://www.w3.org/2000/svg}path[@data-wheel-id]")
+        self.assertEqual(len(callouts), 9)
+        self.assertEqual(len(visuals), 9)
+        self.assertEqual(len(routes), 9)
+        self.assertEqual(len(sectors), 9)
+        self.assertTrue(all(" C" in route.attrib["d"] for route in routes))
+        route_colors = {route.attrib["data-item-id"]: route.attrib["stroke"] for route in routes}
+        sector_colors = {sector.attrib["data-wheel-id"]: sector.attrib["fill"] for sector in sectors}
+        self.assertEqual(route_colors, sector_colors)
+
     def test_non_flow_templates_keep_attached_markers(self) -> None:
         expected = {
             "hub-spoke-agent-runtime.json": 8,

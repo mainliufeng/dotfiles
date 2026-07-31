@@ -73,6 +73,21 @@ For `hub-spoke`:
 - Keep 4-8 outer cards.
 - Assign each card a `group`.
 - Keep the center statement shorter than the outer explanations.
+- Use organic cubic connectors by default. Set a card's signed `curve` between
+  `-0.32` and `0.32` only when a connection must bend the other way to avoid a
+  card or label; keep nearby spokes consistent so the diagram reads as one
+  expanding system rather than unrelated wires.
+
+For `annotated-hub`:
+
+- Treat the center wheel and every outer callout as independent drawings.
+- Give every callout an explicit `x`, `y`, `w`, `h`, `visual`, and connector `curve`.
+- Finish the mini-diagram layout before routing connectors.
+- Keep a whitespace corridor between the center wheel and callouts.
+- Use curved dashed routes for explanatory association; do not imply execution order.
+- Supported mini visuals include `candidate`, `compute`, `websocket`,
+  `token-growth`, `memory`, `catalog`, `routing`, `timeline`, `delta`, and
+  `code`.
 
 For `comparison`:
 
