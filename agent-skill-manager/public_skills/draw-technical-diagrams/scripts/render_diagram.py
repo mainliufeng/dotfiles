@@ -414,8 +414,9 @@ def render_annotated_hub(spec: dict, width: int, height: int, theme: dict) -> li
     items = spec.get("callouts", [])
     palette = [theme["violet"], theme["blue"], theme["coral"], theme["amber"], theme["teal"]]
 
-    # First solve all geometry. Connectors are drawn before panels so no line can
-    # visually cut through a mini-diagram even when a route approaches a corner.
+    # First solve all geometry without drawing routes. The center and every
+    # mini-diagram establish the composition; connectors are painted last and
+    # stop outside panel boundaries so they cannot cover callout content.
     connector_parts: list[str] = []
     count = max(1, len(items))
     item_geometry: list[dict] = []
@@ -449,9 +450,7 @@ def render_annotated_hub(spec: dict, width: int, height: int, theme: dict) -> li
             f'fill="none" stroke="{color}" stroke-width="4" stroke-dasharray="11 10" '
             f'stroke-linecap="round" marker-end="url(#{marker_for_color(theme, color)})"/>'
         )
-    out.extend(connector_parts)
-
-    # Center wheel and callouts are independent drawings, layered over routes.
+    # Center wheel and callouts are independent drawings.
     sorted_geometry = sorted(item_geometry, key=lambda value: value["angle"])
     for index, geometry in enumerate(sorted_geometry):
         item = geometry["item"]
@@ -476,6 +475,7 @@ def render_annotated_hub(spec: dict, width: int, height: int, theme: dict) -> li
     for index, item in enumerate(items):
         color = theme.get(item.get("color", ""), item.get("color", palette[index % len(palette)]))
         out.append(annotated_callout(item, theme, color))
+    out.extend(connector_parts)
     return out
 
 
