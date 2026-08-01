@@ -10,6 +10,25 @@ for script in "$HOME"/dotfiles/macos/bin/*; do
   ln -svfn "$script" "$HOME/.local/bin/$(basename "$script")"
 done
 
+watchdog_label="com.mainliufeng.codex-app-watchdog"
+watchdog_template="$HOME/dotfiles/macos/launchd/${watchdog_label}.plist"
+watchdog_dest="$HOME/Library/LaunchAgents/${watchdog_label}.plist"
+watchdog_log_dir="$HOME/Library/Logs/$watchdog_label"
+
+if [[ -f "$watchdog_template" ]]; then
+  mkdir -p "$HOME/Library/LaunchAgents" "$watchdog_log_dir"
+  sed \
+    -e "s|__WATCHDOG__|$HOME/.local/bin/codex-app-watchdog|g" \
+    -e "s|__LOG_DIR__|$watchdog_log_dir|g" \
+    "$watchdog_template" > "$watchdog_dest"
+  plutil -lint "$watchdog_dest"
+  launchctl bootout "gui/$UID/$watchdog_label" >/dev/null 2>&1 || true
+  launchctl bootstrap "gui/$UID" "$watchdog_dest"
+  launchctl enable "gui/$UID/$watchdog_label"
+  launchctl kickstart "gui/$UID/$watchdog_label"
+  echo "[macos] installed Codex app watchdog: $watchdog_dest"
+fi
+
 for app in "$HOME"/dotfiles/macos/apps/*.app; do
   [[ -d "$app" ]] || continue
   find "$app/Contents/MacOS" -type f -exec chmod +x {} \;
@@ -25,7 +44,7 @@ for app in "$HOME"/dotfiles/macos/apps/*.app; do
   touch "$dest_app"
   echo "[macos] installed app: $dest_app"
 done
-unset codex_icon dest_app
+unset codex_icon dest_app watchdog_label watchdog_template watchdog_dest watchdog_log_dir
 
 codex_cli="/Applications/Codex.app/Contents/Resources/codex"
 if [[ -x "$codex_cli" && ! -e "$HOME/.local/bin/codex" ]]; then

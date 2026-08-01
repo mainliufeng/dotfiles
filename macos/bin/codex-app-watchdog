@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+find_app() {
+  if [[ -n "${CODEX_APP_PATH:-}" && -d "$CODEX_APP_PATH" ]]; then
+    printf '%s\n' "$CODEX_APP_PATH"
+  elif [[ -d /Applications/ChatGPT.app ]]; then
+    printf '%s\n' /Applications/ChatGPT.app
+  elif [[ -d /Applications/Codex.app ]]; then
+    printf '%s\n' /Applications/Codex.app
+  else
+    return 1
+  fi
+}
+
+app_path="$(find_app || true)"
+if [[ -z "$app_path" ]]; then
+  echo "[codex-watchdog] ChatGPT.app/Codex.app not found" >&2
+  exit 1
+fi
+
+bundle_executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app_path/Contents/Info.plist" 2>/dev/null || true)"
+if [[ -z "$bundle_executable" ]]; then
+  echo "[codex-watchdog] CFBundleExecutable missing: $app_path" >&2
+  exit 1
+fi
+
+main_executable="$app_path/Contents/MacOS/$bundle_executable"
+
+is_default_instance_running() {
+  /bin/ps -axo command= | /usr/bin/awk -v target="$main_executable" '
+    $0 == target { found = 1 }
+    END { exit(found ? 0 : 1) }
+  '
+}
+
+if [[ "${1:-}" == "--check" ]]; then
+  if is_default_instance_running; then
+    echo "[codex-watchdog] default instance is running"
+    exit 0
+  fi
+  echo "[codex-watchdog] default instance is not running" >&2
+  exit 1
+fi
+
+if is_default_instance_running; then
+  exit 0
+fi
+
+echo "[codex-watchdog] default instance missing; launching $app_path"
+/usr/bin/open -g -n "$app_path"
+
+for _ in {1..20}; do
+  /bin/sleep 1
+  if is_default_instance_running; then
+    echo "[codex-watchdog] default instance recovered"
+    exit 0
+  fi
+done
+
+echo "[codex-watchdog] launch did not produce a healthy default instance" >&2
+exit 1

@@ -19,3 +19,5 @@ Use the root entrypoints:
 ```
 
 `macos/Brewfile` includes the observed casks, including `clash-verge-rev` and `neovide-app`, plus the shared development tools that the common modules expect.
+
+`macos/link.sh` also installs a user LaunchAgent that checks the default Codex/ChatGPT app instance once per minute and relaunches it in the background after a crash. This keeps local Codex Scheduled tasks available while the Mac is awake. It does not override lid-close sleep.
