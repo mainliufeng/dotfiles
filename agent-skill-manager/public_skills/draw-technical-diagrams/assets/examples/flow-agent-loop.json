@@ -11,7 +11,7 @@
     {"id": "context", "label": "1 组装上下文", "body": "指令、历史、工具定义", "x": 310, "y": 210, "w": 580, "h": 150, "fill": "surface_alt", "stroke": "teal"},
     {"id": "model", "label": "2 调用模型", "body": "发送请求并接收流式输出", "x": 310, "y": 430, "w": 580, "h": 150, "fill": "surface_alt", "stroke": "violet"},
     {"id": "decision", "label": "3 解析输出", "body": "判断最终答案或工具调用", "x": 310, "y": 650, "w": 580, "h": 150, "fill": "surface_alt", "stroke": "amber"},
-    {"id": "done", "label": "最终结果", "body": "Task Done", "x": 920, "y": 880, "w": 240, "h": 130, "fill": "surface_alt", "stroke": "coral"},
+    {"id": "done", "label": "最终结果", "body": "Task Done", "x": 950, "y": 880, "w": 210, "h": 130, "fill": "surface_alt", "stroke": "coral"},
     {"id": "validate", "label": "4 校验工具调用", "body": "参数、权限、审批策略", "x": 310, "y": 900, "w": 580, "h": 150, "fill": "surface_alt", "stroke": "amber"},
     {"id": "execute", "label": "5 执行工具", "body": "Shell、编辑器、浏览器", "x": 310, "y": 1130, "w": 580, "h": 150, "fill": "surface_alt", "stroke": "teal"},
     {"id": "append", "label": "6 回写结果", "body": "追加进历史，进入下一轮", "x": 310, "y": 1360, "w": 580, "h": 150, "fill": "surface_alt", "stroke": "teal"}

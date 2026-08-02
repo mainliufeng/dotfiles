@@ -68,6 +68,9 @@ Use the example specifications as structure references:
 
 - Attach every directed connector to an explicit source and target port.
 - Put the arrow tip on the target boundary; never use a floating triangle as an arrow.
+- Use renderer-generated markers for topology. For hand-authored SVG, every arrow marker must set `markerUnits="userSpaceOnUse"`; never rely on the SVG default `strokeWidth`, which can scale a marker into a large triangle when the shaft is thick.
+- Keep a visible shaft before every arrowhead. The final segment into a target must be at least 1.5 times the fixed arrowhead length; if the gap is too narrow, widen the gap or route through a gutter instead of shortening the shaft.
+- Never use Unicode glyphs such as `→`, `←`, `▲`, or `▶` as topology connectors. Text arrows may appear only inside prose labels, never as the line that carries an edge.
 - Match connector geometry to meaning: organic cubic curves for explanatory expansion, orthogonal lines for process routing, and straight lines only for strict radial or measurement relationships.
 - Route return loops through a dedicated outer gutter.
 - Keep one dominant reading path. Treat secondary paths as branches, not equal-weight spaghetti.
@@ -75,3 +78,4 @@ Use the example specifications as structure references:
 - Do not use image generation for diagrams whose correctness depends on exact arrows, repeated alignment, or token-by-token states.
 - Do not use Mermaid when the reference layout requires exact geometry, nested panels, a center hub, repeated token strips, or carefully isolated return paths.
 - Do not imitate a source image's brand identity. Reuse spatial grammar only.
+- Treat arrow anatomy as a release gate at both full size and 390 px: the shaft, bend, and head must remain distinguishable; a head with no visible handle or a handle shorter than the head must be redrawn before publication.

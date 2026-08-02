@@ -50,6 +50,16 @@ class DiagramRendererTests(unittest.TestCase):
         self.assertEqual(done_edge.attrib["stroke"], renderer.DEFAULT_THEME["coral"])
         self.assertEqual(done_edge.attrib["marker-end"], "url(#arrow-coral)")
 
+    def test_arrow_markers_use_fixed_user_space_units(self) -> None:
+        path = SKILL_DIR / "assets" / "examples" / "flow-agent-loop.json"
+        svg = renderer.render(json.loads(path.read_text(encoding="utf-8")))
+        root = ET.fromstring(svg)
+        markers = root.findall(".//{http://www.w3.org/2000/svg}marker")
+        self.assertGreater(len(markers), 0)
+        for marker in markers:
+            self.assertEqual(marker.attrib.get("markerUnits"), "userSpaceOnUse")
+            self.assertLessEqual(float(marker.attrib["markerWidth"]), 20)
+
     def test_hub_spokes_use_nonzero_organic_curves(self) -> None:
         path = SKILL_DIR / "assets" / "examples" / "hub-spoke-agent-runtime.json"
         svg = renderer.render(json.loads(path.read_text(encoding="utf-8")))

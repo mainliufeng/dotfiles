@@ -12,6 +12,7 @@ from pathlib import Path
 
 
 SVG_NS = {"svg": "http://www.w3.org/2000/svg"}
+ARROW_GLYPHS = {"→", "←", "↑", "↓", "↔", "↕", "▶", "◀", "▲", "▼"}
 
 
 def pair(value: str) -> tuple[float, float]:
@@ -56,6 +57,22 @@ def main() -> int:
     if (width, height) != (int(spec.get("width", width)), int(spec.get("height", height))):
         errors.append("SVG dimensions do not match the specification")
     nodes = {}
+
+    marker_lengths: dict[str, float] = {}
+    for marker in root.findall(".//svg:marker", SVG_NS):
+        marker_id = marker.attrib.get("id", "<unnamed>")
+        if marker.attrib.get("markerUnits") != "userSpaceOnUse":
+            errors.append(f"{marker_id}: markerUnits must be userSpaceOnUse")
+        try:
+            marker_lengths[marker_id] = float(marker.attrib.get("markerWidth", "0"))
+        except ValueError:
+            errors.append(f"{marker_id}: markerWidth is not numeric")
+
+    for text in root.findall(".//svg:text", SVG_NS):
+        value = "".join(text.itertext()).strip()
+        if value in ARROW_GLYPHS:
+            errors.append(f"topology connector uses a Unicode arrow glyph: {value}")
+
     for group in root.findall(".//svg:g[@data-node-id]", SVG_NS):
         nodes[group.attrib["data-node-id"]] = bbox(group.attrib["data-bbox"])
     edges = root.findall(".//svg:path[@data-edge-id]", SVG_NS)
@@ -84,6 +101,15 @@ def main() -> int:
         }[to_side]
         if not approaches_from_outside:
             errors.append(f"{edge_id}: final segment approaches the {to_side} port from inside the target node")
+        marker_ref = edge.attrib.get("marker-end", "")
+        marker_id = marker_ref.removeprefix("url(#").removesuffix(")")
+        marker_length = marker_lengths.get(marker_id, 16.0)
+        final_segment = math.dist(pre_end, end)
+        if final_segment < marker_length * 1.5:
+            errors.append(
+                f"{edge_id}: final shaft {final_segment:.1f}px is shorter than "
+                f"1.5x arrowhead length {marker_length:.1f}px"
+            )
     text_sizes = []
     for text in root.findall(".//svg:text", SVG_NS):
         if "font-size" in text.attrib:
