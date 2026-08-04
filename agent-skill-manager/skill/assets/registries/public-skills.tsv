@@ -2,7 +2,7 @@ id	adapter	source_path	codex	hermes	hermes_category	platforms	clone_url	notes
 agent-skill-manager	single	~/dotfiles/agent-skill-manager/skill	active	active	meta	all		manager skill bootstrap and scripted sync control plane
 commit	single	~/dotfiles/agent-skill-manager/public_skills/commit	active	active	meta	all		emoji commit template
 archlinux-desktop-ops	single	~/dotfiles/agent-skill-manager/public_skills/archlinux-desktop-ops	active	none		archlinux		Arch Linux / Hyprland only
-chrome-access-routing	single	~/dotfiles/agent-skill-manager/public_skills/chrome-access-routing	active	none		all		browser and Chrome route arbiter
+chrome-access-routing	single	~/dotfiles/agent-skill-manager/public_skills/chrome-access-routing	active	active	research	all		Codex and Hermes browser and Chrome route arbiter
 computer-use-non-disruptive	single	~/dotfiles/agent-skill-manager/public_skills/computer-use-non-disruptive	active	none		macos		non-disruptive Computer Use guardrail
 engineering-contract-guard	single	~/dotfiles/agent-skill-manager/public_skills/engineering-contract-guard	active	none		all		API and contract preflight
 iteration-drift-guard	single	~/dotfiles/agent-skill-manager/public_skills/iteration-drift-guard	active	none		all		long iteration drift guard

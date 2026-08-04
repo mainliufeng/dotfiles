@@ -2,13 +2,47 @@
 set -euo pipefail
 
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
+MODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INSTALL_DIR="${HERMES_INSTALL_DIR:-$HERMES_HOME/hermes-agent}"
 HERMES_BIN="$INSTALL_DIR/venv/bin/hermes"
+HERMES_PYTHON="$INSTALL_DIR/venv/bin/python"
 LINK_DIR="$HOME/.local/bin"
 LINK_PATH="$LINK_DIR/hermes"
+RESEARCH_BROWSER_LINK="$LINK_DIR/hermes-research-browser"
 INSTALL_TIMEOUT="${HERMES_INSTALL_TIMEOUT:-1200}"
 INSTALL_URL="https://hermes-agent.nousresearch.com/install.sh"
 DESKTOP_LINK="$HOME/Applications/Hermes.app"
+
+configure_research_stack() {
+  local hermes_uv=""
+
+  if [[ ! -x "$HERMES_PYTHON" ]]; then
+    echo "[hermes-agent] missing Python runtime: $HERMES_PYTHON" >&2
+    return 1
+  fi
+
+  if [[ -x "$HERMES_HOME/bin/uv" ]]; then
+    hermes_uv="$HERMES_HOME/bin/uv"
+  elif command -v uv >/dev/null 2>&1; then
+    hermes_uv="$(command -v uv)"
+  else
+    echo "[hermes-agent] uv is required to install the DDGS search backend" >&2
+    return 1
+  fi
+
+  if ! "$HERMES_PYTHON" -c 'import ddgs' >/dev/null 2>&1; then
+    "$hermes_uv" pip install --python "$HERMES_PYTHON" 'ddgs>=9,<10'
+  fi
+
+  HERMES_HOME="$HERMES_HOME" "$HERMES_BIN" config set web.search_backend ddgs >/dev/null
+
+  if ! HERMES_HOME="$HERMES_HOME" "$HERMES_BIN" computer-use status 2>/dev/null \
+    | grep -q 'installed at'; then
+    HERMES_HOME="$HERMES_HOME" "$HERMES_BIN" computer-use install
+  fi
+
+  echo "[hermes-agent] research stack ready: DDGS search, browser tools, cua-driver"
+}
 
 desktop_app_path() {
   local candidate
@@ -34,6 +68,7 @@ unset PYTHONHOME
 exec "$HERMES_BIN" "\$@"
 EOF
   chmod +x "$LINK_PATH"
+  ln -sfn "$MODULE_DIR/research-browser" "$RESEARCH_BROWSER_LINK"
 }
 
 link_desktop_app() {
@@ -64,6 +99,7 @@ if install_is_complete; then
   if [[ "$(uname -s)" == "Darwin" ]]; then
     link_desktop_app
   fi
+  configure_research_stack
   echo "[hermes-agent] using existing install at $INSTALL_DIR"
   exit 0
 fi
@@ -94,3 +130,5 @@ if [[ "$(uname -s)" == "Darwin" ]] && ! link_desktop_app; then
   echo "[hermes-agent] installer completed without building Hermes.app" >&2
   exit 1
 fi
+
+configure_research_stack

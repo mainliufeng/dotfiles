@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+task_hermes_home="${HERMES_HOME:-$HOME/.hermes}"
+profile_dir="${HERMES_RESEARCH_BROWSER_PROFILE:-$task_hermes_home/browser-profiles/research}"
+
+if ! command -v agent-browser >/dev/null 2>&1; then
+  echo "agent-browser is required; run ~/dotfiles/agent-browser/setup.sh" >&2
+  exit 1
+fi
+
+mkdir -p "$profile_dir"
+chmod 700 "$task_hermes_home/browser-profiles" "$profile_dir" 2>/dev/null || true
+
+exec agent-browser --profile "$profile_dir" "$@"
