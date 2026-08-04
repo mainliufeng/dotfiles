@@ -3,7 +3,7 @@ set -euo pipefail
 
 case "$(uname -s)" in
   Darwin)
-    brew install python pyenv pyenv-virtualenv
+    brew install python pyenv pyenv-virtualenv pipx
     ;;
   Linux)
     sudo pacman -S --needed python-pip
@@ -18,3 +18,11 @@ case "$(uname -s)" in
     exit 1
     ;;
 esac
+
+if command -v pipx >/dev/null 2>&1; then
+  if command -v notebooklm >/dev/null 2>&1; then
+    echo "[python] notebooklm already installed"
+  else
+    pipx install notebooklm-py
+  fi
+fi

@@ -17,5 +17,7 @@ esac
 git config --global user.email "mainliufeng@gmail.com"
 git config --global user.name "Liu Feng"
 git config --global log.date "format:%Y-%m-%d %H:%M:%S"
+git config --global 'includeIf.gitdir:~/Code/rcrai/.path' '~/.rcrai.gitconfig'
+git lfs install
 
 # 安装github-cli后执行gh auth login

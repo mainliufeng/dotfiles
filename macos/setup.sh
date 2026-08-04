@@ -16,6 +16,9 @@ echo "[macos] Homebrew: $(brew --version | head -n 1)"
 echo "[macos] Applying $BREWFILE"
 brew bundle --file "$BREWFILE"
 
+echo "[macos] Installing apps that were not Homebrew-managed on the audited Mac"
+bash "$ROOT_DIR/macos/install-extra-apps.sh"
+
 echo "[macos] Applying keyboard shortcuts"
 "$ROOT_DIR/macos/keyboard-shortcuts.sh"
 

@@ -10,6 +10,9 @@ for script in "$HOME"/dotfiles/macos/bin/*; do
   ln -svfn "$script" "$HOME/.local/bin/$(basename "$script")"
 done
 
+mkdir -p "$HOME/.config/htop"
+ln -svfn "$HOME/dotfiles/macos/htoprc" "$HOME/.config/htop/htoprc"
+
 watchdog_label="com.mainliufeng.codex-app-watchdog"
 watchdog_template="$HOME/dotfiles/macos/launchd/${watchdog_label}.plist"
 watchdog_dest="$HOME/Library/LaunchAgents/${watchdog_label}.plist"

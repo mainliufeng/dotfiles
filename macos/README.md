@@ -2,6 +2,9 @@
 
 This directory contains macOS-only setup.
 
+The current audited inventory and migration boundary are documented in
+[`app-inventory.md`](app-inventory.md).
+
 Observed on this Mac when the layout was created:
 
 - Homebrew: `/opt/homebrew/bin/brew`
@@ -18,6 +21,9 @@ Use the root entrypoints:
 ./link.sh
 ```
 
-`macos/Brewfile` includes the observed casks, including `clash-verge-rev` and `neovide-app`, plus the shared development tools that the common modules expect.
+`macos/Brewfile` includes the observed Homebrew, Mac App Store, Go, Cargo, and
+npm packages. `install-extra-apps.sh` handles GUI applications that were
+manually installed on the audited Mac without colliding with those existing
+bundles. Apps without a safe automated mapping remain in the manual inventory.
 
 `macos/link.sh` also installs a user LaunchAgent that checks the default Codex/ChatGPT app instance once per minute and relaunches it in the background after a crash. This keeps local Codex Scheduled tasks available while the Mac is awake. It does not override lid-close sleep.
