@@ -38,6 +38,12 @@ portable include pointing at `~/.rcrai.gitconfig`. `link.sh` restores the
 tracked shell/editor/terminal configuration, htop layout, Hammerspoon config,
 local helper apps, and LaunchAgents owned by this repository.
 
+The common `hermes-agent` module restores both the Hermes CLI and the official
+Hermes Desktop app. Its installer keeps code and mutable data under
+`~/.hermes`; the desktop bundle is exposed at `~/Applications/Hermes.app`.
+Back up `~/.hermes` separately when sessions or private runtime state must move
+to the new Mac.
+
 ## Manual-only applications
 
 These were present but did not have a safe one-command mapping to the same app.
