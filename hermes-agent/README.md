@@ -8,11 +8,27 @@ research stack:
 - `hermes-research-browser`, an explicit persistent profile isolated from the
   user's daily Chrome profile;
 - `cua-driver` for native desktop Computer Use on macOS, Windows, and Linux.
+- bounded Telegram HTTP pools so proxy reconnects cannot exhaust macOS
+  launchd's default 256-file soft limit.
 
 Page extraction deliberately stays layered instead of pretending DDGS can
 extract bodies: prefer first-party APIs or `curl`, then Jina/`web-access`, then
 Hermes browser automation for dynamic pages. Use a real Chrome profile only
 when the task actually requires authenticated state.
+
+## Gateway network limits
+
+`setup.sh` links `runtime.env` into the ignored `.env` at the Hermes install
+root. Hermes loads the user's private `~/.hermes/.env` first and this file only
+fills missing non-secret defaults. The Telegram send and polling pools are
+limited to 32 connections each, with four short-lived keepalive connections.
+This leaves headroom for SQLite, terminal tools, model clients, and subagents
+under launchd's default 256-file soft limit while preserving normal concurrent
+message delivery.
+
+If the install root already contains a regular `.env`, setup preserves it and
+prints a reminder to merge these safe defaults manually instead of overwriting
+potentially private values.
 
 The default research browser stores its profile under
 `~/.hermes/browser-profiles/research`. It does not copy or export cookies from
@@ -40,6 +56,7 @@ cookies.
 hermes tools list --platform cli
 hermes config get web.search_backend
 hermes computer-use status
+hermes gateway status
 agent-browser --session hermes-research-smoke open https://example.com
 agent-browser --session hermes-research-smoke snapshot -c -d 2
 agent-browser --session hermes-research-smoke close

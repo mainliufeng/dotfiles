@@ -12,6 +12,24 @@ RESEARCH_BROWSER_LINK="$LINK_DIR/hermes-research-browser"
 INSTALL_TIMEOUT="${HERMES_INSTALL_TIMEOUT:-1200}"
 INSTALL_URL="https://hermes-agent.nousresearch.com/install.sh"
 DESKTOP_LINK="$HOME/Applications/Hermes.app"
+RUNTIME_ENV_SOURCE="$MODULE_DIR/runtime.env"
+RUNTIME_ENV_LINK="$INSTALL_DIR/.env"
+
+link_runtime_env() {
+  if [[ ! -f "$RUNTIME_ENV_SOURCE" ]]; then
+    echo "[hermes-agent] missing runtime environment defaults: $RUNTIME_ENV_SOURCE" >&2
+    return 1
+  fi
+
+  if [[ -e "$RUNTIME_ENV_LINK" && ! -L "$RUNTIME_ENV_LINK" ]]; then
+    echo "[hermes-agent] keeping existing runtime env at $RUNTIME_ENV_LINK" >&2
+    echo "[hermes-agent] merge the safe defaults from $RUNTIME_ENV_SOURCE manually" >&2
+    return 0
+  fi
+
+  ln -sfn "$RUNTIME_ENV_SOURCE" "$RUNTIME_ENV_LINK"
+  echo "[hermes-agent] linked runtime defaults: $RUNTIME_ENV_LINK -> $RUNTIME_ENV_SOURCE"
+}
 
 configure_research_stack() {
   local hermes_uv=""
@@ -96,6 +114,7 @@ install_is_complete() {
 
 if install_is_complete; then
   link_hermes
+  link_runtime_env
   if [[ "$(uname -s)" == "Darwin" ]]; then
     link_desktop_app
   fi
@@ -125,6 +144,7 @@ if [[ ! -x "$HERMES_BIN" ]]; then
 fi
 
 link_hermes
+link_runtime_env
 
 if [[ "$(uname -s)" == "Darwin" ]] && ! link_desktop_app; then
   echo "[hermes-agent] installer completed without building Hermes.app" >&2
