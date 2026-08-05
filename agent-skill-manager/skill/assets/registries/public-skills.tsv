@@ -18,8 +18,6 @@ humanizer-zh	single	~/Code/source/agent-skills/Humanizer-zh	active	active	creati
 gpt-image-2	single	~/Code/source/agent-skills/garden-skills/skills/gpt-image-2	active	active	creative	all		GPT Image 2 workflow
 gstack	manual_pack	~/gstack	manual	none		all	https://github.com/garrytan/gstack.git	manual/reference only; do not auto-discover in Codex
 mattpocock-skills	manual_pack	~/Code/source/mattpocock-skills	manual	none		all	https://github.com/mattpocock/skills.git	manual/reference only; route through local router skills
-google-cloud-official-skills	manual_pack	~/Code/source/google-skills	manual	none		all	https://github.com/google/skills.git	Google official upstream pack; cold library only and route through google-cloud-skills
-google-cloud-skills	single	~/dotfiles/agent-skill-manager/public_skills/google-cloud-skills	active	active	research	all		selective router for the 13 Google Cloud launch skills
 notebooklm	tool_plus_skill	~/dotfiles/agent-skill-manager/public_skills/notebooklm	active	active	research	all		requires notebooklm CLI outside skill sync
 impeccable	single	~/Code/source/agent-skills/impeccable/.agents/skills/impeccable	active	none		all		current Codex install shape; companion bundle not enabled
 web-access	single	~/Code/source/agent-skills/web-access	active	active	research	all		public web access skill
