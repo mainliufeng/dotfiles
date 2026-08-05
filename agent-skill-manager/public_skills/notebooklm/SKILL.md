@@ -36,6 +36,17 @@ notebooklm login
 3. 需要切换 notebook 时用：`notebooklm use <notebook_id>`
 4. 再执行 ask / source / artifact / download
 
+## Research-to-Content Pipeline
+
+当前 `notebooklm` CLI 仍是本机执行入口。用户明确要求“NotebookLM 先研究，再综合、写稿或生成内容资产”时，可按需读取 cold library 中 Claude-World 的流程参考：
+
+```text
+~/.local/share/agent-skill-manager/skills/claude-world-notebooklm/SKILL.md
+~/.local/share/agent-skill-manager/skills/claude-world-notebooklm/references/pipeline_recipes.md
+```
+
+只吸收其中的 research → synthesis → content draft 流程，不另起一套认证、CLI 或 MCP。该流程只产出草稿和本地 artifact；如果还要发布到公众号、X 或其他平台，必须有用户明确发布请求，并转入对应发布 skill。
+
 ## Core Commands
 
 ### Notebook

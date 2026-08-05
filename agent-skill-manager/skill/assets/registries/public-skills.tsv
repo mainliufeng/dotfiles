@@ -18,6 +18,15 @@ humanizer-zh	single	~/Code/source/agent-skills/Humanizer-zh	active	active	creati
 gpt-image-2	single	~/Code/source/agent-skills/garden-skills/skills/gpt-image-2	active	active	creative	all		GPT Image 2 workflow
 gstack	manual_pack	~/gstack	manual	none		all	https://github.com/garrytan/gstack.git	manual/reference only; do not auto-discover in Codex
 mattpocock-skills	manual_pack	~/Code/source/mattpocock-skills	manual	none		all	https://github.com/mattpocock/skills.git	manual/reference only; route through local router skills
+openakita-content-writer	manual_pack	~/Code/source/openakita	manual	none		all	https://github.com/openakita/openakita.git	content-research-writer reference; route through chinese-content-toolkit
+claude-world-notebooklm	manual_pack	~/Code/source/notebooklm-skill	manual	none		all	https://github.com/claude-world/notebooklm-skill.git	NotebookLM research-to-content reference; local notebooklm remains canonical
+khazix-skills	manual_pack	~/Code/source/khazix-skills	manual	none		all	https://github.com/KKKKhazix/khazix-skills.git	broad writing and research pack; cold library only
+ian-xiaohei-illustrations	manual_pack	~/Code/source/ian-xiaohei-illustrations	manual	none		all	https://github.com/helloianneo/ian-xiaohei-illustrations.git	Chinese article illustration method; route through chinese-content-toolkit
+guizang-social-card-skill	manual_pack	~/Code/source/guizang-social-card-skill	manual	none		all	https://github.com/op7418/guizang-social-card-skill.git	social cards and cover workflow; route through chinese-content-toolkit
+baoyu-skills	manual_pack	~/Code/source/baoyu-skills	manual	none		all	https://github.com/jimliu/baoyu-skills.git	broad visual and publishing pack; cold library only
+guizang-ppt-skill	manual_pack	~/Code/source/guizang-ppt-skill	manual	none		all	https://github.com/op7418/guizang-ppt-skill.git	web presentation workflow; route through chinese-content-toolkit
+html-anything	manual_pack	~/Code/source/html-anything	manual	none		all	https://github.com/clockless-org/html-anything.git	single-file HTML artifact workflow; route through chinese-content-toolkit
+chinese-content-toolkit	single	~/dotfiles/agent-skill-manager/public_skills/chinese-content-toolkit	active	active	creative	all		selective router for Chinese content research, writing, and visual production
 notebooklm	tool_plus_skill	~/dotfiles/agent-skill-manager/public_skills/notebooklm	active	active	research	all		requires notebooklm CLI outside skill sync
 impeccable	single	~/Code/source/agent-skills/impeccable/.agents/skills/impeccable	active	none		all		current Codex install shape; companion bundle not enabled
 web-access	single	~/Code/source/agent-skills/web-access	active	active	research	all		public web access skill

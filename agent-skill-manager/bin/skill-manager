@@ -37,10 +37,23 @@ DBSKILL_HERMES_CATEGORIES = {
     "dbs-deconstruct": "thinking-tools",
     "dbs-chatroom-austrian": "thinking-tools",
     "dbs-chatroom": "thinking-tools",
+    "dbs-good-question": "thinking-tools",
+    "dbs-learning": "thinking-tools",
     "dbs-agent-migration": "workflow-infrastructure",
+    "dbs-bridge": "workflow-infrastructure",
+    "dbs-skill-cleaner": "workflow-infrastructure",
+    "dbs-update": "workflow-infrastructure",
     "dbs-save": "state-management",
     "dbs-restore": "state-management",
     "dbs-report": "state-management",
+    "dbs-decision": "state-management",
+    "dbs-knowledge": "state-management",
+    "dbs-content-system": "content-creation",
+    "dbs-resonate": "content-creation",
+    "dbs-script-flow": "content-creation",
+    "dbs-spread": "content-creation",
+    "dbs-standard-answer": "content-creation",
+    "dbs-wechat-html": "content-creation",
 }
 
 CATEGORY_DESCRIPTIONS = {
