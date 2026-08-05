@@ -26,7 +26,6 @@ guizang-social-card-skill	manual_pack	~/Code/source/guizang-social-card-skill	ma
 baoyu-skills	manual_pack	~/Code/source/baoyu-skills	manual	none		all	https://github.com/jimliu/baoyu-skills.git	broad visual and publishing pack; cold library only
 guizang-ppt-skill	manual_pack	~/Code/source/guizang-ppt-skill	manual	none		all	https://github.com/op7418/guizang-ppt-skill.git	web presentation workflow; route through chinese-content-toolkit
 html-anything	manual_pack	~/Code/source/html-anything	manual	none		all	https://github.com/clockless-org/html-anything.git	single-file HTML artifact workflow; route through chinese-content-toolkit
-chinese-content-toolkit	single	~/dotfiles/agent-skill-manager/public_skills/chinese-content-toolkit	active	active	creative	all		selective router for Chinese content research, writing, and visual production
 notebooklm	tool_plus_skill	~/dotfiles/agent-skill-manager/public_skills/notebooklm	active	active	research	all		requires notebooklm CLI outside skill sync
 impeccable	single	~/Code/source/agent-skills/impeccable/.agents/skills/impeccable	active	none		all		current Codex install shape; companion bundle not enabled
 web-access	single	~/Code/source/agent-skills/web-access	active	active	research	all		public web access skill
