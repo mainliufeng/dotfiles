@@ -22,6 +22,7 @@ PRIVATE_REGISTRY = (
 LIBRARY_ROOT = Path.home() / ".local/share/agent-skill-manager/skills"
 CODEX_ROOT = Path.home() / ".codex/skills"
 HERMES_ROOT = Path.home() / ".hermes/skills"
+PI_ROOT = Path.home() / ".pi/agent/skills"
 
 DBSKILL_HERMES_CATEGORIES = {
     "dbs": "business-diagnostics",
@@ -77,6 +78,7 @@ class Entry:
     source_path: Path
     codex: str
     hermes: str
+    pi: str
     hermes_category: str
     platforms: str
     clone_url: str
@@ -176,7 +178,7 @@ def read_registry(path: Path) -> list[Entry]:
             header_seen = True
             continue
         cols = line.split("\t")
-        if len(cols) != 9:
+        if len(cols) != 10:
             raise SystemExit(f"Invalid registry row in {path}: {line}")
         rows.append(
             Entry(
@@ -185,10 +187,11 @@ def read_registry(path: Path) -> list[Entry]:
                 source_path=expand(cols[2]),
                 codex=cols[3],
                 hermes=cols[4],
-                hermes_category=cols[5],
-                platforms=cols[6],
-                clone_url=cols[7],
-                notes=cols[8],
+                pi=cols[5],
+                hermes_category=cols[6],
+                platforms=cols[7],
+                clone_url=cols[8],
+                notes=cols[9],
                 registry=path,
             )
         )
@@ -293,6 +296,18 @@ def remove_codex_if_manual(entry: Entry, runner: Runner) -> None:
         runner.unlink_or_rmtree(CODEX_ROOT / entry.id)
 
 
+def install_pi_skill(name: str, check_source: Path, link_source: Path, runner: Runner) -> None:
+    if not (check_source / "SKILL.md").exists():
+        runner.warn(f"{name}: missing SKILL.md at {check_source}")
+        return
+    runner.symlink(link_source, PI_ROOT / name)
+
+
+def remove_pi_if_manual(entry: Entry, runner: Runner) -> None:
+    if entry.pi == "manual":
+        runner.unlink_or_rmtree(PI_ROOT / entry.id)
+
+
 def sync(entries: list[Entry], targets: set[str], only: str | None, runner: Runner) -> None:
     actual_platform = current_platform()
     for entry in entries:
@@ -316,6 +331,13 @@ def sync(entries: list[Entry], targets: set[str], only: str | None, runner: Runn
                     category = DBSKILL_HERMES_CATEGORIES.get(name, "local")
                 install_hermes_skill(name, source, LIBRARY_ROOT / name, category, runner)
 
+        if "pi" in targets:
+            if entry.pi == "active":
+                for name, source in children:
+                    install_pi_skill(name, source, LIBRARY_ROOT / name, runner)
+            elif entry.pi == "manual":
+                remove_pi_if_manual(entry, runner)
+
 
 def audit(entries: list[Entry], targets: set[str], only: str | None) -> int:
     actual_platform = current_platform()
@@ -323,6 +345,8 @@ def audit(entries: list[Entry], targets: set[str], only: str | None) -> int:
     expected_codex: set[str] = set()
     manual_codex: set[str] = set()
     expected_hermes: set[tuple[str, str]] = set()
+    expected_pi: set[str] = set()
+    manual_pi: set[str] = set()
 
     for entry in entries:
         if only and entry.id != only:
@@ -350,6 +374,12 @@ def audit(entries: list[Entry], targets: set[str], only: str | None) -> int:
                     category = DBSKILL_HERMES_CATEGORIES.get(name, "local")
                 expected_hermes.add((category, name))
 
+        if "pi" in targets:
+            if entry.pi == "active":
+                expected_pi.update(name for name, _source in children)
+            elif entry.pi == "manual":
+                manual_pi.add(entry.id)
+
     if "codex" in targets:
         for name in sorted(expected_codex):
             path = CODEX_ROOT / name / "SKILL.md"
@@ -372,6 +402,18 @@ def audit(entries: list[Entry], targets: set[str], only: str | None) -> int:
                 print(f"[missing-hermes] {category}/{name}: {path / 'SKILL.md'}")
                 problems += 1
 
+    if "pi" in targets:
+        for name in sorted(expected_pi):
+            path = PI_ROOT / name / "SKILL.md"
+            if not path.exists():
+                print(f"[missing-pi] {name}: {path}")
+                problems += 1
+        for name in sorted(manual_pi):
+            path = PI_ROOT / name
+            if path.exists() or path.is_symlink():
+                print(f"[manual-active] {name}: {path}")
+                problems += 1
+
     if problems == 0:
         print("audit ok")
     return problems
@@ -379,7 +421,7 @@ def audit(entries: list[Entry], targets: set[str], only: str | None) -> int:
 
 def parse_targets(value: str) -> set[str]:
     if value == "all":
-        return {"codex", "hermes"}
+        return {"codex", "hermes", "pi"}
     return {value}
 
 
@@ -389,7 +431,7 @@ def main() -> int:
 
     for name in ("sync", "audit"):
         cmd = sub.add_parser(name)
-        cmd.add_argument("--target", choices=("codex", "hermes", "all"), default="all")
+        cmd.add_argument("--target", choices=("codex", "hermes", "pi", "all"), default="all")
         cmd.add_argument("--only", help="Only process one registry id")
         if name == "sync":
             cmd.add_argument("--dry-run", action="store_true")

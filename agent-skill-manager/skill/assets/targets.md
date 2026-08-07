@@ -18,6 +18,15 @@ This file describes where each runtime currently expects skills to live.
   - `SKILL.md` must remain readable in the installed path
   - Category `DESCRIPTION.md` files may be needed
 
+## pi
+- Runtime skill dir: `~/.pi/agent/skills`
+- Style: flat directory per skill (same as codex)
+- Notes:
+  - Pi discovers skills from `~/.pi/agent/skills/` and `~/.agents/skills/`
+  - Direct root `.md` files in `~/.pi/agent/skills/` are discovered as individual skills
+  - Pi also supports reading from other harness directories via `settings.json` `skills` array
+  - Symlinks work as expected; pi treats them as regular skill directories
+
 ## cold library
 - Library dir: `~/.local/share/agent-skill-manager/skills`
 - Style: flat symlink registry

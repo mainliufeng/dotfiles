@@ -1,14 +1,14 @@
 ---
 name: agent-skill-manager
-description: Install, update, audit, and compare skills across Codex and Hermes using the local skill registry and fixed sync script.
+description: Install, update, audit, and compare skills across Codex, Hermes, and Pi using the local skill registry and fixed sync script.
 ---
 
 # agent-skill-manager
 
 Use this skill when the user wants to:
-- install skills for Codex or Hermes
+- install skills for Codex, Hermes, or Pi
 - update already-installed skills
-- compare skill coverage across Codex and Hermes
+- compare skill coverage across Codex, Hermes, and Pi
 - audit drift between the TSV registry and runtime directories
 - sync runtime instruction docs such as `AGENTS.md`
 - compare or audit rendered runtime docs against the markdown source catalog
@@ -36,6 +36,7 @@ Before taking action, read these files in this order:
 2. Determine which targets are in scope:
    - codex
    - hermes
+   - pi
 3. Detect the current platform:
    - `macos` when `uname -s` is `Darwin`
    - `archlinux` only when Linux `/etc/os-release` reports Arch or Arch-like
@@ -57,7 +58,7 @@ Before taking action, read these files in this order:
 
 ## Important rules
 
-- Do not assume Codex and Hermes use the same skill directory layout.
+- Do not assume Codex, Hermes, and Pi use the same skill directory layout.
 - Do not assume all registry entries apply on all machines. Respect the `platforms` column.
 - Treat `archlinux` as the only Linux platform currently managed by this registry; do not broaden it to generic Linux without updating the registry first.
 - Do not check or install pure runtime built-ins. If a platform's runtime already includes a skill, omit that platform from the registry row.
@@ -81,3 +82,4 @@ This first version is intentionally conservative:
 - the rest of the registry is installed by `~/dotfiles/agent-skill-manager/bin/skill-manager`
 - runtime instruction docs are also managed in dialog from markdown catalogs and fragments
 - third-party imported skills should be normalized to direct GitHub sources whenever upstream repos exist
+- pi target is supported with the same flat-symlink layout as codex

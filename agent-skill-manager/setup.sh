@@ -7,7 +7,7 @@ DRY_RUN="0"
 
 usage() {
   cat <<'EOF'
-Usage: setup.sh [--target codex|hermes|all] [--dry-run]
+Usage: setup.sh [--target codex|hermes|pi|all] [--dry-run]
 
 Bootstraps the agent-skill-manager skill itself using the fixed registry sync script.
 Use bin/skill-manager sync to install the full configured registry.
@@ -37,7 +37,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "$TARGET" in
-  codex|hermes|all) ;;
+  codex|hermes|pi|all) ;;
   *)
     echo "Error: invalid --target '$TARGET'" >&2
     usage >&2
