@@ -1,15 +1,21 @@
 # Codex CLI Configuration
 
-Managed configuration template for `~/.codex`. Run `~/dotfiles/codex/link.sh` (或仓库根目录的 `link.sh`) 将 `config.toml` 复制到运行时位置。
+Managed configuration templates for `~/.codex`. Run `~/dotfiles/codex/link.sh` (或仓库根目录的 `link.sh`) 将当前平台模板复制到运行时位置。
+
+- Linux 使用 `config.linux.toml`，包含 Codex Desktop Linux 的可迁移基线。
+- macOS 和其他已有环境继续使用 `config.toml`。
+- Desktop 自动生成的 marketplace 路径、内置 Node runtime 路径、登录信息、插件缓存、项目历史和 task/session 不进入模板。
 
 `~/.codex/config.toml` 必须是运行时文件，而不是指向本仓库的软链。Codex App 会在使用过程中写入项目 trust、迁移提示状态等本机状态；如果这里使用软链，这些运行时改动会直接污染 dotfiles repo。
 
 默认行为：
 
-- `~/.codex/config.toml` 不存在时，从 `~/dotfiles/codex/config.toml` 复制一份。
+- `~/.codex/config.toml` 不存在时，从当前平台模板复制一份。
 - `~/.codex/config.toml` 是旧软链时，保留当前内容并替换成真实文件。
 - `~/.codex/config.toml` 已经是真实文件时，默认不覆盖。
-- 如需强制用模板覆盖运行时配置，执行 `DOTFILES_CODEX_OVERWRITE_CONFIG=1 ~/dotfiles/codex/link.sh`。
+- 如需强制用模板覆盖运行时配置，执行 `DOTFILES_CODEX_OVERWRITE_CONFIG=1 ~/dotfiles/codex/link.sh`；覆盖前会创建带时间戳的本地备份。
+
+Linux App 本身由 `~/dotfiles/linux/apps/codex-desktop/setup.sh` 安装。个人插件、active skills 和私有 AGENTS overlay 由 `~/dotfiles-private/codex/setup-linux-desktop.sh` 串联配置。
 
 Codex App 的内置 terminal/code font 由 `~/.codex/.codex-global-state.json` 管理。`link.sh` 会调用
 `~/dotfiles/codex/apply-app-font.sh`，默认将 chrome theme 的 `fonts.code` 设置为 `Hack Nerd Font Mono`，避免 prompt 图标在 App terminal 里显示成方块。执行后如当前窗口还没变化，Reload Window 或重启 Codex App 即可。

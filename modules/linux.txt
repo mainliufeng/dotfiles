@@ -5,6 +5,7 @@ linux/apps/antigravity-tools
 linux/apps/chrome
 linux/apps/clash
 linux/apps/confirmo
+linux/apps/codex-desktop
 linux/apps/dingtalk
 linux/apps/screenshot-ocr
 linux/desktop/awesome

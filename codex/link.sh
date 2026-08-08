@@ -2,7 +2,10 @@
 set -euo pipefail
 
 codex_dir="$HOME/.codex"
-source_config="$HOME/dotfiles/codex/config.toml"
+case "$(uname -s)" in
+  Linux) source_config="$HOME/dotfiles/codex/config.linux.toml" ;;
+  *) source_config="$HOME/dotfiles/codex/config.toml" ;;
+esac
 runtime_config="$codex_dir/config.toml"
 
 mkdir -p "$codex_dir"
@@ -19,9 +22,13 @@ elif [ ! -e "$runtime_config" ]; then
   chmod 600 "$runtime_config"
   echo "[codex] copied config template -> $runtime_config"
 elif [ "${DOTFILES_CODEX_OVERWRITE_CONFIG:-0}" = "1" ]; then
+  backup_config="$runtime_config.before-dotfiles.$(date '+%Y%m%d-%H%M%S')"
+  cp "$runtime_config" "$backup_config"
+  chmod 600 "$backup_config"
   cp "$source_config" "$runtime_config"
   chmod 600 "$runtime_config"
   echo "[codex] overwrote runtime config from template: $runtime_config"
+  echo "[codex] previous runtime config: $backup_config"
 else
   echo "[codex] keeping existing runtime config: $runtime_config"
 fi
