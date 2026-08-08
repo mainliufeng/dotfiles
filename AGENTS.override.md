@@ -23,7 +23,7 @@
 
 本地 workflow skills 路由：
 - `rcrai` / `rcrai-design` / `rcrai-impl` / `rcrai-review`: rcrai/echomind 仓库、接口、表结构、部署配置、客户集成设计。
-- `knowledge`: `/Users/liufeng/Code/self/knowledge` 的 research/content_create 工作。
+- `knowledge`: `~/Code/self/knowledge` 的 research/content_create 工作。
 - `mainliufeng-local-env`: dotfiles、dotfiles-private、本地 env、Codex/Claude/Hermes 运行时目录。
 - `personal-repo-finish` + `commit`: personal repo 收尾、commit/rebase/push 和提交信息约定。
 - `web-access`: 公开网页检索和联网核验；不要用它判断真实 Chrome 登录态。
