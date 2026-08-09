@@ -1,0 +1,4 @@
+interface:
+  display_name: "Decision Review Loop"
+  short_description: "记录延迟反馈决策，并在验证窗口到期后依据实际证据完成复盘"
+  default_prompt: "Use $decision-review-loop to record this decision and define when and how its outcome will be reviewed."

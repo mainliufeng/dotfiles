@@ -6,6 +6,7 @@ chrome-access-routing	single	~/dotfiles/agent-skill-manager/public_skills/chrome
 computer-use-non-disruptive	single	~/dotfiles/agent-skill-manager/public_skills/computer-use-non-disruptive	active	none	active		macos		non-disruptive Computer Use guardrail
 engineering-contract-guard	single	~/dotfiles/agent-skill-manager/public_skills/engineering-contract-guard	active	none	active		all		API and contract preflight
 iteration-drift-guard	single	~/dotfiles/agent-skill-manager/public_skills/iteration-drift-guard	active	none	active		all		long iteration drift guard
+decision-review-loop	single	~/dotfiles/agent-skill-manager/public_skills/decision-review-loop	active	active	active	local	all		delayed decision recording and evidence-based review
 spark	single	~/dotfiles/agent-skill-manager/public_skills/spark	active	none	active		all		fast subagent trigger
 vercel-design	single	~/dotfiles/agent-skill-manager/public_skills/vercel-design	active	none	active		all		Vercel-style frontend design guidance
 draw-technical-diagrams	single	~/dotfiles/agent-skill-manager/public_skills/draw-technical-diagrams	active	none	active		all		precise technical diagram selection, specification, rendering, and validation
