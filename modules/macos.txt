@@ -1,2 +1,3 @@
 macos
+deeptutor
 telegram-codex-gateway

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DEEPTUTOR_HOME="${DEEPTUTOR_HOME:-$HOME/.local/share/deeptutor}"
+umask 077
+
+if ! command -v deeptutor >/dev/null 2>&1; then
+  echo "deeptutor is not installed; run ~/dotfiles/deeptutor/setup.sh" >&2
+  exit 1
+fi
+
+exec deeptutor start --home "$DEEPTUTOR_HOME" "$@"
