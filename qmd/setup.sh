@@ -6,13 +6,13 @@ KNOWLEDGE_ROOT="${KNOWLEDGE_ROOT:-$HOME/Code/self/knowledge}"
 ARTICLE_INDEX_DIR="${QMD_ARTICLE_INDEX_DIR:-$HOME/.cache/knowledge-qmd/articles}"
 export QMD_EMBED_MODEL="${QMD_EMBED_MODEL:-hf:Qwen/Qwen3-Embedding-0.6B-GGUF/Qwen3-Embedding-0.6B-Q8_0.gguf}"
 
+export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
+export PATH="$BUN_INSTALL/bin:$PATH"
+
 if ! command -v bun >/dev/null 2>&1; then
   echo "[qmd] bun is required; run the dotfiles bun module first" >&2
   exit 1
 fi
-
-export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
-export PATH="$BUN_INSTALL/bin:$PATH"
 
 installed_version="$(bun pm ls -g 2>/dev/null | sed -n 's/.*@tobilu\/qmd@\([^[:space:]]*\).*/\1/p' | head -n 1)"
 if [[ "$installed_version" != "$QMD_VERSION" ]]; then
