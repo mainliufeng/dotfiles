@@ -22,3 +22,5 @@ Useful variants:
 ```
 
 Common modules live at the repo root. Linux-only modules live under `linux/`; macOS-only setup lives under `macos/`.
+
+The macOS `obsidian` module installs the pinned Front Matter Title plugin and its Knowledge-vault preset so English filenames can be displayed as Chinese frontmatter titles.

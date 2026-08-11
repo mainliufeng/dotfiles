@@ -1,3 +1,4 @@
 macos
+obsidian
 deeptutor
 telegram-codex-gateway
