@@ -15,7 +15,9 @@ Managed configuration templates for `~/.codex`. Run `~/dotfiles/codex/link.sh` (
 - `~/.codex/config.toml` 已经是真实文件时，默认不覆盖。
 - 如需强制用模板覆盖运行时配置，执行 `DOTFILES_CODEX_OVERWRITE_CONFIG=1 ~/dotfiles/codex/link.sh`；覆盖前会创建带时间戳的本地备份。
 
-Linux App 本身由 `~/dotfiles/linux/apps/codex-desktop/setup.sh` 安装。个人插件、active skills 和私有 AGENTS overlay 由 `~/dotfiles-private/codex/setup-linux-desktop.sh` 串联配置。
+Linux App 使用 OpenAI 官方桌面应用，对应 Arch 包 `chatgpt-desktop-bin`，由
+`~/dotfiles/linux/apps/chatgpt-desktop/setup.sh` 安装。个人插件、active skills
+和私有 AGENTS overlay 由 `~/dotfiles-private/codex/setup-linux-desktop.sh` 串联配置。
 
 Codex App 的内置 terminal/code font 由 `~/.codex/.codex-global-state.json` 管理。`link.sh` 会调用
 `~/dotfiles/codex/apply-app-font.sh`，默认将 chrome theme 的 `fonts.code` 设置为 `Hack Nerd Font Mono`，避免 prompt 图标在 App terminal 里显示成方块。执行后如当前窗口还没变化，Reload Window 或重启 Codex App 即可。
