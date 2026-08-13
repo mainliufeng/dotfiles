@@ -1,4 +1,7 @@
 {
+  "defaultProvider": "deepseek",
+  "defaultModel": "deepseek-v4-flash",
+  "defaultThinkingLevel": "high",
   "retry": {
     "enabled": true,
     "maxRetries": 3,

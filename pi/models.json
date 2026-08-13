@@ -1,0 +1,8 @@
+{
+  "providers": {
+    "deepseek": {
+      "baseUrl": "https://api.deepseek.com",
+      "apiKey": "!bash -lc 'source \"$HOME/dotfiles-private/deepseek/env.sh\" && printf %s \"$DEEPSEEK_API_KEY\"'"
+    }
+  }
+}

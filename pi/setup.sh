@@ -8,14 +8,10 @@ npm install -g --ignore-scripts @earendil-works/pi-coding-agent
 
 mkdir -p "$PI_AGENT_DIR"
 
-node - "$SCRIPT_DIR/settings.json" "$PI_AGENT_DIR/settings.json" <<'NODE'
+node - \
+  "$SCRIPT_DIR/settings.json" "$PI_AGENT_DIR/settings.json" \
+  "$SCRIPT_DIR/models.json" "$PI_AGENT_DIR/models.json" <<'NODE'
 const fs = require("node:fs");
-
-const [sourcePath, targetPath] = process.argv.slice(2);
-const source = JSON.parse(fs.readFileSync(sourcePath, "utf8"));
-const target = fs.existsSync(targetPath)
-  ? JSON.parse(fs.readFileSync(targetPath, "utf8"))
-  : {};
 
 function merge(targetValue, sourceValue) {
   if (
@@ -35,5 +31,17 @@ function merge(targetValue, sourceValue) {
   return sourceValue;
 }
 
-fs.writeFileSync(targetPath, `${JSON.stringify(merge(target, source), null, 2)}\n`);
+const paths = process.argv.slice(2);
+for (let index = 0; index < paths.length; index += 2) {
+  const sourcePath = paths[index];
+  const targetPath = paths[index + 1];
+  const source = JSON.parse(fs.readFileSync(sourcePath, "utf8"));
+  const target = fs.existsSync(targetPath)
+    ? JSON.parse(fs.readFileSync(targetPath, "utf8"))
+    : {};
+
+  fs.writeFileSync(targetPath, `${JSON.stringify(merge(target, source), null, 2)}\n`);
+}
 NODE
+
+chmod 600 "$PI_AGENT_DIR/models.json"
