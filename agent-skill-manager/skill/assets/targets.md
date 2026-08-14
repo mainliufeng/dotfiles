@@ -32,4 +32,5 @@ This file describes where each runtime currently expects skills to live.
 - Style: flat symlink registry
 - Notes:
   - Every configured skill or pack gets a stable library link here first
-  - Manual packs such as `gstack` and `mattpocock-skills` stay here and do not enter runtime auto-discovery
+  - Manual packs such as `gstack` stay here and do not enter runtime auto-discovery
+  - Nested bundles such as `mattpocock-skills` may also expose each non-deprecated child as a flat runtime skill

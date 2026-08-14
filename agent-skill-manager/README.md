@@ -59,7 +59,8 @@ Runtime note:
 - `bin/skill-manager audit` checks the configured registry without touching unrelated runtime skills.
 - Public local skills live under `~/dotfiles/agent-skill-manager/public_skills/`.
 - Hermes caveat: do **not** install ordinary local/private skills by making `~/.hermes/skills/<category>/<skill-name>` a whole-directory symlink. For Hermes local/private skills, the installed path should be a real directory that contains `SKILL.md` plus any needed subdirs as internal symlinks or copies.
-- Broad/manual packs such as `gstack`, `mattpocock-skills`, `baoyu-skills`, and other content-production sources are linked into `~/.local/share/agent-skill-manager/skills/` but are not installed wholesale into Codex auto-discovery. Narrow local routers expose the relevant upstream procedure on demand.
+- Broad/manual packs such as `gstack`, `baoyu-skills`, and other content-production sources are linked into `~/.local/share/agent-skill-manager/skills/` but are not installed wholesale into Codex auto-discovery. Narrow local routers expose the relevant upstream procedure on demand.
+- `mattpocock-skills` is an explicit exception: its nested, non-deprecated children are flattened into Codex top-level auto-discovery while the source repository remains the single managed checkout.
 
 ## Current status
 

@@ -17,7 +17,7 @@ tapestry	single	~/dotfiles/.codex/skills/tapestry	active	none	active		all		conte
 humanizer-zh	single	~/Code/source/agent-skills/Humanizer-zh	active	active	active	creative	all		Chinese humanizer
 gpt-image-2	single	~/Code/source/agent-skills/garden-skills/skills/gpt-image-2	active	active	active	creative	all		GPT Image 2 workflow
 gstack	manual_pack	~/gstack	manual	none	manual		all	https://github.com/garrytan/gstack.git	manual/reference only; do not auto-discover in Codex
-mattpocock-skills	manual_pack	~/Code/source/mattpocock-skills	manual	none	manual		all	https://github.com/mattpocock/skills.git	manual/reference only; route through local router skills
+mattpocock-skills	bundle_recursive	~/Code/source/mattpocock-skills	active	none	manual		all	https://github.com/mattpocock/skills.git	flatten nested non-deprecated skills into Codex top-level discovery
 openakita-content-writer	manual_pack	~/Code/source/openakita	manual	none	manual		all	https://github.com/openakita/openakita.git	content-research-writer reference; route through chinese-content-toolkit
 claude-world-notebooklm	manual_pack	~/Code/source/notebooklm-skill	manual	none	manual		all	https://github.com/claude-world/notebooklm-skill.git	NotebookLM research-to-content reference; local notebooklm remains canonical
 khazix-skills	manual_pack	~/Code/source/khazix-skills	manual	none	manual		all	https://github.com/KKKKhazix/khazix-skills.git	broad writing and research pack; cold library only

@@ -214,12 +214,31 @@ def clone_if_missing(entry: Entry, runner: Runner) -> None:
     runner.run("git", "clone", entry.clone_url, str(entry.source_path))
 
 
+def is_bundle(entry: Entry) -> bool:
+    return entry.adapter in {"bundle_children", "bundle_recursive"}
+
+
 def skill_children(entry: Entry) -> list[tuple[str, Path]]:
-    if entry.adapter != "bundle_children":
+    if not is_bundle(entry):
         return [(entry.id, entry.source_path)]
     skills_dir = entry.source_path / "skills"
     if not skills_dir.exists():
         return []
+    if entry.adapter == "bundle_recursive":
+        children = [
+            (skill_md.parent.name, skill_md.parent)
+            for skill_md in skills_dir.rglob("SKILL.md")
+            if "deprecated" not in skill_md.relative_to(skills_dir).parts
+            and "node_modules" not in skill_md.relative_to(skills_dir).parts
+        ]
+        names = [name for name, _source in children]
+        duplicates = {name for name in names if names.count(name) > 1}
+        if duplicates:
+            raise SystemExit(
+                f"Duplicate recursive skill names for {entry.id}: "
+                + ", ".join(sorted(duplicates))
+            )
+        return sorted(children)
     return sorted(
         (path.name, path)
         for path in skills_dir.iterdir()
@@ -241,7 +260,7 @@ def ensure_library(entry: Entry, runner: Runner) -> list[tuple[str, Path]]:
     runner.symlink(entry.source_path, LIBRARY_ROOT / entry.id)
 
     children = skill_children(entry)
-    if entry.adapter == "bundle_children":
+    if is_bundle(entry):
         for name, source in children:
             runner.symlink(source, LIBRARY_ROOT / name)
     return children
@@ -327,7 +346,7 @@ def sync(entries: list[Entry], targets: set[str], only: str | None, runner: Runn
         if "hermes" in targets and entry.hermes == "active":
             for name, source in children:
                 category = entry.hermes_category
-                if entry.adapter == "bundle_children":
+                if is_bundle(entry):
                     category = DBSKILL_HERMES_CATEGORIES.get(name, "local")
                 install_hermes_skill(name, source, LIBRARY_ROOT / name, category, runner)
 
@@ -357,7 +376,7 @@ def audit(entries: list[Entry], targets: set[str], only: str | None) -> int:
             print(f"[missing-library] {entry.id}: {LIBRARY_ROOT / entry.id}")
             problems += 1
         children = skill_children(entry)
-        if entry.adapter == "bundle_children":
+        if is_bundle(entry):
             for name, _source in children:
                 if not (LIBRARY_ROOT / name / "SKILL.md").exists():
                     print(f"[missing-library] {name}: {LIBRARY_ROOT / name}")
@@ -370,7 +389,7 @@ def audit(entries: list[Entry], targets: set[str], only: str | None) -> int:
         if "hermes" in targets and entry.hermes == "active":
             for name, _source in children:
                 category = entry.hermes_category
-                if entry.adapter == "bundle_children":
+                if is_bundle(entry):
                     category = DBSKILL_HERMES_CATEGORIES.get(name, "local")
                 expected_hermes.add((category, name))
 
