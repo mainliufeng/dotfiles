@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+# dsh-app — launch the DeepSeek Harness web UI and open it in the default browser.
+#
+# It keeps the dsh web server as a child process (foreground), so the app
+# "window" lifetime follows the server. Closing the terminal / killing the
+# process stops the server. If you only want the URL printed without opening a
+# browser, set DSH_APP_NO_OPEN=1.
+set -euo pipefail
+
+# ---------------------------------------------------------------------------
+# Resolution order for the `dsh` command:
+#   1. $DSH_BIN            — explicit path
+#   2. `dsh` on PATH       — an installed CLI
+#   3. npx @deepseek-ai/dsh — the published package (fetched on demand)
+# ---------------------------------------------------------------------------
+
+log()  { printf '[dsh-app] %s\n' "$*"; }
+die()  { printf '[dsh-app] error: %s\n' "$*" >&2; exit 1; }
+
+detect_platform() {
+  case "$(uname -s)" in
+    Darwin) echo macos ;;
+    Linux)  echo linux ;;
+    *)      echo unknown ;;
+  esac
+}
+
+open_browser() {
+  local url="$1"
+  case "$PLATFORM" in
+    macos) open "$url" ;;
+    linux) xdg-open "$url" >/dev/null 2>&1 || sensible-browser "$url" >/dev/null 2>&1 || true ;;
+  esac
+}
+
+# Resolve the dsh launcher command. Prints a command line to run via $0.
+resolve_dsh() {
+  if [[ -n "${DSH_BIN:-}" ]]; then
+    printf '%s' "$DSH_BIN"
+    return
+  fi
+  if command -v dsh >/dev/null 2>&1; then
+    command -v dsh
+    return
+  fi
+  printf 'npx --yes @deepseek-ai/dsh@latest'
+}
+
+# ---------------------------------------------------------------------------
+
+PLATFORM="$(detect_platform)"
+[[ "$PLATFORM" == "unknown" ]] && die "unsupported platform: $(uname -s)"
+
+DSH_CMD="$(resolve_dsh)"
+DEFAULT_PORT=3080
+
+# Collect user args, forwarding --port / --host through to `dsh web`.
+PORT="${DSH_APP_PORT:-$DEFAULT_PORT}"
+HOST="${DSH_APP_HOST:-127.0.0.1}"
+PASSTHROUGH=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --port)
+      PORT="${2:-}"; shift 2 ;;
+    --port=*)
+      PORT="${1#*=}"; shift ;;
+    --host)
+      HOST="${2:-}"; shift 2 ;;
+    --host=*)
+      HOST="${1#*=}"; shift ;;
+    --no-open)
+      DSH_APP_NO_OPEN=1; shift ;;
+    -h|--help)
+      cat <<'EOF'
+Usage: dsh-app [options]
+
+Launch the DeepSeek Harness web UI and open it in your default browser.
+
+Options:
+  --port <port>   Port to bind (default 3080; pass 0 for an OS-chosen port)
+  --host <host>   Host to bind (default 127.0.0.1)
+  --no-open       Start the server without opening a browser
+  -h, --help      Show this help
+
+Environment:
+  DSH_BIN          Explicit path to the `dsh` launcher
+  DSH_APP_PORT     Default port override
+  DSH_APP_HOST     Default host override
+  DSH_APP_NO_OPEN  Set to 1 to suppress the browser open
+EOF
+      exit 0 ;;
+    *)
+      PASSTHROUGH+=("$1"); shift ;;
+  esac
+done
+
+# Build the dsh web invocation.
+read -r -a DSH_PARTS <<< "$DSH_CMD"
+set -- "${DSH_PARTS[@]}" web --host "$HOST" --port "$PORT" "${PASSTHROUGH[@]+"${PASSTHROUGH[@]}"}"
+
+URL="http://${HOST}:${PORT}"
+
+log "starting: $*"
+log "waiting for $URL ..."
+
+# Start the server in the background, capturing its output to a log file so we
+# can surface the real URL (in case --port 0 picked a free port).
+LOG_FILE="$(mktemp -t dsh-app.XXXXXX.log)"
+"$@" >"$LOG_FILE" 2>&1 &
+SERVER_PID=$!
+
+cleanup() {
+  # Kill the server on exit; ignore errors if it already exited.
+  kill "$SERVER_PID" 2>/dev/null || true
+  wait "$SERVER_PID" 2>/dev/null || true
+  rm -f "$LOG_FILE"
+}
+trap cleanup EXIT INT TERM
+
+# If port 0 was requested, parse the actual URL from the log line
+# `dsh web: http://host:port`.
+RESOLVED_URL=""
+for _ in $(seq 1 60); do
+  if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+    die "dsh exited before the server came up. Log follows:"$'\n'"$(cat "$LOG_FILE" 2>/dev/null)"
+  fi
+  if [[ "$PORT" == "0" ]]; then
+    RESOLVED_URL="$(grep -oE 'http://[0-9.]+:[0-9]+' "$LOG_FILE" 2>/dev/null | head -1 || true)"
+    [[ -n "$RESOLVED_URL" ]] && break
+  elif grep -q "dsh web:" "$LOG_FILE" 2>/dev/null; then
+    RESOLVED_URL="$(grep -oE 'http://[0-9.]+:[0-9]+' "$LOG_FILE" | head -1 || true)"
+    [[ -z "$RESOLVED_URL" ]] && RESOLVED_URL="$URL"
+    break
+  fi
+  sleep 0.5
+done
+
+[[ -z "$RESOLVED_URL" ]] && RESOLVED_URL="$URL"
+log "ready: $RESOLVED_URL"
+
+if [[ "${DSH_APP_NO_OPEN:-0}" != "1" ]]; then
+  open_browser "$RESOLVED_URL"
+fi
+
+# Follow the server in the foreground so Ctrl-C / app-close shuts it down.
+wait "$SERVER_PID"

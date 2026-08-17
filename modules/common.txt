@@ -4,6 +4,7 @@ android
 bun
 claude-code
 codex
+deepseek-harness
 fonts
 fzf
 ghostty
