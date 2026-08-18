@@ -1,0 +1,17 @@
+{
+  "layout": "timeline",
+  "width": 1600, "height": 1000,
+  "slug": "timeline-dsh",
+  "title": "DeepSeek Harness 单次会话的时间线",
+  "subtitle": "装配 → 循环 → 退出，事件按发生顺序排列",
+  "description": "一次 DSH 会话从插件装配开始，经过工具调用循环，最后退出并清理。",
+  "axis_label": "时间 →",
+  "events": [
+    {"date": "T0", "title": "装配插件", "body": "base/Web/patch 叠加", "color": "teal"},
+    {"date": "T1", "title": "解析依赖", "body": "服务按依赖排序", "color": "teal"},
+    {"date": "T2", "title": "首次提问", "body": "组装上下文", "color": "amber"},
+    {"date": "T3", "title": "工具调用", "body": "校验 → 执行 → 回写", "color": "violet"},
+    {"date": "T4", "title": "流式回复", "body": "增量输出给用户", "color": "teal"},
+    {"date": "T5", "title": "退出清理", "body": "卸载服务", "color": "coral"}
+  ]
+}

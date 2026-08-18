@@ -700,6 +700,354 @@ def render_flow(spec: dict, width: int, height: int, theme: dict) -> list[str]:
     return out
 
 
+def render_quadrant(spec: dict, width: int, height: int, theme: dict) -> list[str]:
+    """2x2 matrix: items positioned by two normalized axes (0-1, y bottom-up)."""
+    out: list[str] = []
+    out.append(text_block(width / 2, 58, spec.get("title", ""), width=width - 100, size=44, fill=theme["text"], weight=800, max_lines=1))
+    if spec.get("subtitle"):
+        out.append(text_block(width / 2, 102, spec["subtitle"], width=width - 160, size=20, fill=theme["muted"], max_lines=1))
+    x0, y0, x1, y1 = 140, 150, width - 140, height - 150
+    mid_x, mid_y = (x0 + x1) / 2, (y0 + y1) / 2
+    quadrants = spec.get("quadrants", [])
+    # order: q1 top-right, q2 top-left, q3 bottom-left, q4 bottom-right
+    cells = [
+        (mid_x, y0, x1, mid_y),
+        (x0, y0, mid_x, mid_y),
+        (x0, mid_y, mid_x, y1),
+        (mid_x, mid_y, x1, y1),
+    ]
+    for index, quad in enumerate(quadrants[:4]):
+        qx, qy, qw, qh = cells[index]
+        color = theme.get(quad.get("color", ""), quad.get("color", theme["line"]))
+        out.append(f'<rect x="{qx:.1f}" y="{qy:.1f}" width="{qw - qx:.1f}" height="{qh - qy:.1f}" fill="{color}" fill-opacity=".08" stroke="{color}" stroke-width="2"/>')
+        out.append(text_block(qx + 28, qy + 44, quad.get("title", ""), width=min(300, (qw - qx) / 2), size=24, fill=color, weight=800, anchor="start", max_lines=1))
+        if quad.get("body"):
+            out.append(text_block(qx + 28, qy + 84, quad["body"], width=min(300, (qw - qx) / 2), size=16, fill=theme["muted"], anchor="start", max_lines=2))
+    # axes
+    out.append(f'<path d="M{x0:.1f},{mid_y:.1f} H{x1:.1f}" stroke="{theme["line"]}" stroke-width="4"/>')
+    out.append(f'<path d="M{mid_x:.1f},{y0:.1f} V{y1:.1f}" stroke="{theme["line"]}" stroke-width="4"/>')
+    if spec.get("x_label"):
+        out.append(text_block(x0 - 8, mid_y + 40, spec["x_label"], width=200, size=20, fill=theme["muted"], anchor="start", max_lines=1))
+        out.append(text_block(x1 + 8, mid_y + 40, spec.get("x_high_label", ""), width=200, size=20, fill=theme["muted"], anchor="start", max_lines=1))
+    if spec.get("y_label"):
+        out.append(text_block(mid_x, y1 - 14, spec["y_label"], width=200, size=20, fill=theme["muted"], max_lines=1))
+        out.append(text_block(mid_x, y0 + 44, spec.get("y_high_label", ""), width=200, size=20, fill=theme["muted"], max_lines=1))
+    # items
+    for item in spec.get("items", []):
+        ix = x0 + float(item["x"]) * (x1 - x0)
+        iy = y1 - float(item["y"]) * (y1 - y0)
+        color = theme.get(item.get("color", ""), item.get("color", theme["text"]))
+        out.append(f'<circle cx="{ix:.1f}" cy="{iy:.1f}" r="16" fill="{color}" stroke="{theme["background"]}" stroke-width="3"/>')
+        label_x = ix + 30 if ix < mid_x - 40 else ix - 30
+        anchor = "start" if ix < mid_x - 40 else "end"
+        out.append(text_block(label_x, iy + 6, item.get("label", ""), width=240, size=20, fill=theme["text"], weight=700, anchor=anchor, max_lines=2))
+    return out
+
+
+def render_timeline(spec: dict, width: int, height: int, theme: dict) -> list[str]:
+    """Events positioned along a horizontal axis, cards alternating above/below."""
+    out: list[str] = []
+    out.append(text_block(width / 2, 58, spec.get("title", ""), width=width - 100, size=44, fill=theme["text"], weight=800, max_lines=1))
+    if spec.get("subtitle"):
+        out.append(text_block(width / 2, 102, spec["subtitle"], width=width - 160, size=20, fill=theme["muted"], max_lines=1))
+    events = spec.get("events", [])
+    axis_y = height * 0.56
+    x0, x1 = 120, width - 120
+    if not events:
+        return out
+    step = (x1 - x0) / max(1, len(events))
+    card_w = min(280.0, step - 24)
+    card_h = 148.0
+    for index, event in enumerate(events):
+        ex = x0 + step * index + step / 2
+        color = theme.get(event.get("color", ""), event.get("color", theme["teal"]))
+        # dot on axis
+        out.append(f'<circle cx="{ex:.1f}" cy="{axis_y:.1f}" r="15" fill="{color}" stroke="{theme["background"]}" stroke-width="4"/>')
+        below = index % 2 == 1
+        cy = axis_y + 80 if below else axis_y - 80
+        cy = axis_y + 70 if below else axis_y - 70
+        cx = min(max(ex, x0 + card_w / 2 + 16), x1 - card_w / 2 - 16)
+        # connector
+        out.append(f'<path d="M{ex:.1f},{axis_y:.1f} V{cy - card_h / 2 if below else cy + card_h / 2:.1f}" stroke="{color}" stroke-width="3" stroke-dasharray="6 8"/>')
+        # card
+        out.append(f'<rect x="{cx - card_w / 2:.1f}" y="{cy - card_h / 2:.1f}" width="{card_w}" height="{card_h}" rx="20" fill="{theme["surface"]}" stroke="{color}" stroke-width="3"/>')
+        out.append(text_block(cx, cy - 22, event.get("date", f"T{index + 1}"), width=card_w - 36, size=16, fill=color, weight=800, max_lines=1))
+        out.append(text_block(cx, cy + 16, event.get("title", ""), width=card_w - 36, size=24, fill=theme["text"], weight=800, max_lines=2))
+        if event.get("body"):
+            out.append(text_block(cx, cy + 52, event["body"], width=card_w - 44, size=16, fill=theme["muted"], max_lines=2))
+    out.append(f'<path d="M{x0 - 10:.1f},{axis_y:.1f} H{x1 + 10:.1f}" stroke="{theme["line"]}" stroke-width="4"/>')
+    if spec.get("axis_label"):
+        out.append(text_block(x1 + 30, axis_y + 8, spec["axis_label"], width=140, size=20, fill=theme["muted"], anchor="start", max_lines=1))
+    legend = spec.get("legend", [])
+    if legend:
+        total_w = width - 120
+        item_w = total_w / len(legend)
+        y = height - 52
+        for index, item in enumerate(legend):
+            x = 60 + index * item_w
+            color = theme.get(item.get("state", ""), item.get("color", theme["muted"]))
+            out.append(f'<rect x="{x:.1f}" y="{y - 18:.1f}" width="36" height="36" rx="8" fill="{color}" stroke="{theme["text"]}" stroke-width="2"/>')
+            out.append(text_block(x + 50, y + 2, item.get("label", ""), width=item_w - 58, size=16, fill=theme["muted"], anchor="start", max_lines=1))
+    return out
+
+
+def render_layers(spec: dict, width: int, height: int, theme: dict) -> list[str]:
+    """Stacked horizontal layer bands with short dependency arrows between them."""
+    out: list[str] = []
+    out.append(text_block(width / 2, 58, spec.get("title", ""), width=width - 100, size=44, fill=theme["text"], weight=800, max_lines=1))
+    if spec.get("subtitle"):
+        out.append(text_block(width / 2, 102, spec["subtitle"], width=width - 160, size=20, fill=theme["muted"], max_lines=1))
+    layers = spec.get("layers", [])
+    if not layers:
+        return out
+    lw = min(width - 220, 960)
+    lx = (width - lw) / 2
+    top, gap = 150, 48
+    lh = (height - top - 110 - gap * (len(layers) - 1)) / len(layers)
+    for index, layer in enumerate(layers):
+        ly = top + index * (lh + gap)
+        color = theme.get(layer.get("color", ""), layer.get("color", theme["line"]))
+        out.append(f'<rect x="{lx:.1f}" y="{ly:.1f}" width="{lw:.1f}" height="{lh:.1f}" rx="20" fill="{theme["surface"]}" stroke="{color}" stroke-width="3"/>')
+        out.append(text_block(lx + 36, ly + lh / 2, layer.get("title", ""), width=min(320, lw * 0.4), size=28, fill=theme["text"], weight=800, anchor="start", max_lines=2))
+        if layer.get("body"):
+            out.append(text_block(lx + lw - 36, ly + lh / 2, layer["body"], width=min(420, lw * 0.5), size=20, fill=theme["muted"], anchor="end", max_lines=2))
+        if index < len(layers) - 1:
+            ay = ly + lh + gap / 2
+            out.append(f'<path d="M{lx + lw / 2:.1f},{ly + lh:.1f} V{ay:.1f}" stroke="{color}" stroke-width="4" marker-end="url(#{marker_for_color(theme, color)})"/>')
+    return out
+
+
+def render_swimlane(spec: dict, width: int, height: int, theme: dict) -> list[str]:
+    """Horizontal lanes; steps positioned by normalized x within a lane; orthogonal edges."""
+    out: list[str] = []
+    out.append(text_block(width / 2, 58, spec.get("title", ""), width=width - 100, size=44, fill=theme["text"], weight=800, max_lines=1))
+    if spec.get("subtitle"):
+        out.append(text_block(width / 2, 102, spec["subtitle"], width=width - 160, size=20, fill=theme["muted"], max_lines=1))
+    lanes = spec.get("lanes", [])
+    steps = spec.get("steps", [])
+    if not lanes:
+        return out
+    lane_label_w = 220
+    x0, x1 = lane_label_w + 60, width - 80
+    top, bottom = 150, height - 90
+    lane_h = (bottom - top) / len(lanes)
+    lane_y = {lane["id"]: top + index * lane_h for index, lane in enumerate(lanes)}
+    for index, lane in enumerate(lanes):
+        ly = lane_y[lane["id"]]
+        color = theme.get(lane.get("color", ""), lane.get("color", theme["line"]))
+        if index % 2 == 0:
+            out.append(f'<rect x="{x0:.1f}" y="{ly + 8:.1f}" width="{x1 - x0:.1f}" height="{lane_h - 16:.1f}" fill="{theme["surface"]}" fill-opacity=".5" rx="16"/>')
+        out.append(f'<rect x="40" y="{ly + 8:.1f}" width="{lane_label_w - 16}" height="{lane_h - 16:.1f}" rx="16" fill="{color}" fill-opacity=".14" stroke="{color}" stroke-width="2"/>')
+        out.append(text_block(40 + (lane_label_w - 16) / 2, ly + lane_h / 2 + 4, lane.get("title", ""), width=lane_label_w - 40, size=24, fill=color, weight=800, max_lines=2))
+    nodes: dict[str, dict] = {}
+    for step in steps:
+        lane = step["lane"]
+        sx = x0 + float(step.get("x", 0.5)) * (x1 - x0 - 320) + 160
+        sy = lane_y[lane] + lane_h / 2 - 55
+        nodes[step["id"]] = {"x": sx - 130, "y": sy, "w": 260, "h": 112}
+        color = theme.get(step.get("color", ""), step.get("color", theme.get(lane, theme["teal"])))
+        out.append(
+            f'<g data-node-id="{esc(step["id"])}" data-bbox="{sx - 130:.1f},{sy:.1f},260.0,112.0">'
+            f'<rect x="{sx - 130:.1f}" y="{sy:.1f}" width="260" height="112" rx="16" fill="{theme["surface_alt"]}" stroke="{color}" stroke-width="3"/>'
+            f'{text_block(sx, sy + 40, step.get("label", ""), width=236, size=24, fill=theme["text"], weight=800, max_lines=2)}'
+            f'{text_block(sx, sy + 80, step.get("body", ""), width=236, size=16, fill=theme["muted"], max_lines=1)}'
+            f"</g>"
+        )
+    for edge_index, edge in enumerate(spec.get("edges", [])):
+        source, target = nodes[edge["from"]], nodes[edge["to"]]
+        path, start, pre_end, end, from_side, to_side = edge_path(source, target, {"id": f"sw-{edge_index}", **edge})
+        color = theme.get(edge.get("color", ""), edge.get("color", theme["line"]))
+        marker = marker_for_color(theme, color)
+        out.append(
+            f'<path data-edge-id="{esc(edge.get("id", f"sw-edge-{edge_index}"))}" '
+            f'data-from="{esc(edge["from"])}" data-to="{esc(edge["to"])}" '
+            f'data-from-side="{from_side}" data-to-side="{to_side}" '
+            f'data-start="{start[0]:.1f},{start[1]:.1f}" data-pre-end="{pre_end[0]:.1f},{pre_end[1]:.1f}" '
+            f'data-end="{end[0]:.1f},{end[1]:.1f}" '
+            f'd="{path}" fill="none" stroke="{color}" stroke-width="4" '
+            f'stroke-linecap="round" stroke-linejoin="round" marker-end="url(#{marker})"/>'
+        )
+        if edge.get("label"):
+            lx = float(edge.get("label_x", (start[0] + end[0]) / 2))
+            ly = float(edge.get("label_y", (start[1] + end[1]) / 2 - 12))
+            out.append(f'<rect x="{lx - 76:.1f}" y="{ly - 20:.1f}" width="152" height="32" rx="12" fill="{theme["background"]}" opacity=".94"/>')
+            out.append(text_block(lx, ly, edge["label"], width=144, size=16, fill=color, weight=700, max_lines=1))
+    return out
+
+
+def tree_layout(nodes: dict, root_id: str, x0: float, x1: float, y_top: float, level_h: float, node_w: float, node_h: float, depth: int = 0) -> None:
+    """Assign x/y to each node by leaves-count partition, then recurse."""
+    node = nodes[root_id]
+    node["y"] = y_top + depth * level_h
+    node["w"] = node_w
+    node["h"] = node_h
+    children = [c for c in node.get("children", []) if c in nodes]
+    if not children:
+        node["x"] = (x0 + x1) / 2 - node_w / 2
+        return
+    total = sum(max(1, len(_collect_leaves(nodes, c))) for c in children)
+    cursor = x0
+    for child in children:
+        share = max(1, len(_collect_leaves(nodes, child))) / total * (x1 - x0)
+        tree_layout(nodes, child, cursor, cursor + share, y_top, level_h, node_w, node_h, depth + 1)
+        cursor += share
+    node["x"] = (x0 + x1) / 2 - node_w / 2
+
+
+def _collect_leaves(nodes: dict, node_id: str) -> list[str]:
+    node = nodes[node_id]
+    children = [c for c in node.get("children", []) if c in nodes]
+    if not children:
+        return [node_id]
+    out: list[str] = []
+    for child in children:
+        out.extend(_collect_leaves(nodes, child))
+    return out
+
+
+def render_tree(spec: dict, width: int, height: int, theme: dict) -> list[str]:
+    """Hierarchy tree: root at top, children partitioned below, orthogonal edges."""
+    out: list[str] = []
+    out.append(text_block(width / 2, 58, spec.get("title", ""), width=width - 100, size=44, fill=theme["text"], weight=800, max_lines=1))
+    if spec.get("subtitle"):
+        out.append(text_block(width / 2, 102, spec["subtitle"], width=width - 160, size=20, fill=theme["muted"], max_lines=1))
+    raw = spec.get("nodes", [])
+    if not raw:
+        return out
+    nodes: dict[str, dict] = {n["id"]: dict(n) for n in raw}
+    root_id = spec.get("root", raw[0]["id"])
+    node_w, node_h = 240, 112
+    x0, x1 = 80, width - 80
+    top, bottom = 160, height - 80
+    depth = max(_depth_of(nodes, root_id), 1)
+    level_h = (bottom - top) / depth
+    tree_layout(nodes, root_id, x0, x1, top, level_h, node_w, node_h)
+    # edges before nodes (markers behind boxes)
+    for edge_index, node in enumerate(nodes.values()):
+        for child_id in node.get("children", []):
+            if child_id not in nodes:
+                continue
+            child = nodes[child_id]
+            color = theme.get(node.get("color", ""), node.get("color", theme["line"]))
+            sx = float(node["x"]) + node_w / 2
+            sy = float(node["y"]) + node_h
+            tx = float(child["x"]) + node_w / 2
+            ty = float(child["y"])
+            mx = (sx + tx) / 2
+            path = f"M{sx:.1f},{sy:.1f} V{sy + 24:.1f} H{mx:.1f} V{ty - 24:.1f} H{tx:.1f} V{ty:.1f}"
+            out.append(
+                f'<path data-edge-id="{esc(node["id"])}-{esc(child_id)}" '
+                f'data-from="{esc(node["id"])}" data-to="{esc(child_id)}" '
+                f'data-from-side="bottom" data-to-side="top" '
+                f'data-start="{sx:.1f},{sy:.1f}" data-pre-end="{tx:.1f},{ty - 24:.1f}" '
+                f'data-end="{tx:.1f},{ty:.1f}" '
+                f'd="{path}" fill="none" stroke="{color}" stroke-width="4" '
+                f'stroke-linecap="round" stroke-linejoin="round" marker-end="url(#{marker_for_color(theme, color)})"/>'
+            )
+    for node in nodes.values():
+        color = theme.get(node.get("color", ""), node.get("color", theme["line"]))
+        out.append(
+            card(
+                float(node["x"]),
+                float(node["y"]),
+                node_w,
+                node_h,
+                node.get("label", ""),
+                node.get("body", ""),
+                fill=theme.get("surface_alt", theme["surface_alt"]),
+                stroke=color,
+                theme=theme,
+                node_id=node["id"],
+            )
+        )
+    return out
+
+
+def _depth_of(nodes: dict, node_id: str) -> int:
+    node = nodes[node_id]
+    children = [c for c in node.get("children", []) if c in nodes]
+    if not children:
+        return 1
+    return 1 + max(_depth_of(nodes, c) for c in children)
+
+
+def render_venn(spec: dict, width: int, height: int, theme: dict) -> list[str]:
+    """Two or three overlapping circles with normalized label points."""
+    out: list[str] = []
+    out.append(text_block(width / 2, 58, spec.get("title", ""), width=width - 100, size=44, fill=theme["text"], weight=800, max_lines=1))
+    if spec.get("subtitle"):
+        out.append(text_block(width / 2, 102, spec["subtitle"], width=width - 160, size=20, fill=theme["muted"], max_lines=1))
+    sets = spec.get("sets", [])
+    if not sets:
+        return out
+    area_x0, area_y0, area_x1, area_y1 = 100, 150, width - 100, height - 170
+    cx = (area_x0 + area_x1) / 2
+    cy = (area_y0 + area_y1) / 2
+    r = min(area_x1 - area_x0, area_y1 - area_y0) * 0.21
+    if len(sets) == 2:
+        positions = [(cx - r * 0.52, cy), (cx + r * 0.52, cy)]
+    else:
+        positions = [(cx, cy - r * 0.55), (cx - r * 0.62, cy + r * 0.52), (cx + r * 0.62, cy + r * 0.52)]
+    for index, set_spec in enumerate(sets[:3]):
+        color = theme.get(set_spec.get("color", ""), set_spec.get("color", theme["line"]))
+        px, py = positions[index]
+        out.append(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="{r:.1f}" fill="{color}" fill-opacity=".22" stroke="{color}" stroke-width="4"/>')
+        out.append(text_block(px, py - r - 26, set_spec.get("title", ""), width=240, size=24, fill=color, weight=800, max_lines=1))
+    for label in spec.get("labels", []):
+        lx = area_x0 + float(label["x"]) * (area_x1 - area_x0)
+        ly = area_y0 + float(label["y"]) * (area_y1 - area_y0)
+        color = theme.get(label.get("color", ""), label.get("color", theme["text"]))
+        out.append(text_block(lx, ly, label.get("text", ""), width=200, size=20, fill=color, weight=700, max_lines=2))
+    legend = spec.get("legend", [])
+    if legend:
+        total_w = width - 120
+        item_w = total_w / len(legend)
+        y = height - 56
+        for index, item in enumerate(legend):
+            x = 60 + index * item_w
+            color = theme.get(item.get("state", ""), item.get("color", theme["muted"]))
+            out.append(f'<rect x="{x:.1f}" y="{y - 18:.1f}" width="36" height="36" rx="8" fill="{color}" stroke="{theme["text"]}" stroke-width="2"/>')
+            out.append(text_block(x + 50, y + 2, item.get("label", ""), width=item_w - 58, size=16, fill=theme["muted"], anchor="start", max_lines=1))
+    return out
+
+
+def render_pyramid(spec: dict, width: int, height: int, theme: dict) -> list[str]:
+    """Trapezoid stack: pyramid (narrow top) or funnel (narrow bottom)."""
+    out: list[str] = []
+    out.append(text_block(width / 2, 58, spec.get("title", ""), width=width - 100, size=44, fill=theme["text"], weight=800, max_lines=1))
+    if spec.get("subtitle"):
+        out.append(text_block(width / 2, 102, spec["subtitle"], width=width - 160, size=20, fill=theme["muted"], max_lines=1))
+    levels = spec.get("levels", [])
+    if not levels:
+        return out
+    funnel = spec.get("mode", "pyramid") == "funnel"
+    cx = width / 2
+    top, bottom = 160, height - 90
+    lh = (bottom - top) / len(levels)
+    max_w = width - 260
+    taper = (max_w - max_w * 0.22) / (len(levels) - 1) if len(levels) > 1 else 0
+    for index, level in enumerate(levels):
+        ly = top + index * lh
+        # pyramid: level 0 (top) narrowest; funnel: level 0 widest
+        rank = index if not funnel else (len(levels) - 1 - index)
+        w_here = max_w * 0.22 + taper * rank
+        w_next = max_w * 0.22 + taper * (rank - 1 if not funnel else rank + 1)
+        w_next = max(w_next, max_w * 0.22)
+        y0t, y1t = ly, ly + lh
+        x_l0, x_r0 = cx - w_here / 2, cx + w_here / 2
+        x_l1, x_r1 = cx - w_next / 2, cx + w_next / 2
+        color = theme.get(level.get("color", ""), level.get("color", theme["line"]))
+        out.append(
+            f'<path d="M{x_l0:.1f},{y0t:.1f} L{x_r0:.1f},{y0t:.1f} '
+            f'L{x_r1:.1f},{y1t:.1f} L{x_l1:.1f},{y1t:.1f} Z" '
+            f'fill="{color}" fill-opacity=".16" stroke="{color}" stroke-width="3"/>'
+        )
+        out.append(text_block(cx, y0t + lh * 0.4, level.get("title", ""), width=w_here - 40, size=24, fill=theme["text"], weight=800, max_lines=2))
+        if level.get("body"):
+            out.append(text_block(cx, y0t + lh * 0.7, level["body"], width=w_here - 40, size=16, fill=theme["muted"], max_lines=2))
+    return out
+
+
 def find_chrome() -> str | None:
     candidates = [
         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -824,6 +1172,20 @@ def render(spec: dict) -> str:
         parts.extend(render_token_prefix(spec, width, height, theme))
     elif layout == "flow":
         parts.extend(render_flow(spec, width, height, theme))
+    elif layout == "quadrant":
+        parts.extend(render_quadrant(spec, width, height, theme))
+    elif layout == "timeline":
+        parts.extend(render_timeline(spec, width, height, theme))
+    elif layout == "layers":
+        parts.extend(render_layers(spec, width, height, theme))
+    elif layout == "swimlane":
+        parts.extend(render_swimlane(spec, width, height, theme))
+    elif layout == "tree":
+        parts.extend(render_tree(spec, width, height, theme))
+    elif layout == "venn":
+        parts.extend(render_venn(spec, width, height, theme))
+    elif layout == "pyramid":
+        parts.extend(render_pyramid(spec, width, height, theme))
     else:
         raise ValueError(f"Unsupported layout: {layout}")
     parts.append("</svg>")

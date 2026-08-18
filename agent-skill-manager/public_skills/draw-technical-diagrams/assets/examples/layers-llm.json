@@ -1,0 +1,14 @@
+{
+  "layout": "layers",
+  "width": 1200, "height": 1300,
+  "slug": "layers-llm",
+  "title": "LLM 应用的分层架构",
+  "subtitle": "上层依赖下层，箭头表示依赖方向",
+  "description": "从界面到模型的分层：应用层、编排层、服务层、模型层。",
+  "layers": [
+    {"title": "应用层", "body": "Web / 客户端 / Agent 界面", "color": "coral"},
+    {"title": "编排层", "body": "会话状态、工具循环、审批", "color": "amber"},
+    {"title": "服务层", "body": "模型网关、缓存、沙箱", "color": "violet"},
+    {"title": "模型层", "body": "推理服务、KV 缓存", "color": "teal"}
+  ]
+}

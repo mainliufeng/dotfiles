@@ -135,3 +135,42 @@ For `token-prefix`:
 - Keep equal token widths.
 - Represent state through color, not changing block geometry.
 - Point to the first changed token when explaining cache invalidation.
+
+For `quadrant`:
+
+- `quadrants` holds 4 cells in fixed order: top-right, top-left, bottom-left, bottom-right. Give each a `title`, optional `body`, and `color`.
+- `items` position points by normalized `x`/`y` (0–1, y bottom-up) inside the plot area, with `label` and optional `color`.
+- Axis wording lives in `x_label`/`x_high_label` (low/high cost) and `y_label`/`y_high_label` (low/high impact). Put the *actionable* quadrant top-right ("立即做").
+- Keep ≤ 12 items; if labels would collide, drop the least important items instead of shrinking text.
+
+For `timeline`:
+
+- `events` are ordered along the axis; each has optional `date`, `title`, `body`, and `color`. Cards alternate above/below the axis automatically.
+- Card width adapts to event count; if events are dense, split into two timelines or keep ≤ 8 events.
+- `axis_label` sits at the right end of the axis (e.g. "时间 →").
+
+For `layers`:
+
+- `layers` render top-down in list order; each has `title`, optional `body`, and `color`.
+- The arrow between layers points downward (dependency direction). Put the *most dependent-on* layer last.
+
+For `swimlane`:
+
+- `lanes` render top-down; each has `id`, `title`, `color`.
+- `steps` give `id`, `lane`, `label`, optional `body`, and normalized `x` (0–1 across the lane area).
+- `edges` connect step ids with optional `label`; routing is orthogonal and validated. Keep ≤ 5 lanes and ≤ 10 steps.
+
+For `tree`:
+
+- `nodes` list every node with `id`, `label`, optional `body`/`color`; parent nodes carry `children` (ids). `root` names the top node.
+- Layout partitions width by leaf counts, so subtrees stay readable. Keep depth ≤ 4 and nodes ≤ 12.
+
+For `venn`:
+
+- `sets` are 2–3 circles with `title` and `color`; `labels` place free text by normalized `x`/`y` (0–1) inside the plot area.
+- Keep labels sparse: one per region that carries information. Three circles max.
+
+For `pyramid`:
+
+- `levels` render top-down; each has `title`, optional `body`, and `color`. `mode: "pyramid"` tapers narrow at top; `mode: "funnel"` tapers narrow at bottom.
+- Top levels are the focal ones — give them `coral`/`amber`, bottom `muted`. Keep ≤ 6 levels.

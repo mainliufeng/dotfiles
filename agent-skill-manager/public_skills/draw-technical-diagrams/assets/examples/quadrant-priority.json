@@ -1,0 +1,23 @@
+{
+  "layout": "quadrant",
+  "width": 1400, "height": 1100,
+  "slug": "quadrant-priority",
+  "title": "优化项优先级：影响 × 成本",
+  "subtitle": "右上角先做，左下角放弃",
+  "description": "按影响与成本两个维度给优化项分类：高影响低成本优先，高影响高成本策略投入，其余暂缓或放弃。",
+  "x_label": "低成本 →", "x_high_label": "高成本 →",
+  "y_label": "低影响 →", "y_high_label": "高影响 →",
+  "quadrants": [
+    {"title": "策略投入", "body": "高影响 · 高成本", "color": "amber"},
+    {"title": "立即做", "body": "高影响 · 低成本", "color": "teal"},
+    {"title": "放弃", "body": "低影响 · 高成本", "color": "muted"},
+    {"title": "暂缓", "body": "低影响 · 低成本", "color": "coral"}
+  ],
+  "items": [
+    {"label": "修复箭头渲染", "x": 0.62, "y": 0.78, "color": "teal"},
+    {"label": "4px 网格", "x": 0.55, "y": 0.68, "color": "teal"},
+    {"label": "全量重写 renderer", "x": 0.78, "y": 0.72, "color": "amber"},
+    {"label": "品牌 onboarding", "x": 0.25, "y": 0.3, "color": "muted"},
+    {"label": "动画效果", "x": 0.32, "y": 0.62, "color": "amber"}
+  ]
+}
