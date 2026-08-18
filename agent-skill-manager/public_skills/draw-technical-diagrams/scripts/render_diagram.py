@@ -706,7 +706,7 @@ def render_quadrant(spec: dict, width: int, height: int, theme: dict) -> list[st
     out.append(text_block(width / 2, 58, spec.get("title", ""), width=width - 100, size=44, fill=theme["text"], weight=800, max_lines=1))
     if spec.get("subtitle"):
         out.append(text_block(width / 2, 102, spec["subtitle"], width=width - 160, size=20, fill=theme["muted"], max_lines=1))
-    x0, y0, x1, y1 = 140, 150, width - 140, height - 150
+    x0, y0, x1, y1 = 140, 180, width - 140, height - 150
     mid_x, mid_y = (x0 + x1) / 2, (y0 + y1) / 2
     quadrants = spec.get("quadrants", [])
     # order: q1 top-right, q2 top-left, q3 bottom-left, q4 bottom-right
@@ -719,19 +719,22 @@ def render_quadrant(spec: dict, width: int, height: int, theme: dict) -> list[st
     for index, quad in enumerate(quadrants[:4]):
         qx, qy, qw, qh = cells[index]
         color = theme.get(quad.get("color", ""), quad.get("color", theme["line"]))
-        out.append(f'<rect x="{qx:.1f}" y="{qy:.1f}" width="{qw - qx:.1f}" height="{qh - qy:.1f}" fill="{color}" fill-opacity=".08" stroke="{color}" stroke-width="2"/>')
+        out.append(f'<rect x="{qx:.1f}" y="{qy:.1f}" width="{qw - qx:.1f}" height="{qh - qy:.1f}" fill="{color}" fill-opacity=".10" stroke="{color}" stroke-width="2"/>')
         out.append(text_block(qx + 28, qy + 44, quad.get("title", ""), width=min(300, (qw - qx) / 2), size=24, fill=color, weight=800, anchor="start", max_lines=1))
         if quad.get("body"):
             out.append(text_block(qx + 28, qy + 84, quad["body"], width=min(300, (qw - qx) / 2), size=16, fill=theme["muted"], anchor="start", max_lines=2))
     # axes
     out.append(f'<path d="M{x0:.1f},{mid_y:.1f} H{x1:.1f}" stroke="{theme["line"]}" stroke-width="4"/>')
     out.append(f'<path d="M{mid_x:.1f},{y0:.1f} V{y1:.1f}" stroke="{theme["line"]}" stroke-width="4"/>')
-    if spec.get("x_label"):
-        out.append(text_block(x0 - 8, mid_y + 40, spec["x_label"], width=200, size=20, fill=theme["muted"], anchor="start", max_lines=1))
-        out.append(text_block(x1 + 8, mid_y + 40, spec.get("x_high_label", ""), width=200, size=20, fill=theme["muted"], anchor="start", max_lines=1))
+    # axis labels live OUTSIDE the plot area: top/bottom centers, left/right ends
+    if spec.get("y_high_label"):
+        out.append(text_block(mid_x, y0 - 24, spec["y_high_label"], width=240, size=20, fill=theme["muted"], max_lines=1))
     if spec.get("y_label"):
-        out.append(text_block(mid_x, y1 - 14, spec["y_label"], width=200, size=20, fill=theme["muted"], max_lines=1))
-        out.append(text_block(mid_x, y0 + 44, spec.get("y_high_label", ""), width=200, size=20, fill=theme["muted"], max_lines=1))
+        out.append(text_block(mid_x, y1 + 32, spec["y_label"], width=240, size=20, fill=theme["muted"], max_lines=1))
+    if spec.get("x_label"):
+        out.append(text_block(x0 - 20, mid_y + 8, spec["x_label"], width=240, size=20, fill=theme["muted"], anchor="end", max_lines=1))
+    if spec.get("x_high_label"):
+        out.append(text_block(x1 + 20, mid_y + 8, spec.get("x_high_label", ""), width=240, size=20, fill=theme["muted"], anchor="start", max_lines=1))
     # items
     for item in spec.get("items", []):
         ix = x0 + float(item["x"]) * (x1 - x0)
@@ -770,7 +773,7 @@ def render_timeline(spec: dict, width: int, height: int, theme: dict) -> list[st
         # connector
         out.append(f'<path d="M{ex:.1f},{axis_y:.1f} V{cy - card_h / 2 if below else cy + card_h / 2:.1f}" stroke="{color}" stroke-width="3" stroke-dasharray="6 8"/>')
         # card
-        out.append(f'<rect x="{cx - card_w / 2:.1f}" y="{cy - card_h / 2:.1f}" width="{card_w}" height="{card_h}" rx="20" fill="{theme["surface"]}" stroke="{color}" stroke-width="3"/>')
+        out.append(f'<g filter="url(#shadow)"><rect x="{cx - card_w / 2:.1f}" y="{cy - card_h / 2:.1f}" width="{card_w}" height="{card_h}" rx="20" fill="{theme["surface"]}" stroke="{color}" stroke-width="3"/></g>')
         out.append(text_block(cx, cy - 22, event.get("date", f"T{index + 1}"), width=card_w - 36, size=16, fill=color, weight=800, max_lines=1))
         out.append(text_block(cx, cy + 16, event.get("title", ""), width=card_w - 36, size=24, fill=theme["text"], weight=800, max_lines=2))
         if event.get("body"):
@@ -807,7 +810,7 @@ def render_layers(spec: dict, width: int, height: int, theme: dict) -> list[str]
     for index, layer in enumerate(layers):
         ly = top + index * (lh + gap)
         color = theme.get(layer.get("color", ""), layer.get("color", theme["line"]))
-        out.append(f'<rect x="{lx:.1f}" y="{ly:.1f}" width="{lw:.1f}" height="{lh:.1f}" rx="20" fill="{theme["surface"]}" stroke="{color}" stroke-width="3"/>')
+        out.append(f'<g filter="url(#shadow)"><rect x="{lx:.1f}" y="{ly:.1f}" width="{lw:.1f}" height="{lh:.1f}" rx="20" fill="{theme["surface"]}" stroke="{color}" stroke-width="3"/></g>')
         out.append(text_block(lx + 36, ly + lh / 2, layer.get("title", ""), width=min(320, lw * 0.4), size=28, fill=theme["text"], weight=800, anchor="start", max_lines=2))
         if layer.get("body"):
             out.append(text_block(lx + lw - 36, ly + lh / 2, layer["body"], width=min(420, lw * 0.5), size=20, fill=theme["muted"], anchor="end", max_lines=2))
@@ -848,7 +851,7 @@ def render_swimlane(spec: dict, width: int, height: int, theme: dict) -> list[st
         color = theme.get(step.get("color", ""), step.get("color", theme.get(lane, theme["teal"])))
         out.append(
             f'<g data-node-id="{esc(step["id"])}" data-bbox="{sx - 130:.1f},{sy:.1f},260.0,112.0">'
-            f'<rect x="{sx - 130:.1f}" y="{sy:.1f}" width="260" height="112" rx="16" fill="{theme["surface_alt"]}" stroke="{color}" stroke-width="3"/>'
+            f'<rect x="{sx - 130:.1f}" y="{sy:.1f}" width="260" height="112" rx="16" fill="{theme["surface_alt"]}" stroke="{color}" stroke-width="3" filter="url(#shadow)"/>'
             f'{text_block(sx, sy + 40, step.get("label", ""), width=236, size=24, fill=theme["text"], weight=800, max_lines=2)}'
             f'{text_block(sx, sy + 80, step.get("body", ""), width=236, size=16, fill=theme["muted"], max_lines=1)}'
             f"</g>"
@@ -991,7 +994,7 @@ def render_venn(spec: dict, width: int, height: int, theme: dict) -> list[str]:
     for index, set_spec in enumerate(sets[:3]):
         color = theme.get(set_spec.get("color", ""), set_spec.get("color", theme["line"]))
         px, py = positions[index]
-        out.append(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="{r:.1f}" fill="{color}" fill-opacity=".22" stroke="{color}" stroke-width="4"/>')
+        out.append(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="{r:.1f}" fill="{color}" fill-opacity=".34" stroke="{color}" stroke-width="4"/>')
         out.append(text_block(px, py - r - 26, set_spec.get("title", ""), width=240, size=24, fill=color, weight=800, max_lines=1))
     for label in spec.get("labels", []):
         lx = area_x0 + float(label["x"]) * (area_x1 - area_x0)
