@@ -44,7 +44,6 @@ These mark "AI generated" schematics of any type. Reject them at review:
 
 - Node count ≤ 9, arrows ≤ 12, focal elements ≤ 2. Exceeding any limit: split into overview + detail.
 - Hub-spoke: 4–8 outer cards. Sequence: ≤ 5 lifelines. Return loops: ≤ 2, each in its own outer gutter.
-- Per-type limits: quadrant ≤ 12 items; timeline ≤ 8 events; swimlane ≤ 5 lanes and ≤ 10 steps; tree depth ≤ 4 and ≤ 12 nodes; venn ≤ 3 sets; pyramid ≤ 6 levels; layers ≤ 6.
 - If the diagram cannot be read as one dominant path with branches, it is two diagrams.
 
 ## 4px grid check

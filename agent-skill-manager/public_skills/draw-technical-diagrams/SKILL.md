@@ -1,6 +1,6 @@
 ---
 name: draw-technical-diagrams
-description: Turn technical explanations into precise, publication-ready architecture diagrams, flowcharts, sequence diagrams, hub-and-spoke maps, side-by-side comparisons, token/cache diagrams, 2x2 quadrants, timelines, layer stacks, swimlanes, hierarchy trees, Venn diagrams, pyramids/funnels, and technical covers. Use when Codex must decide what diagram to draw, derive a diagram brief from domain knowledge, match the spatial layout of a reference image without copying its content or style, generate SVG/PNG assets, or fix broken arrows, crowded routing, text overflow, and mobile readability.
+description: Turn technical explanations into precise, publication-ready architecture diagrams, flowcharts, sequence diagrams, hub-and-spoke maps, side-by-side comparisons, token/cache diagrams, and technical covers. Use when Codex must decide what diagram to draw, derive a diagram brief from domain knowledge, match the spatial layout of a reference image without copying its content or style, generate SVG/PNG assets, or fix broken arrows, crowded routing, text overflow, and mobile readability.
 ---
 
 # Draw Technical Diagrams
@@ -14,7 +14,7 @@ Build diagrams in two stages: derive a semantic specification, then render it wi
 3. Select one layout family using [layout-selection.md](references/layout-selection.md).
 4. Write a diagram specification before writing SVG, Mermaid, or an image prompt. Follow [spec-writing.md](references/spec-writing.md).
 5. Render:
-   - Use `scripts/render_diagram.py` for `hub-spoke`, `annotated-hub`, `comparison`, `token-prefix`, port-routed `flow`, `quadrant`, `timeline`, `layers`, `swimlane`, `tree`, `venn`, and `pyramid` diagrams.
+   - Use `scripts/render_diagram.py` for `hub-spoke`, `annotated-hub`, `comparison`, `token-prefix`, and port-routed `flow` diagrams.
    - Use Mermaid for ordinary sequence, state, and small acyclic flow diagrams. Follow [mermaid-and-sequence.md](references/mermaid-and-sequence.md).
    - Use an image model only for covers, scene metaphors, or decorative illustration. Follow [cover-prompts.md](references/cover-prompts.md).
 6. Export an editable source plus PNG. Never ship SVG as the only article asset.
@@ -63,13 +63,6 @@ Use the example specifications as structure references:
 - `assets/examples/token-prefix-cache.json`
 - `assets/examples/flow-agent-loop.json`
 - `assets/examples/flow-direct-vs-code-mode.json`
-- `assets/examples/quadrant-priority.json`
-- `assets/examples/timeline-dsh.json`
-- `assets/examples/layers-llm.json`
-- `assets/examples/swimlane-agent.json`
-- `assets/examples/tree-knowledge.json`
-- `assets/examples/venn-agent.json`
-- `assets/examples/pyramid-readers.json`
 
 ## Non-negotiable rules
 
