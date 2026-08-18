@@ -79,3 +79,9 @@ Use the example specifications as structure references:
 - Do not use Mermaid when the reference layout requires exact geometry, nested panels, a center hub, repeated token strips, or carefully isolated return paths.
 - Do not imitate a source image's brand identity. Reuse spatial grammar only.
 - Treat arrow anatomy as a release gate at both full size and 390 px: the shaft, bend, and head must remain distinguishable; a head with no visible handle or a handle shorter than the head must be redrawn before publication.
+- Respect the complexity budget (≤9 nodes, ≤12 arrows, ≤2 focal elements). If you exceed it, split into overview + detail. See [spec-writing.md](references/spec-writing.md).
+- Stay on the 4px grid: every coordinate, node size, gap, and font size is a multiple of 4. Off-grid values are what make deterministic SVG feel AI-generated.
+- Every arrow label sits on an opaque mask rect with a visible 6–10px gap above its connector. No label may touch or hide its own arrow.
+- Fan attach points: connectors sharing one box edge attach ≥12px apart; no connector may hide another; crossings use a bridge/hop, never a shared stroke path.
+- No connector passes behind a box that is not its source or target, except when geometrically unavoidable — then the stroke is dashed, the label sits at the visible end, and no arrowhead lands on the intervening box.
+- Export accessible SVG: `role="img"` plus a `<title>` (first child) and one-sentence `<desc>`, with per-diagram prefixed IDs when inlined into HTML.

@@ -13,6 +13,49 @@
 - No topology edge is represented by a Unicode arrow glyph or a standalone triangle.
 - The final segment entering a node is at least 1.5 times the arrowhead length. If there is not enough room, reroute or move nodes.
 
+## Connector rules (hard fails)
+
+- **Label-to-connector gap: 6–10px, always.** Every arrow label needs an opaque mask rect behind it (otherwise the line bleeds through), and the mask must sit with a visible 6–10px gap above the stroke. A label that touches or hides its own arrow is a hard fail. Never `writing-mode` vertical text on arrows.
+- **Fan the attach points.** When two or more connectors enter or exit the same edge of a box, each gets its own attach point spread along the edge, ≥12px apart (8px minimum for very small boxes). No two connectors may share one point; no connector may hide another.
+- **No overlapping connectors.** Two connectors must never share a stroke path or run on top of each other. Crossings use a bridge / hop primitive; parallel connectors keep ≥12px separation end to end. If you find yourself stacking connectors, split the diagram.
+- **No connector passes behind a non-endpoint box — except when geometrically unavoidable on the direct orthogonal path.** In that narrow exception the stroke must be dashed (transit, not interaction), the label sits at the visible end, and no arrowhead lands on the intervening box.
+- **Label masks must not overlap nodes painted after them.** A mask that lands inside a later node gets clipped by the node fill and the text renders as a fragment on the border. Place labels on segments running through open canvas.
+
+## Anti-patterns (AI-slop markers)
+
+These mark "AI generated" schematics of any type. Reject them at review:
+
+| Anti-pattern | Why it fails |
+|---|---|
+| Dark mode + cyan/purple glow | Looks "technical" without design decisions |
+| Monospace as a blanket "dev" font | Mono is for technical content — ports, commands, URLs. Names go in the body font |
+| Identical boxes for every node | Erases hierarchy |
+| Legend floating inside the diagram area | Collides with nodes |
+| Arrow labels with no masking rect | Bleeds through the line |
+| Vertical `writing-mode` text on arrows | Unreadable |
+| 3 equal-width summary cards as default | Generic grid — vary widths |
+| Shadow on every element | Borders are the default; shadows only for deliberate elevation |
+| `rounded-2xl` on boxes | Max radius 16–24px or none |
+| Accent color on every "important" node | Accent is 1–2 focal elements, not a signaling system |
+| Reproducing Mermaid's renderer layout | Imports automatic spacing and routing instead of an editorial layout |
+| Diagonal connectors between off-axis nodes | Orthogonal elbows are mandatory for process routing |
+
+## Complexity budget check
+
+- Node count ≤ 9, arrows ≤ 12, focal elements ≤ 2. Exceeding any limit: split into overview + detail.
+- Hub-spoke: 4–8 outer cards. Sequence: ≤ 5 lifelines. Return loops: ≤ 2, each in its own outer gutter.
+- If the diagram cannot be read as one dominant path with branches, it is two diagrams.
+
+## 4px grid check
+
+- Every rect `x/y/width/height`, text `x/y/font-size`, and gap is a multiple of 4. `validate_diagram.py` flags off-grid values; fix before publication.
+- Exempt: stroke widths, opacity, `y + h/2` baseline offsets.
+
+## Accessibility check
+
+- The exported SVG carries `role="img"` and an accessible name. When inlining into HTML, add `<title>` as the first child of `<svg>` and a one-sentence `<desc>` describing the content (not the geometry), with IDs prefixed per diagram — never bare `title` / `desc` IDs, which collide when several diagrams are inlined on one page.
+- Decorative-only graphics get `aria-hidden="true"` instead of an accessible name.
+
 ## Visual checks
 
 Inspect the PNG at full size and at 390 px wide.

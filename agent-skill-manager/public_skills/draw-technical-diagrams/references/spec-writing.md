@@ -57,6 +57,41 @@ radial connector gutter: 24-40 px outside cards
 - Put qualifications, evidence boundaries, and examples in the caption or surrounding article.
 - Preserve domain distinctions. For example, `direct tool calls` and `code mode` are workflows, while `tool result` is data; do not draw all three as peer components.
 
+## Complexity budget
+
+Decide the budget before writing coordinates. When a diagram exceeds its budget, split it into overview + detail instead of compressing.
+
+| Limit | Rule |
+|---|---|
+| Max nodes | 9 |
+| Max arrows / transitions | 12 |
+| Max focal (accent) elements | 2 |
+| Max outer cards (hub-spoke) | 8 |
+| Max sequence lifelines | 5 |
+| Max return loops | 2 (one per outer gutter) |
+| Max annotation callouts | 2 |
+
+The budget is a planning gate, not a checklist item: if you cannot name the 1–2 things the reader should look at first, the diagram is not finished.
+
+## 4px grid
+
+All coordinates, node sizes, gaps, and font sizes must be multiples of 4. This is what keeps a deterministic SVG from feeling AI-generated.
+
+| Category | Allowed values |
+|---|---|
+| Font sizes | 16, 20, 24, 28, 32, 40, 48 |
+| Node width / height | multiples of 4 |
+| x / y coordinates | multiples of 4 |
+| Gap between nodes | 16, 20, 24, 32, 40 |
+| Padding inside boxes | 8, 12, 16 |
+| Border radius | 4, 8, 12, 16, 24 |
+
+Exempt: stroke widths, opacity values, and text baseline offsets computed as `y + h/2` (keep the *declared* box geometry on the grid). If a coordinate ends in 1, 2, 3, 5, 6, 7, 9 — fix it. `validate_diagram.py` reports off-grid values as warnings; treat them as errors before publication.
+
+## Focal rule
+
+One accent treatment per diagram, on 1–2 elements max. Everything else uses neutral fills. If you are tempted to accent 4 nodes, you have not decided what the reader should see first. Semantic colors (safe green / danger red) are categories, not focal accents — keep at most two semantic hues active in one diagram, plus at most two focal elements.
+
 ## JSON workflow
 
 Copy the closest file from `assets/examples/` and replace its semantic content.

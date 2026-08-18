@@ -107,7 +107,7 @@ def text_block(
     )
 
 
-def svg_header(width: int, height: int, theme: dict, title: str) -> list[str]:
+def svg_header(width: int, height: int, theme: dict, title: str, slug: str = "diagram", description: str = "") -> list[str]:
     markers = []
     for key in ("line", "teal", "amber", "violet", "coral", "blue", "cached", "new", "invalid", "recomputed", "muted"):
         markers.append(
@@ -115,12 +115,16 @@ def svg_header(width: int, height: int, theme: dict, title: str) -> list[str]:
             'markerWidth="16" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto-start-reverse" overflow="visible">'
             f'<path d="M0,0 L16,8 L0,16 Z" fill="{theme[key]}"/></marker>'
         )
+    desc = description or "Technical diagram. See the surrounding article for the full explanation."
     return [
         '<?xml version="1.0" encoding="UTF-8"?>',
         (
             f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
-            f'viewBox="0 0 {width} {height}" role="img" aria-label="{esc(title)}">'
+            f'viewBox="0 0 {width} {height}" role="img" aria-labelledby="{slug}-title">'
         ),
+        # <title> must be the first child of <svg>, before <defs>, for assistive tech.
+        f'<title id="{slug}-title">{esc(title)}</title>',
+        f'<desc id="{slug}-desc">{esc(desc)}</desc>',
         "<defs>",
         *markers,
         (
@@ -719,6 +723,58 @@ def png_dimensions(path: Path) -> tuple[int, int]:
     return struct.unpack(">II", header[16:24])
 
 
+def render_png_with_chrome(svg_path: Path, png_path: Path, width: int, height: int) -> None:
+    chrome = find_chrome()
+    if not chrome:
+        raise RuntimeError("Chrome not found")
+    if png_path.exists():
+        png_path.unlink()
+    deadline = time.monotonic() + 20
+    with tempfile.TemporaryDirectory(prefix="diagram-render-") as profile:
+        process = subprocess.Popen(
+            [
+                chrome,
+                "--headless=new",
+                "--disable-gpu",
+                "--disable-background-networking",
+                "--hide-scrollbars",
+                "--no-first-run",
+                "--no-default-browser-check",
+                f"--user-data-dir={profile}",
+                "--force-device-scale-factor=1",
+                f"--window-size={width},{height}",
+                f"--screenshot={png_path}",
+                svg_path.resolve().as_uri(),
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        try:
+            while time.monotonic() < deadline:
+                if png_path.exists() and png_path.stat().st_size > 1024:
+                    return
+                if process.poll() is not None and not png_path.exists():
+                    raise RuntimeError(f"Chrome exited with code {process.returncode} before writing PNG")
+                time.sleep(0.1)
+            raise RuntimeError("Chrome did not write PNG within 20 seconds")
+        finally:
+            if process.poll() is None:
+                process.terminate()
+                try:
+                    process.wait(timeout=3)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait(timeout=3)
+
+
+def render_png_with_sips(svg_path: Path, png_path: Path) -> None:
+    subprocess.run(
+        ["sips", "-s", "format", "png", str(svg_path), "--out", str(png_path)],
+        check=True,
+        stdout=subprocess.DEVNULL,
+    )
+
+
 def render_png(svg_path: Path, png_path: Path, width: int, height: int) -> None:
     rsvg = shutil.which("rsvg-convert")
     if rsvg:
@@ -726,48 +782,17 @@ def render_png(svg_path: Path, png_path: Path, width: int, height: int) -> None:
     else:
         chrome = find_chrome()
         if chrome:
-            if png_path.exists():
-                png_path.unlink()
-            process = None
-            deadline = time.monotonic() + 20
-            with tempfile.TemporaryDirectory(prefix="diagram-render-") as profile:
-                process = subprocess.Popen(
-                    [
-                        chrome,
-                        "--headless=new",
-                        "--disable-gpu",
-                        "--disable-background-networking",
-                        "--hide-scrollbars",
-                        "--no-first-run",
-                        "--no-default-browser-check",
-                        f"--user-data-dir={profile}",
-                        "--force-device-scale-factor=1",
-                        f"--window-size={width},{height}",
-                        f"--screenshot={png_path}",
-                        svg_path.resolve().as_uri(),
-                    ],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                )
-                try:
-                    while time.monotonic() < deadline:
-                        if png_path.exists() and png_path.stat().st_size > 1024:
-                            break
-                        if process.poll() is not None and not png_path.exists():
-                            raise RuntimeError(f"Chrome exited with code {process.returncode} before writing PNG")
-                        time.sleep(0.1)
-                    else:
-                        raise RuntimeError("Chrome did not write PNG within 20 seconds")
-                finally:
-                    if process.poll() is None:
-                        process.terminate()
-                        try:
-                            process.wait(timeout=3)
-                        except subprocess.TimeoutExpired:
-                            process.kill()
-                            process.wait(timeout=3)
+            try:
+                render_png_with_chrome(svg_path, png_path, width, height)
+            except RuntimeError:
+                # Chrome is fragile in some environments (sandbox, crashpad);
+                # fall back to macOS sips before giving up.
+                if sys.platform == "darwin" and shutil.which("sips"):
+                    render_png_with_sips(svg_path, png_path)
+                else:
+                    raise
         elif sys.platform == "darwin" and shutil.which("sips"):
-            subprocess.run(["sips", "-s", "format", "png", str(svg_path), "--out", str(png_path)], check=True, stdout=subprocess.DEVNULL)
+            render_png_with_sips(svg_path, png_path)
         else:
             raise RuntimeError("Cannot export PNG: install rsvg-convert, Chrome/Chromium, or macOS sips")
     actual = png_dimensions(png_path)
@@ -781,7 +806,14 @@ def render(spec: dict) -> str:
     theme = dict(DEFAULT_THEME)
     theme.update(spec.get("theme", {}))
     layout = spec.get("layout")
-    parts = svg_header(width, height, theme, spec.get("title", "technical diagram"))
+    parts = svg_header(
+        width,
+        height,
+        theme,
+        spec.get("title", "technical diagram"),
+        slug=spec.get("slug", "diagram"),
+        description=spec.get("description", ""),
+    )
     if layout == "hub-spoke":
         parts.extend(render_hub_spoke(spec, width, height, theme))
     elif layout == "annotated-hub":

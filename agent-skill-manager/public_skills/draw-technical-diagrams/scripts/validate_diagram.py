@@ -56,6 +56,44 @@ def main() -> int:
     width, height = int(float(root.attrib["width"])), int(float(root.attrib["height"]))
     if (width, height) != (int(spec.get("width", width)), int(spec.get("height", height))):
         errors.append("SVG dimensions do not match the specification")
+
+    # Accessibility contract: role=img + title as first child + accessible name.
+    if root.attrib.get("role") != "img":
+        errors.append("SVG root must carry role=\"img\"")
+    svg_children = list(root)
+    title_first = bool(svg_children) and svg_children[0].tag == f"{{{SVG_NS['svg']}}}title"
+    if not title_first:
+        warnings.append("SVG has no <title> as its first child; screen readers may miss the name")
+    has_name = root.attrib.get("aria-label") is not None or any(
+        el.tag == f"{{{SVG_NS['svg']}}}title" for el in root.iter()
+    )
+    if not has_name:
+        warnings.append("SVG has no accessible name (aria-label or <title>)")
+
+    # 4px grid: declared box geometry and font sizes must be multiples of 4.
+    off_grid: list[str] = []
+    for element in root.iter():
+        tag = element.tag.split("}")[-1]
+        for attr in ("x", "y", "width", "height"):
+            if tag == "rect" and attr in element.attrib:
+                try:
+                    value = float(element.attrib[attr])
+                except ValueError:
+                    continue
+                if value % 4 != 0:
+                    off_grid.append(f"rect {attr}={element.attrib[attr]}")
+        if tag == "text" and "font-size" in element.attrib:
+            try:
+                value = float(element.attrib["font-size"])
+            except ValueError:
+                continue
+            if value % 4 != 0:
+                off_grid.append(f"text font-size={element.attrib['font-size']}")
+    if off_grid:
+        shown = ", ".join(off_grid[:12])
+        suffix = " …" if len(off_grid) > 12 else ""
+        warnings.append(f"off-grid values (boxes and font sizes must be multiples of 4): {shown}{suffix}")
+
     nodes = {}
 
     marker_lengths: dict[str, float] = {}
@@ -125,6 +163,13 @@ def main() -> int:
                 errors.append(f"PNG dimensions {png_size} do not match SVG {(width, height)}")
         except (OSError, ValueError) as exc:
             errors.append(f"PNG validation failed: {exc}")
+
+    # Complexity budget: plan-level gate, reported as warnings.
+    if len(nodes) > 9:
+        warnings.append(f"complexity budget: {len(nodes)} nodes exceed the 9-node limit; split into overview + detail")
+    if len(edges) > 12:
+        warnings.append(f"complexity budget: {len(edges)} arrows exceed the 12-arrow limit; split into overview + detail")
+
     result = {
         "valid": not errors,
         "layout": spec.get("layout"),
