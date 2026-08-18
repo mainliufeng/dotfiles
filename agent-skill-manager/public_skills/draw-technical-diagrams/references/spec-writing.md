@@ -86,7 +86,7 @@ All coordinates, node sizes, gaps, and font sizes must be multiples of 4. This i
 | Padding inside boxes | 8, 12, 16 |
 | Border radius | 4, 8, 12, 16, 24 |
 
-Exempt: stroke widths, opacity values, and text baseline offsets computed as `y + h/2` (keep the *declared* box geometry on the grid). If a coordinate ends in 1, 2, 3, 5, 6, 7, 9 — fix it. `validate_diagram.py` reports off-grid values as warnings; treat them as errors before publication.
+Exempt: stroke widths, opacity values, text baseline offsets computed as `y + h/2`, and renderer-computed geometry (comparison panel widths, hub-spoke polar card positions, edge label masks). The grid applies to declared geometry: node boxes, group boxes, fonts, and every coordinate you write in the spec. If a coordinate ends in 1, 2, 3, 5, 6, 7, 9 — fix it. `validate_diagram.py` reports off-grid values as warnings; treat them as errors before publication.
 
 ## Focal rule
 

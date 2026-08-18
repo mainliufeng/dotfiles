@@ -165,7 +165,7 @@ def card(
     parts = [
         f'<g{attrs} filter="url(#shadow)">',
         f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="24" fill="{fill}" stroke="{stroke}" stroke-width="3"/>',
-        text_block(x + w / 2, y + h * (0.39 if body else 0.5), title, width=w - 36, size=30, fill=theme["text"], weight=700, max_lines=2),
+        text_block(x + w / 2, y + h * (0.39 if body else 0.5), title, width=w - 36, size=28, fill=theme["text"], weight=700, max_lines=2),
     ]
     if body:
         parts.append(
@@ -206,9 +206,9 @@ def render_hub_spoke(spec: dict, width: int, height: int, theme: dict) -> list[s
     out: list[str] = []
     title = spec.get("title", "")
     subtitle = spec.get("subtitle", "")
-    out.append(text_block(width / 2, 64, title, width=width - 120, size=46, fill=theme["text"], weight=800, max_lines=1))
+    out.append(text_block(width / 2, 64, title, width=width - 120, size=48, fill=theme["text"], weight=800, max_lines=1))
     if subtitle:
-        out.append(text_block(width / 2, 112, subtitle, width=width - 180, size=23, fill=theme["muted"], max_lines=1))
+        out.append(text_block(width / 2, 112, subtitle, width=width - 180, size=24, fill=theme["muted"], max_lines=1))
     cx, cy = width / 2, height * 0.57
     cards = spec.get("cards", [])
     groups = spec.get("groups", [])
@@ -227,10 +227,10 @@ def render_hub_spoke(spec: dict, width: int, height: int, theme: dict) -> list[s
                 f'fill="{group["color"]}" opacity=".92" stroke="{theme["background"]}" stroke-width="5"/>'
             )
             lx, ly = polar(cx, cy, (ring_inner + ring_outer) / 2, (a0 + a1) / 2)
-            ring_labels.append(text_block(lx, ly, group.get("title", group["id"]), width=112, size=17, fill=theme["text"], weight=800, max_lines=2))
+            ring_labels.append(text_block(lx, ly, group.get("title", group["id"]), width=112, size=16, fill=theme["text"], weight=800, max_lines=2))
     out.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{ring_inner - 8}" fill="{theme["surface"]}" stroke="{theme["text"]}" stroke-width="4"/>')
     center = spec.get("center", {})
-    out.append(text_block(cx, cy - 14, center.get("title", ""), width=190, size=30, fill=theme["text"], weight=800, max_lines=2))
+    out.append(text_block(cx, cy - 14, center.get("title", ""), width=190, size=28, fill=theme["text"], weight=800, max_lines=2))
     out.append(text_block(cx, cy + 54, center.get("subtitle", ""), width=190, size=20, fill=theme["muted"], max_lines=2))
     out.extend(ring_labels)
     count = max(1, len(cards))
@@ -410,7 +410,7 @@ def render_annotated_hub(spec: dict, width: int, height: int, theme: dict) -> li
     out: list[str] = []
     title = spec.get("title", "")
     if title:
-        out.append(text_block(width / 2, 42, title, width=width - 100, size=34, fill=theme["text"], weight=800, max_lines=1))
+        out.append(text_block(width / 2, 42, title, width=width - 100, size=32, fill=theme["text"], weight=800, max_lines=1))
     cx = float(spec.get("center", {}).get("x", width / 2))
     cy = float(spec.get("center", {}).get("y", height / 2))
     outer = float(spec.get("center", {}).get("radius", min(width, height) * .22))
@@ -471,11 +471,11 @@ def render_annotated_hub(spec: dict, width: int, height: int, theme: dict) -> li
             f'fill="{color}" opacity=".94" stroke="{theme["background"]}" stroke-width="3"/>'
         )
         lx, ly = polar(cx, cy, (inner + outer) / 2, angle)
-        out.append(text_block(lx, ly, item.get("short", item["title"]), width=92, size=15, fill=theme["text"], weight=800, max_lines=2))
+        out.append(text_block(lx, ly, item.get("short", item["title"]), width=92, size=16, fill=theme["text"], weight=800, max_lines=2))
     out.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{inner - 6:.1f}" fill="{theme["surface"]}" stroke="{theme["text"]}" stroke-width="4"/>')
     center = spec.get("center", {})
-    out.append(text_block(cx, cy - 12, center.get("title", ""), width=inner * 1.5, size=30, fill=theme["text"], weight=800, max_lines=2))
-    out.append(text_block(cx, cy + 43, center.get("subtitle", ""), width=inner * 1.55, size=17, fill=theme["muted"], max_lines=2))
+    out.append(text_block(cx, cy - 12, center.get("title", ""), width=inner * 1.5, size=28, fill=theme["text"], weight=800, max_lines=2))
+    out.append(text_block(cx, cy + 43, center.get("subtitle", ""), width=inner * 1.55, size=16, fill=theme["muted"], max_lines=2))
     for index, item in enumerate(items):
         color = theme.get(item.get("color", ""), item.get("color", palette[index % len(palette)]))
         out.append(annotated_callout(item, theme, color))
@@ -496,14 +496,14 @@ def render_comparison(spec: dict, width: int, height: int, theme: dict) -> list[
         color = panel.get("color", theme["teal"])
         out.append(f'<rect x="{x:.1f}" y="{top}" width="{panel_w:.1f}" height="{panel_h:.1f}" rx="28" fill="{theme["surface"]}" stroke="{color}" stroke-width="3" stroke-dasharray="10 10"/>')
         out.append(f'<rect x="{x + panel_w * .2:.1f}" y="{top - 26}" width="{panel_w * .6:.1f}" height="58" rx="29" fill="{color}"/>')
-        out.append(text_block(x + panel_w / 2, top + 5, panel.get("title", ""), width=panel_w * .55, size=27, fill=theme["background"], weight=800, max_lines=1))
+        out.append(text_block(x + panel_w / 2, top + 5, panel.get("title", ""), width=panel_w * .55, size=28, fill=theme["background"], weight=800, max_lines=1))
         mode = panel.get("mode", "segmented-bars")
         if mode == "segmented-bars":
             rows = panel.get("rows", [])
             row_gap = (panel_h - 140) / max(1, len(rows))
             for row_index, row in enumerate(rows):
                 cy = top + 95 + row_index * row_gap
-                out.append(text_block(x + 72, cy, row.get("label", ""), width=110, size=22, fill=theme["text"], weight=700, max_lines=1))
+                out.append(text_block(x + 72, cy, row.get("label", ""), width=110, size=20, fill=theme["text"], weight=700, max_lines=1))
                 bar_x = x + 138
                 available = panel_w - 176
                 total = sum(float(s.get("weight", 1)) for s in row.get("segments", [])) or 1
@@ -512,14 +512,14 @@ def render_comparison(spec: dict, width: int, height: int, theme: dict) -> list[
                     seg_w = available * float(seg.get("weight", 1)) / total
                     seg_color = theme.get(seg.get("state", ""), seg.get("color", theme["muted"]))
                     out.append(f'<rect x="{cursor:.1f}" y="{cy - 30:.1f}" width="{seg_w:.1f}" height="60" rx="10" fill="{seg_color}" stroke="{theme["text"]}" stroke-width="2"/>')
-                    out.append(text_block(cursor + seg_w / 2, cy + 2, seg.get("label", ""), width=seg_w - 12, size=18, fill=theme["background"], weight=700, max_lines=1))
+                    out.append(text_block(cursor + seg_w / 2, cy + 2, seg.get("label", ""), width=seg_w - 12, size=16, fill=theme["background"], weight=700, max_lines=1))
                     cursor += seg_w
         elif mode == "persistent-spine":
             handshake = panel.get("handshake", "handshake ×1")
             hx, hy = x + panel_w * .2, top + 72
             hw, hh = panel_w * .45, 70
             out.append(f'<rect x="{hx:.1f}" y="{hy:.1f}" width="{hw:.1f}" height="{hh}" rx="14" fill="{theme["surface_alt"]}" stroke="{theme["text"]}" stroke-width="3"/>')
-            out.append(text_block(hx + hw / 2, hy + hh / 2 + 2, handshake, width=hw - 20, size=22, fill=theme["text"], weight=700, max_lines=1))
+            out.append(text_block(hx + hw / 2, hy + hh / 2 + 2, handshake, width=hw - 20, size=20, fill=theme["text"], weight=700, max_lines=1))
             spine_x = x + panel_w * .38
             spine_top = hy + hh
             events = panel.get("events", [])
@@ -530,7 +530,7 @@ def render_comparison(spec: dict, width: int, height: int, theme: dict) -> list[
                 ex, ew, eh = x + panel_w * .55, panel_w * .3, 66
                 out.append(f'<path d="M{spine_x:.1f},{ey:.1f} H{ex:.1f}" stroke="{theme["line"]}" stroke-width="4" fill="none" marker-end="url(#arrow-line)"/>')
                 out.append(f'<rect x="{ex:.1f}" y="{ey - eh / 2:.1f}" width="{ew:.1f}" height="{eh}" rx="14" fill="{color}" stroke="{theme["text"]}" stroke-width="2"/>')
-                out.append(text_block(ex + ew / 2, ey + 2, event.get("label", f"Δ {event_index + 1}"), width=ew - 18, size=22, fill=theme["background"], weight=800, max_lines=1))
+                out.append(text_block(ex + ew / 2, ey + 2, event.get("label", f"Δ {event_index + 1}"), width=ew - 18, size=20, fill=theme["background"], weight=800, max_lines=1))
         footer = panel.get("footer", "")
         out.append(text_block(x + panel_w / 2, top + panel_h - 34, footer, width=panel_w - 80, size=24, fill=color, weight=800, max_lines=1))
     legend = spec.get("legend", [])
@@ -542,14 +542,14 @@ def render_comparison(spec: dict, width: int, height: int, theme: dict) -> list[
             x = 60 + index * item_w
             color = theme.get(item.get("state", ""), item.get("color", theme["muted"]))
             out.append(f'<rect x="{x:.1f}" y="{y - 18:.1f}" width="36" height="36" rx="8" fill="{color}" stroke="{theme["text"]}" stroke-width="2"/>')
-            out.append(text_block(x + 50, y + 2, item.get("label", ""), width=item_w - 58, size=18, fill=theme["muted"], anchor="start", max_lines=1))
+            out.append(text_block(x + 50, y + 2, item.get("label", ""), width=item_w - 58, size=16, fill=theme["muted"], anchor="start", max_lines=1))
     return out
 
 
 def render_token_prefix(spec: dict, width: int, height: int, theme: dict) -> list[str]:
     out: list[str] = []
     title = spec.get("title", "")
-    out.append(text_block(width / 2, 58, title, width=width - 100, size=42, fill=theme["text"], weight=800, max_lines=1))
+    out.append(text_block(width / 2, 58, title, width=width - 100, size=40, fill=theme["text"], weight=800, max_lines=1))
     rows = spec.get("rows", [])
     outer_x, outer_y, outer_w, outer_h = 42, 110, width - 84, height - 160
     label_w = 270
@@ -566,7 +566,7 @@ def render_token_prefix(spec: dict, width: int, height: int, theme: dict) -> lis
         if row_index:
             out.append(f'<path d="M{outer_x},{y0:.1f} H{outer_x + outer_w}" stroke="{theme["line"]}" stroke-width="2" stroke-dasharray="8 10"/>')
         cy = y0 + row_h / 2
-        out.append(text_block(outer_x + label_w / 2, cy, row.get("label", ""), width=label_w - 42, size=25, fill=theme["text"], weight=700, max_lines=3))
+        out.append(text_block(outer_x + label_w / 2, cy, row.get("label", ""), width=label_w - 42, size=24, fill=theme["text"], weight=700, max_lines=3))
         start_x = outer_x + label_w + 42
         token_y = cy - token_h / 2 - 18
         for token_index, state in enumerate(row.get("tokens", [])):
@@ -581,11 +581,11 @@ def render_token_prefix(spec: dict, width: int, height: int, theme: dict) -> lis
             x2 = start_x + end * (token_w + gap) + token_w
             ay = token_y + token_h + 35
             color = theme.get(annotation.get("state", ""), annotation.get("color", theme["muted"]))
-            out.append(text_block((x1 + x2) / 2, ay, annotation.get("label", ""), width=max(100, x2 - x1), size=19, fill=color, weight=700, max_lines=1))
+            out.append(text_block((x1 + x2) / 2, ay, annotation.get("label", ""), width=max(100, x2 - x1), size=20, fill=color, weight=700, max_lines=1))
             if annotation.get("arrow"):
                 tx = start_x + start * (token_w + gap) + token_w / 2
                 out.append(f'<path d="M{tx:.1f},{token_y - 42:.1f} V{token_y:.1f}" stroke="{color}" stroke-width="4" marker-end="url(#{marker_for_color(theme, color)})"/>')
-                out.append(text_block(tx, token_y - 56, annotation.get("arrow"), width=180, size=18, fill=color, weight=700, max_lines=1))
+                out.append(text_block(tx, token_y - 56, annotation.get("arrow"), width=180, size=16, fill=color, weight=700, max_lines=1))
     return out
 
 
@@ -651,13 +651,13 @@ def render_flow(spec: dict, width: int, height: int, theme: dict) -> list[str]:
     subtitle = spec.get("subtitle", "")
     out.append(text_block(width / 2, 58, title, width=width - 100, size=44, fill=theme["text"], weight=800, max_lines=1))
     if subtitle:
-        out.append(text_block(width / 2, 102, subtitle, width=width - 160, size=22, fill=theme["muted"], max_lines=1))
+        out.append(text_block(width / 2, 102, subtitle, width=width - 160, size=20, fill=theme["muted"], max_lines=1))
     groups = spec.get("groups", [])
     for group in groups:
         x, y, w, h = (float(group[k]) for k in ("x", "y", "w", "h"))
         color = theme.get(group.get("color", ""), group.get("color", theme["line"]))
         out.append(f'<g data-group-id="{esc(group["id"])}"><rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="28" fill="{theme["surface"]}" fill-opacity=".48" stroke="{color}" stroke-width="3" stroke-dasharray="12 10"/>')
-        out.append(text_block(x + 28, y + 32, group.get("title", ""), width=w - 56, size=22, fill=color, weight=800, anchor="start", max_lines=1))
+        out.append(text_block(x + 28, y + 32, group.get("title", ""), width=w - 56, size=20, fill=color, weight=800, anchor="start", max_lines=1))
         out.append("</g>")
     nodes = {node["id"]: node for node in spec.get("nodes", [])}
     for edge_index, edge in enumerate(spec.get("edges", [])):
@@ -679,7 +679,7 @@ def render_flow(spec: dict, width: int, height: int, theme: dict) -> list[str]:
             lx = float(edge.get("label_x", (start[0] + end[0]) / 2))
             ly = float(edge.get("label_y", (start[1] + end[1]) / 2 - 14))
             out.append(f'<rect x="{lx - 80:.1f}" y="{ly - 22:.1f}" width="160" height="34" rx="12" fill="{theme["background"]}" opacity=".94"/>')
-            out.append(text_block(lx, ly, edge["label"], width=150, size=18, fill=color, weight=700, max_lines=1))
+            out.append(text_block(lx, ly, edge["label"], width=150, size=16, fill=color, weight=700, max_lines=1))
     for node in spec.get("nodes", []):
         fill = theme.get(node.get("fill", ""), node.get("fill", theme["surface_alt"]))
         stroke = theme.get(node.get("stroke", ""), node.get("stroke", theme["teal"]))

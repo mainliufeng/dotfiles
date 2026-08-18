@@ -49,7 +49,7 @@ These mark "AI generated" schematics of any type. Reject them at review:
 ## 4px grid check
 
 - Every rect `x/y/width/height`, text `x/y/font-size`, and gap is a multiple of 4. `validate_diagram.py` flags off-grid values; fix before publication.
-- Exempt: stroke widths, opacity, `y + h/2` baseline offsets.
+- Exempt by design: stroke widths, opacity, `y + h/2` baseline offsets, and renderer-computed geometry (comparison panel widths, hub-spoke polar card positions, edge label masks, ring sectors). The grid applies to *declared* geometry — node boxes, group boxes, fonts, and manually authored coordinates in the spec.
 
 ## Accessibility check
 
