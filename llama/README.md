@@ -5,18 +5,24 @@
 
 ## 模型选型
 
-- **LFM2.5-2.6B Q8_0**（默认，~2.87GB）：Liquid AI 端侧 agent 模型，专为工具调用/多步 agent 训练。
-  第三方实测（RTX 5090 + llama.cpp server，30 任务工具调用 battery，2026-08-06）：
-  96.7% 成功率 > Qwen3.5-9B 86.7% > Gemma-4-E4B 83.3% > Qwen3.5-4B 80.0%。
-  调研细节见 Knowledge：`research/synthesis/2026/2026-08-19-small-local-model-tool-calling.md`。
-- **LFM2.5-2.6B Q4_K_M**（~1.6GB）：更快更省内存，质量略降。
-- 备选：Qwen3.5-2B（BFCL-v4 thinking 43.6，但 llama.cpp 模板有已知 issue #19872 需实测）。
+- **Qwen3.5-4B Q4_K_M**（默认，~2.6GB）：阿里官方，Apache-2.0。独立评测（LM Studio，
+  13 模型 40 场景）工具调用 97.5% 第一；llama.cpp 模板生态最成熟，pi 集成稳定。
+- **Qwopus3.5-4B-Coder Q4_K_M**（~2.78GB）：基于 Qwen3.5-4B 的社区微调（Trace Inversion +
+  MTP 加速 1.4-2.2x），工具调用 15 场景满分、BugFind +19；社区模型需自测。
+- **Qwen3.5-9B Q4_K_M**（~5.5GB）：更强 coding 的升级档（ABS 19 模型综合第一）。
+- **LFM2.5-2.6B Q8_0**（~2.87GB）：Liquid AI 端侧 agent 模型，第三方实测工具调用 96.7%
+  最高，但 GGUF 模板硬编码 `<think>`，pi 集成下有 thinking 不收敛风险（需 --predict 兜底），
+  已降为备选。
+
+调研细节见 Knowledge：`research/synthesis/2026/2026-08-19-domestic-small-model-tool-calling.md`。
 
 ## 安装（按需）
 
 ```bash
-bash ~/dotfiles/llama/setup.sh        # Q8_0
-bash ~/dotfiles/llama/setup.sh q4     # Q4_K_M
+bash ~/dotfiles/llama/setup.sh             # Qwen3.5-4B Q4_K_M（默认）
+bash ~/dotfiles/llama/setup.sh qwopus     # Qwopus3.5-4B-Coder
+bash ~/dotfiles/llama/setup.sh qwen9b     # Qwen3.5-9B
+bash ~/dotfiles/llama/setup.sh lfm25      # LFM2.5-2.6B Q8_0（备选）
 ```
 
 做的事：
@@ -41,6 +47,8 @@ router 参数说明：
 - `--jinja`：启用兼容 chat template 与工具调用（必须）
 - `-ngl 999`：尽可能多层 offload 到 Metal
 - `-c 32768`：每模型 32K 上下文（模型原生 128K，全开内存压力大）
+- `--reasoning-budget 768` + message：thinking 预算上限，防止长 prompt 下思考不收敛
+- `--predict 4096`：单请求生成上限兜底（截断后客户端可能报 tool call 错误，是最后防线）
 
 ## pi 使用
 
@@ -63,12 +71,14 @@ pi --provider llama.cpp --model LFM2.5-2.6B-Q8_0.gguf "任务"
 
 ## 边界与坑（来自调研）
 
-1. **thinking 必须开着**：LFM2.5-2.6B 关 reasoning 后工具调用成功率 96.7% → 70.0%
-   （单工具档 100% → 60%）。默认跑没问题；要关时需 patched chat template
-   （`--chat-template-file` 预闭合 `<think>`）+ `--predict` 上限，否则请求挂起。
-2. **许可证**：LFM Open License v1.0（非 Apache 2.0），年收入 ≥ $10M 的商用需另行许可；
-   个人/非营利研究不受限。
-3. **Qwen3.5 系**：llama.cpp GGUF 模板工具调用有已知问题（issue #19872），用 Qwen3.5 前先实测。
+1. **pi 集成注意**：pi 的 system prompt 可达 13K+ tokens、max_tokens 取上下文上限；
+   强制 thinking 且不收敛的模型（如 LFM2.5 模板硬编码 `<think>`）会无限生成，已用
+   `--reasoning-budget` + `--predict` 兜底。Qwen3.5 系模板成熟，通常无此问题。
+2. **许可证**：Qwen3.5-4B Apache-2.0；LFM2.5 用 LFM Open License v1.0（年收入 ≥ $10M
+   商用需另行许可）；Qwopus 社区微调 Apache-2.0。
+3. **非交互模式**：llama.cpp provider 的模型列表来自 router catalog（`/llama` 同步），
+   `--list-models` 默认不刷新；非交互 `--provider llama.cpp` 需要 models-store.json
+   已含该模型条目（setup 后首次 `pi /llama` 加载会自动持久化）。
 4. reasoning 使每任务 token 成本翻倍（~1400 vs 685），小任务链可接受。
 5. 本目录不含任何密钥；pi 其它 provider 的密钥走 `~/dotfiles/pi/models.json` 的
    `!bash` 间接引用（见 `~/dotfiles-private/`）。

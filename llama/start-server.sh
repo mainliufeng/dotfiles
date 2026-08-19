@@ -19,6 +19,9 @@ nohup llama-server \
   --port "$PORT" \
   -ngl 999 \
   -c 32768 \
+  --reasoning-budget 768 \
+  --reasoning-budget-message "我已经想得足够多了，现在直接调用工具或给出最终答案。" \
+  --predict 4096 \
   >"$MODELS_DIR/llama-server.log" 2>&1 &
 
 for i in $(seq 1 15); do
