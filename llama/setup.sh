@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# llama.cpp 本地推理 + pi 集成安装（macOS Apple Silicon）
+# 按需执行，不随全局 setup 自动运行。
+# 用法: bash ~/dotfiles/llama/setup.sh [q8|q4]
+#   q8 (默认): LFM2.5-2.6B Q8_0（~2.87GB，第三方实测工具调用 96.7% 用的量化）
+#   q4       : LFM2.5-2.6B Q4_K_M（~1.6GB，更快更省内存）
+set -euo pipefail
+
+MODEL="${1:-q8}"
+QUANT="Q8_0"
+if [ "$MODEL" = "q4" ]; then QUANT="Q4_K_M"; fi
+
+MODELS_DIR="${MODELS_DIR:-$HOME/models}"
+GGUF="$MODELS_DIR/LFM2.5-2.6B-$QUANT.gguf"
+GGUF_URL="https://huggingface.co/LiquidAI/LFM2.5-2.6B-GGUF/resolve/main/LFM2.5-2.6B-$QUANT.gguf"
+
+echo "==> 1/4 安装 llama.cpp (brew)"
+if ! command -v llama-server >/dev/null 2>&1; then
+  brew install llama.cpp
+else
+  echo "    已安装: $(llama-server --version 2>&1 | head -1)"
+fi
+
+echo "==> 2/4 下载模型 $QUANT"
+mkdir -p "$MODELS_DIR"
+if [ ! -s "$GGUF" ]; then
+  curl -L --fail -o "$GGUF" "$GGUF_URL"
+fi
+ls -lh "$GGUF"
+
+echo "==> 3/4 配置 pi llama.cpp provider（auth.json，无密钥）"
+# 等价于 pi 内 /login llama.cpp；llama.cpp provider 是 pi 内置扩展，
+# 模型目录由 router 动态发现，不需要 models.json 条目。
+python3 - <<'EOF'
+import json, os
+path = os.path.expanduser("~/.pi/agent/auth.json")
+data = json.load(open(path)) if os.path.exists(path) else {}
+data["llama.cpp"] = {
+    "type": "api_key",
+    "env": {"LLAMA_BASE_URL": "http://127.0.0.1:8080"},
+}
+with open(path, "w") as f:
+    json.dump(data, f, indent=2)
+print("    auth.json providers:", list(data.keys()))
+EOF
+
+echo "==> 4/4 启动 llama-server router（后台）"
+# router 模式：不带 --model，--models-dir 扫描 GGUF，/llama 按需加载
+nohup llama-server \
+  --models-dir "$MODELS_DIR" \
+  --no-models-autoload \
+  --jinja \
+  --host 127.0.0.1 \
+  --port 8080 \
+  -ngl 999 \
+  -c 32768 \
+  >"$MODELS_DIR/llama-server.log" 2>&1 &
+sleep 3
+curl -s http://127.0.0.1:8080/health && echo
+echo "    log: $MODELS_DIR/llama-server.log"
+echo "    完成。pi 内 /llama 加载模型 → /model 选择。"
