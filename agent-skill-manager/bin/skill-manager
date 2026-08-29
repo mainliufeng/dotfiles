@@ -41,8 +41,9 @@ DBSKILL_HERMES_CATEGORIES = {
     "dbs-good-question": "thinking-tools",
     "dbs-learning": "thinking-tools",
     "dbs-agent-migration": "workflow-infrastructure",
-    "dbs-bridge": "workflow-infrastructure",
+    "dbs-install-skill": "workflow-infrastructure",
     "dbs-skill-cleaner": "workflow-infrastructure",
+    "dbs-skill-maker": "workflow-infrastructure",
     "dbs-update": "workflow-infrastructure",
     "dbs-save": "state-management",
     "dbs-restore": "state-management",
@@ -55,6 +56,8 @@ DBSKILL_HERMES_CATEGORIES = {
     "dbs-spread": "content-creation",
     "dbs-standard-answer": "content-creation",
     "dbs-wechat-html": "content-creation",
+    "dbs-content-risk-check": "content-creation",
+    "dbs-jtbd": "business-diagnostics",
 }
 
 CATEGORY_DESCRIPTIONS = {
@@ -286,12 +289,92 @@ def ensure_hermes_category(category: str, runner: Runner) -> None:
             desc.write_text(text)
 
 
+def is_managed_hermes_install(path: Path, link_source: Path) -> bool:
+    skill_md = path / "SKILL.md"
+    return (
+        path.is_dir()
+        and not path.is_symlink()
+        and skill_md.is_symlink()
+        and skill_md.resolve(strict=False)
+        == (link_source / "SKILL.md").resolve(strict=False)
+    )
+
+
+def symlink_resolves_to(path: Path, target: Path) -> bool:
+    return (
+        path.is_symlink()
+        and path.resolve(strict=False) == target.resolve(strict=False)
+    )
+
+
+def symlink_resolves_within(path: Path, root: Path) -> bool:
+    if not path.is_symlink():
+        return False
+    try:
+        path.resolve(strict=False).relative_to(root.resolve(strict=False))
+    except ValueError:
+        return False
+    return True
+
+
+def remove_stale_hermes_categories(
+    name: str, category: str, link_source: Path, runner: Runner
+) -> None:
+    if not HERMES_ROOT.exists():
+        return
+    for category_dir in HERMES_ROOT.iterdir():
+        if (
+            category_dir.name == category
+            or category_dir.is_symlink()
+            or not category_dir.is_dir()
+        ):
+            continue
+        stale = category_dir / name
+        if is_managed_hermes_install(stale, link_source):
+            runner.unlink_or_rmtree(stale)
+
+
+def stale_bundle_children(entry: Entry, current_names: set[str]) -> list[str]:
+    skills_root = entry.source_path / "skills"
+    if not LIBRARY_ROOT.exists():
+        return []
+    return sorted(
+        path.name
+        for path in LIBRARY_ROOT.iterdir()
+        if path.name not in current_names
+        and symlink_resolves_within(path, skills_root)
+    )
+
+
+def remove_stale_bundle_child(
+    entry: Entry, name: str, targets: set[str], runner: Runner
+) -> None:
+    link_source = LIBRARY_ROOT / name
+    if "codex" in targets and entry.codex == "active":
+        installed = CODEX_ROOT / name
+        if symlink_resolves_to(installed, link_source):
+            runner.unlink_or_rmtree(installed)
+    if "hermes" in targets and entry.hermes == "active" and HERMES_ROOT.exists():
+        for category_dir in HERMES_ROOT.iterdir():
+            if category_dir.is_symlink() or not category_dir.is_dir():
+                continue
+            installed = category_dir / name
+            if is_managed_hermes_install(installed, link_source):
+                runner.unlink_or_rmtree(installed)
+    if "pi" in targets and entry.pi == "active":
+        installed = PI_ROOT / name
+        if symlink_resolves_to(installed, link_source):
+            runner.unlink_or_rmtree(installed)
+    runner.unlink_or_rmtree(link_source)
+
+
 def install_hermes_skill(
     name: str, check_source: Path, link_source: Path, category: str, runner: Runner
 ) -> None:
     if not (check_source / "SKILL.md").exists():
         runner.warn(f"{name}: missing SKILL.md at {check_source}")
         return
+    remove_stale_hermes_categories(name, category, link_source, runner)
     ensure_hermes_category(category, runner)
     dest = HERMES_ROOT / category / name
     if dest.is_symlink() or dest.is_file():
@@ -335,6 +418,10 @@ def sync(entries: list[Entry], targets: set[str], only: str | None, runner: Runn
         if not platform_allows(entry, actual_platform):
             continue
         children = ensure_library(entry, runner)
+        if is_bundle(entry):
+            current_names = {name for name, _source in children}
+            for name in stale_bundle_children(entry, current_names):
+                remove_stale_bundle_child(entry, name, targets, runner)
 
         if "codex" in targets:
             if entry.codex == "active":
@@ -377,6 +464,10 @@ def audit(entries: list[Entry], targets: set[str], only: str | None) -> int:
             problems += 1
         children = skill_children(entry)
         if is_bundle(entry):
+            current_names = {name for name, _source in children}
+            for name in stale_bundle_children(entry, current_names):
+                print(f"[stale-library-child] {entry.id}/{name}: {LIBRARY_ROOT / name}")
+                problems += 1
             for name, _source in children:
                 if not (LIBRARY_ROOT / name / "SKILL.md").exists():
                     print(f"[missing-library] {name}: {LIBRARY_ROOT / name}")
