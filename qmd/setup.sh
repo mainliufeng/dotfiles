@@ -66,15 +66,20 @@ ensure_collection() {
 
 ensure_collection "knowledge-articles" "$ARTICLE_INDEX_DIR" "**/*.md"
 ensure_collection "knowledge-topics" "$KNOWLEDGE_ROOT/research/topics" "**/*.md"
-ensure_collection "knowledge-synthesis" "$KNOWLEDGE_ROOT/research/synthesis" "{20[0-9][0-9],daily-ai-news}/**/*.md"
-ensure_collection "knowledge-sources" "$KNOWLEDGE_ROOT/research/sources" "**/*.md"
+ensure_collection "knowledge-research" "$KNOWLEDGE_ROOT/research/entities" "**/report.md"
+ensure_collection "knowledge-sources" "$KNOWLEDGE_ROOT/research/sources" "**/source.md"
+
+if qmd collection show "knowledge-synthesis" >/dev/null 2>&1; then
+  echo "[qmd] removing replaced collection: knowledge-synthesis"
+  qmd collection remove "knowledge-synthesis"
+fi
 
 qmd context add qmd://knowledge-articles/ \
   "Knowledge 的文章正文投影。每份文件的 source_path 指向 content_create 中的 HTML 真源；回答前读取真源。"
 qmd context add qmd://knowledge-topics/ \
-  "Knowledge 的 Topic 当前结论与 Claim。优先从 Topic 定位主题，再沿显式链接读取 Synthesis 和 Source。"
-qmd context add qmd://knowledge-synthesis/ \
-  "Knowledge 的综合调研，不含 run logs。用于查找一次研究形成的完整判断与证据边界。"
+  "Knowledge 的 Topic 当前结论与 Claim。优先从 Topic 定位主题，再沿显式关系读取 Research 和 Source Entity。"
+qmd context add qmd://knowledge-research/ \
+  "Knowledge 的 Research Entity 主报告。用于查找一次研究形成的完整判断、证据边界和更新条件。"
 qmd context add qmd://knowledge-sources/ \
   "Knowledge 的原始来源卡。Source 是证据入口，不自动等于当前结论；回答前检查状态和来源层级。"
 
