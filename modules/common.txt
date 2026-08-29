@@ -10,7 +10,6 @@ fzf
 ghostty
 git
 go
-hermes-agent
 kitty
 kube
 npm

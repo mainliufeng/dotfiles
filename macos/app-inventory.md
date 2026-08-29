@@ -38,11 +38,9 @@ portable include pointing at `~/.rcrai.gitconfig`. `link.sh` restores the
 tracked shell/editor/terminal configuration, htop layout, Hammerspoon config,
 local helper apps, and LaunchAgents owned by this repository.
 
-The common `hermes-agent` module restores both the Hermes CLI and the official
-Hermes Desktop app. Its installer keeps code and mutable data under
-`~/.hermes`; the desktop bundle is exposed at `~/Applications/Hermes.app`.
-Back up `~/.hermes` separately when sessions or private runtime state must move
-to the new Mac.
+Codex is the default local agent runtime. Hermes is no longer restored by the
+default module list; retain `~/.hermes` only when historical sessions or
+private runtime state still need to be archived.
 
 ## Manual-only applications
 
@@ -91,7 +89,7 @@ restoration. Sizes are approximate snapshots, not backup manifests.
 | `~/.colima` | 104 GB | Recreate containers, or back up required volumes/images separately. |
 | `~/.lmstudio` | 9.9 GB | Re-download models, or copy the model store separately. |
 | `~/.codex` | 4.0 GB | Use the `dotfiles-private/codex` backup suite; exclude auth material. |
-| `~/.hermes` | 1.6 GB | Back up private runtime/session state separately if needed. |
+| `~/.hermes` | 1.6 GB | Retired runtime archive; back up only if historical sessions are still needed. |
 | `~/.codex-rcrai` | 1.1 GB | Private Codex runtime; back up separately and exclude auth material. |
 | `~/.zcode` | 634 MB | Application state; private data backup, not Git. |
 | `~/.workbuddy` | 399 MB | Application state; private data backup, not Git. |
