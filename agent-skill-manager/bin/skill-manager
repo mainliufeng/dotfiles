@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sync the local skill registry into Codex and Hermes runtime directories."""
+"""Sync the local skill registry into Hermes and Pi runtime directories."""
 
 from __future__ import annotations
 
@@ -20,7 +20,6 @@ PRIVATE_REGISTRY = (
     / "dotfiles-private/agent-skill-manager/assets/registries/private-skills.tsv"
 )
 LIBRARY_ROOT = Path.home() / ".local/share/agent-skill-manager/skills"
-CODEX_ROOT = Path.home() / ".codex/skills"
 HERMES_ROOT = Path.home() / ".hermes/skills"
 PI_ROOT = Path.home() / ".pi/agent/skills"
 
@@ -79,7 +78,6 @@ class Entry:
     id: str
     adapter: str
     source_path: Path
-    codex: str
     hermes: str
     pi: str
     hermes_category: str
@@ -181,20 +179,19 @@ def read_registry(path: Path) -> list[Entry]:
             header_seen = True
             continue
         cols = line.split("\t")
-        if len(cols) != 10:
+        if len(cols) != 9:
             raise SystemExit(f"Invalid registry row in {path}: {line}")
         rows.append(
             Entry(
                 id=cols[0],
                 adapter=cols[1],
                 source_path=expand(cols[2]),
-                codex=cols[3],
-                hermes=cols[4],
-                pi=cols[5],
-                hermes_category=cols[6],
-                platforms=cols[7],
-                clone_url=cols[8],
-                notes=cols[9],
+                hermes=cols[3],
+                pi=cols[4],
+                hermes_category=cols[5],
+                platforms=cols[6],
+                clone_url=cols[7],
+                notes=cols[8],
                 registry=path,
             )
         )
@@ -268,12 +265,6 @@ def ensure_library(entry: Entry, runner: Runner) -> list[tuple[str, Path]]:
             runner.symlink(source, LIBRARY_ROOT / name)
     return children
 
-
-def install_codex_skill(name: str, check_source: Path, link_source: Path, runner: Runner) -> None:
-    if not (check_source / "SKILL.md").exists():
-        runner.warn(f"{name}: missing SKILL.md at {check_source}")
-        return
-    runner.symlink(link_source, CODEX_ROOT / name)
 
 
 def ensure_hermes_category(category: str, runner: Runner) -> None:
@@ -350,10 +341,6 @@ def remove_stale_bundle_child(
     entry: Entry, name: str, targets: set[str], runner: Runner
 ) -> None:
     link_source = LIBRARY_ROOT / name
-    if "codex" in targets and entry.codex == "active":
-        installed = CODEX_ROOT / name
-        if symlink_resolves_to(installed, link_source):
-            runner.unlink_or_rmtree(installed)
     if "hermes" in targets and entry.hermes == "active" and HERMES_ROOT.exists():
         for category_dir in HERMES_ROOT.iterdir():
             if category_dir.is_symlink() or not category_dir.is_dir():
@@ -391,12 +378,6 @@ def install_hermes_skill(
         runner.symlink(link_source / child.name, dest / child.name)
 
 
-def remove_codex_if_manual(entry: Entry, runner: Runner) -> None:
-    # Manual packs are cold-library resources. Only remove a top-level runtime
-    # entry with the same id; child cleanup stays explicit to avoid surprises.
-    if entry.codex == "manual":
-        runner.unlink_or_rmtree(CODEX_ROOT / entry.id)
-
 
 def install_pi_skill(name: str, check_source: Path, link_source: Path, runner: Runner) -> None:
     if not (check_source / "SKILL.md").exists():
@@ -411,9 +392,7 @@ def remove_pi_if_manual(entry: Entry, runner: Runner) -> None:
 
 
 def sync(entries: list[Entry], targets: set[str], only: str | None, runner: Runner) -> None:
-    targets = codex_projection("sync", targets, only, runner)
-    if not targets:
-        return
+    validate_targets(targets)
     actual_platform = current_platform()
     for entry in entries:
         if only and entry.id != only:
@@ -425,13 +404,6 @@ def sync(entries: list[Entry], targets: set[str], only: str | None, runner: Runn
             current_names = {name for name, _source in children}
             for name in stale_bundle_children(entry, current_names):
                 remove_stale_bundle_child(entry, name, targets, runner)
-
-        if "codex" in targets:
-            if entry.codex == "active":
-                for name, source in children:
-                    install_codex_skill(name, source, LIBRARY_ROOT / name, runner)
-            elif entry.codex == "manual":
-                remove_codex_if_manual(entry, runner)
 
         if "hermes" in targets and entry.hermes == "active":
             for name, source in children:
@@ -449,14 +421,9 @@ def sync(entries: list[Entry], targets: set[str], only: str | None, runner: Runn
 
 
 def audit(entries: list[Entry], targets: set[str], only: str | None) -> int:
-    original_targets = targets
-    targets = codex_projection("audit", targets, only)
-    if not targets and "codex" in original_targets:
-        return 0
+    validate_targets(targets)
     actual_platform = current_platform()
     problems = 0
-    expected_codex: set[str] = set()
-    manual_codex: set[str] = set()
     expected_hermes: set[tuple[str, str]] = set()
     expected_pi: set[str] = set()
     manual_pi: set[str] = set()
@@ -479,11 +446,6 @@ def audit(entries: list[Entry], targets: set[str], only: str | None) -> int:
                 if not (LIBRARY_ROOT / name / "SKILL.md").exists():
                     print(f"[missing-library] {name}: {LIBRARY_ROOT / name}")
                     problems += 1
-        if "codex" in targets:
-            if entry.codex == "active":
-                expected_codex.update(name for name, _source in children)
-            elif entry.codex == "manual":
-                manual_codex.add(entry.id)
         if "hermes" in targets and entry.hermes == "active":
             for name, _source in children:
                 category = entry.hermes_category
@@ -496,18 +458,6 @@ def audit(entries: list[Entry], targets: set[str], only: str | None) -> int:
                 expected_pi.update(name for name, _source in children)
             elif entry.pi == "manual":
                 manual_pi.add(entry.id)
-
-    if "codex" in targets:
-        for name in sorted(expected_codex):
-            path = CODEX_ROOT / name / "SKILL.md"
-            if not path.exists():
-                print(f"[missing-codex] {name}: {path}")
-                problems += 1
-        for name in sorted(manual_codex):
-            path = CODEX_ROOT / name
-            if path.exists() or path.is_symlink():
-                print(f"[manual-active] {name}: {path}")
-                problems += 1
 
     if "hermes" in targets:
         for category, name in sorted(expected_hermes):
@@ -536,26 +486,15 @@ def audit(entries: list[Entry], targets: set[str], only: str | None) -> int:
     return problems
 
 
-def codex_projection(command: str, targets: set[str], only: str | None,
-                     runner: Runner | None = None) -> set[str]:
-    """An optional private Codex adapter leaves the other target implementations intact."""
-    script = PRIVATE_REGISTRY.parents[2] / "scripts/codex-profile.py"
-    if "codex" not in targets or not script.is_file():
-        return targets
-    args = [sys.executable, str(script), command]
-    if only:
-        args += ["--only", only]
-    if runner is not None and runner.dry_run:
-        args.append("--dry-run")
-    result = subprocess.run(args, check=False)
-    if result.returncode:
-        raise SystemExit(result.returncode)
-    return targets - {"codex"}
+
+def validate_targets(targets):
+    if not targets or not targets <= {"hermes", "pi"}:
+        raise ValueError("Only Hermes/Pi are managed here. Use ~/dotfiles-private/codex/install-skills.py for Codex.")
 
 
 def parse_targets(value: str) -> set[str]:
     if value == "all":
-        return {"codex", "hermes", "pi"}
+        return {"hermes", "pi"}
     return {value}
 
 
@@ -565,7 +504,7 @@ def main() -> int:
 
     for name in ("sync", "audit"):
         cmd = sub.add_parser(name)
-        cmd.add_argument("--target", choices=("codex", "hermes", "pi", "all"), default="all")
+        cmd.add_argument("--target", choices=("hermes", "pi", "all"), default="all")
         cmd.add_argument("--only", help="Only process one registry id")
         if name == "sync":
             cmd.add_argument("--dry-run", action="store_true")

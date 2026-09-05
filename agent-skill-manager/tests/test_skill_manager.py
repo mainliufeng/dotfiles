@@ -88,7 +88,6 @@ class HermesCategoryMigrationTest(unittest.TestCase):
                 id="dbskill",
                 adapter="bundle_children",
                 source_path=source,
-                codex="active",
                 hermes="active",
                 pi="active",
                 hermes_category="",
@@ -112,39 +111,19 @@ class HermesCategoryMigrationTest(unittest.TestCase):
             self.assertTrue((hermes_root / "local/dbs-current/SKILL.md").exists())
 
 
-class CodexProjectionIsolationTest(unittest.TestCase):
-    def test_codex_only_bypasses_shared_library(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            registry = root / "assets/registries/private-skills.tsv"
-            adapter = root / "scripts/codex-profile.py"
-            adapter.parent.mkdir()
-            adapter.write_text("# adapter fixture\n")
-            with (
-                patch.object(SKILL_MANAGER, "PRIVATE_REGISTRY", registry),
-                patch.object(SKILL_MANAGER.subprocess, "run", return_value=SimpleNamespace(returncode=0)) as call,
-                patch.object(SKILL_MANAGER, "ensure_library", side_effect=AssertionError("shared library write")),
-            ):
-                SKILL_MANAGER.sync([], {"codex"}, "commit", SKILL_MANAGER.Runner(True))
-                self.assertEqual(call.call_args.args[0][-3:], ["--only", "commit", "--dry-run"])
+class TargetBoundaryTest(unittest.TestCase):
+    def test_all_only_contains_remaining_harnesses(self):
+        self.assertEqual(SKILL_MANAGER.parse_targets("all"), {"hermes", "pi"})
 
-    def test_combined_target_keeps_other_harness_targets(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            adapter = root / "scripts/codex-profile.py"
-            adapter.parent.mkdir()
-            adapter.write_text("# adapter fixture\n")
-            with (
-                patch.object(SKILL_MANAGER, "PRIVATE_REGISTRY", root / "assets/registries/private-skills.tsv"),
-                patch.object(SKILL_MANAGER.subprocess, "run", return_value=SimpleNamespace(returncode=0)),
-            ):
-                remaining = SKILL_MANAGER.codex_projection("audit", {"codex", "pi", "hermes"}, None)
-                self.assertEqual(remaining, {"pi", "hermes"})
+    def test_codex_rejected_before_library_write(self):
+        with patch.object(SKILL_MANAGER, "ensure_library") as ensure:
+            with self.assertRaises(ValueError):
+                SKILL_MANAGER.sync([], {"codex"}, None, SKILL_MANAGER.Runner(False))
+            ensure.assert_not_called()
 
-    def test_pi_does_not_call_codex_adapter(self):
-        with patch.object(SKILL_MANAGER.subprocess, "run") as call:
-            self.assertEqual(SKILL_MANAGER.codex_projection("sync", {"pi"}, None), {"pi"})
-            call.assert_not_called()
+    def test_registries_have_no_codex_policy(self):
+        self.assertTrue(SKILL_MANAGER.all_entries())
+        self.assertNotIn("codex", SKILL_MANAGER.Entry.__dataclass_fields__)
 
 
 if __name__ == "__main__":

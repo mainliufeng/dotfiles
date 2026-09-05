@@ -1,79 +1,11 @@
-# agent-skill-manager
+# agent-skill-manager (Hermes / Pi)
 
-A registry-driven replacement for the old `agent_config/` flow.
-
-Goal: install one manager skill into Codex and Hermes, then use a fixed script to sync the configured skill registry into runtime skill directories. The manager skill remains the planning and review interface; `bin/skill-manager` performs the filesystem work.
-
-This repo now owns the manager skill, public local skills, and runtime doc catalogs that previously lived under `agent_config/`.
-
-## Layout
-
-- `skill/` — the actual reusable skill that gets linked into each agent runtime
-- `setup.sh` — bootstraps the manager skill itself
-- `bin/skill-manager` — syncs and audits configured skills for Codex and Hermes
-- `skill/assets/registries/public-skills.tsv` — machine-readable public skill registry
-- `~/dotfiles-private/agent-skill-manager/assets/registries/private-skills.tsv` — optional private machine-readable registry
-- `skill/assets/targets.md` — runtime locations and target notes
-- `public_skills/` — public local skill source directories managed by this repo
-- `skill/assets/agent-doc-catalog.md` — markdown source of truth for runtime instruction docs
-- `~/dotfiles-private/agent-skill-manager/assets/private-agent-doc-catalog.md` — optional private overlay for runtime docs
-- `skill/assets/agent-doc-fragments/` — reusable fragments for rendered runtime docs
-
-## Usage
-
-Bootstrap the manager skill everywhere we currently support:
+This legacy manager installs and audits Hermes/Pi skills from the public and private TSV registries. `all` means Hermes and Pi only. Their existing source directories and installation behavior remain unchanged.
 
 ```bash
-~/dotfiles/agent-skill-manager/setup.sh
+./setup.sh --target hermes
+./bin/skill-manager sync --target pi --dry-run
+./bin/skill-manager audit --target all
 ```
 
-Bootstrap only one target:
-
-```bash
-~/dotfiles/agent-skill-manager/setup.sh --target hermes
-~/dotfiles/agent-skill-manager/setup.sh --target codex
-```
-
-Sync all configured skills:
-
-```bash
-~/dotfiles/agent-skill-manager/bin/skill-manager sync
-```
-
-Audit all configured skills:
-
-```bash
-~/dotfiles/agent-skill-manager/bin/skill-manager audit
-```
-
-Preview sync only:
-
-```bash
-~/dotfiles/agent-skill-manager/bin/skill-manager sync --dry-run
-```
-
-Runtime note:
-
-- `setup.sh` only bootstraps the manager skill itself.
-- `bin/skill-manager sync` installs the configured registry into Codex and Hermes.
-- `bin/skill-manager audit` checks the configured registry without touching unrelated runtime skills.
-- If the private `scripts/codex-profile.py` adapter is present, the Codex target delegates
-  to its isolated projection. It can select Codex-specific skill entrypoints without
-  changing shared source files or library links used by Hermes and Pi. Without that
-  adapter the existing Codex installation behavior is retained.
-- Public local skills live under `~/dotfiles/agent-skill-manager/public_skills/`.
-- Hermes caveat: do **not** install ordinary local/private skills by making `~/.hermes/skills/<category>/<skill-name>` a whole-directory symlink. For Hermes local/private skills, the installed path should be a real directory that contains `SKILL.md` plus any needed subdirs as internal symlinks or copies.
-- Broad/manual packs such as `gstack`, `baoyu-skills`, and other content-production sources are linked into `~/.local/share/agent-skill-manager/skills/` but are not installed wholesale into Codex auto-discovery. Narrow local routers expose the relevant upstream procedure on demand.
-- `mattpocock-skills` is an explicit exception: its nested, non-deprecated children are flattened into Codex top-level auto-discovery while the source repository remains the single managed checkout.
-
-## Current status
-
-- Codex: supported
-- Hermes: supported
-
-## Migration status
-
-1. Public local skills now live under `public_skills/`.
-2. Runtime docs are described by markdown catalogs and fragments in this repo.
-3. Private overlays stay in `~/dotfiles-private/agent-skill-manager/`.
-4. The machine-readable TSV registries are the only skill execution source of truth; legacy Markdown install notes have been removed.
+Codex is not supported here: its implementation, registry column, document catalogs and forwarding adapter have been removed. Run `python3 ~/dotfiles-private/codex/install-skills.py` directly. There is no fallback or forwarding through this manager.
