@@ -45,3 +45,9 @@ for (let index = 0; index < paths.length; index += 2) {
 NODE
 
 chmod 600 "$PI_AGENT_DIR/models.json"
+
+# Skills use the private, harness-specific source list.
+private_installer="${DOTFILES_PRIVATE_HOME:-$HOME/dotfiles-private}/pi/install-skills.py"
+if [[ -f "$private_installer" ]]; then
+  python3 "$private_installer"
+fi

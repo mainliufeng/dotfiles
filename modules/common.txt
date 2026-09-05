@@ -1,5 +1,4 @@
 agent-browser
-agent-skill-manager
 android
 bun
 claude-code

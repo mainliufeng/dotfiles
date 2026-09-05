@@ -1,4 +1,0 @@
-interface:
-  display_name: "Vercel Design"
-  short_description: "Use Vercel-inspired UI design guidance"
-  default_prompt: "Use $vercel-design to design a developer-platform UI."

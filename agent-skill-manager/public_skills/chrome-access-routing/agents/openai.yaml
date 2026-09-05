@@ -1,4 +1,0 @@
-interface:
-  display_name: "Chrome Access Routing"
-  short_description: "Route Chrome access safely"
-  default_prompt: "Use $chrome-access-routing to choose the best route for web research or browser access in Codex or Hermes. For public research start with web search and first-party API/curl/static sources, then Browser or agent-browser. Use authenticated Chrome only when the evidence requires login state. On macOS use the runtime's Computer Use for the real visible Chrome window, GSC/Google Search Console, logged-in dashboards, native apps, and route mismatches; verify Codex get_app_state or Hermes cua-driver health first. Treat extension/headless signed-out state as route-specific. Use CDP only when its endpoint is reachable. If one route fails, name it and try another viable route before giving up."
