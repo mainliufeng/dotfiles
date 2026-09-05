@@ -57,6 +57,10 @@ Runtime note:
 - `setup.sh` only bootstraps the manager skill itself.
 - `bin/skill-manager sync` installs the configured registry into Codex and Hermes.
 - `bin/skill-manager audit` checks the configured registry without touching unrelated runtime skills.
+- If the private `scripts/codex-profile.py` adapter is present, the Codex target delegates
+  to its isolated projection. It can select Codex-specific skill entrypoints without
+  changing shared source files or library links used by Hermes and Pi. Without that
+  adapter the existing Codex installation behavior is retained.
 - Public local skills live under `~/dotfiles/agent-skill-manager/public_skills/`.
 - Hermes caveat: do **not** install ordinary local/private skills by making `~/.hermes/skills/<category>/<skill-name>` a whole-directory symlink. For Hermes local/private skills, the installed path should be a real directory that contains `SKILL.md` plus any needed subdirs as internal symlinks or copies.
 - Broad/manual packs such as `gstack`, `baoyu-skills`, and other content-production sources are linked into `~/.local/share/agent-skill-manager/skills/` but are not installed wholesale into Codex auto-discovery. Narrow local routers expose the relevant upstream procedure on demand.

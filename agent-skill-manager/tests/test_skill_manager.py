@@ -7,6 +7,7 @@ import unittest
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
 from unittest.mock import patch
+from types import SimpleNamespace
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "bin/skill-manager"
@@ -109,6 +110,41 @@ class HermesCategoryMigrationTest(unittest.TestCase):
             self.assertTrue(custom.exists())
             self.assertTrue(custom_link.is_symlink())
             self.assertTrue((hermes_root / "local/dbs-current/SKILL.md").exists())
+
+
+class CodexProjectionIsolationTest(unittest.TestCase):
+    def test_codex_only_bypasses_shared_library(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            registry = root / "assets/registries/private-skills.tsv"
+            adapter = root / "scripts/codex-profile.py"
+            adapter.parent.mkdir()
+            adapter.write_text("# adapter fixture\n")
+            with (
+                patch.object(SKILL_MANAGER, "PRIVATE_REGISTRY", registry),
+                patch.object(SKILL_MANAGER.subprocess, "run", return_value=SimpleNamespace(returncode=0)) as call,
+                patch.object(SKILL_MANAGER, "ensure_library", side_effect=AssertionError("shared library write")),
+            ):
+                SKILL_MANAGER.sync([], {"codex"}, "commit", SKILL_MANAGER.Runner(True))
+                self.assertEqual(call.call_args.args[0][-3:], ["--only", "commit", "--dry-run"])
+
+    def test_combined_target_keeps_other_harness_targets(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            adapter = root / "scripts/codex-profile.py"
+            adapter.parent.mkdir()
+            adapter.write_text("# adapter fixture\n")
+            with (
+                patch.object(SKILL_MANAGER, "PRIVATE_REGISTRY", root / "assets/registries/private-skills.tsv"),
+                patch.object(SKILL_MANAGER.subprocess, "run", return_value=SimpleNamespace(returncode=0)),
+            ):
+                remaining = SKILL_MANAGER.codex_projection("audit", {"codex", "pi", "hermes"}, None)
+                self.assertEqual(remaining, {"pi", "hermes"})
+
+    def test_pi_does_not_call_codex_adapter(self):
+        with patch.object(SKILL_MANAGER.subprocess, "run") as call:
+            self.assertEqual(SKILL_MANAGER.codex_projection("sync", {"pi"}, None), {"pi"})
+            call.assert_not_called()
 
 
 if __name__ == "__main__":
