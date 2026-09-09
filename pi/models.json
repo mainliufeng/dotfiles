@@ -3,6 +3,42 @@
     "deepseek": {
       "baseUrl": "https://api.deepseek.com",
       "apiKey": "!bash -lc 'source \"$HOME/dotfiles-private/deepseek/env.sh\" && printf %s \"$DEEPSEEK_API_KEY\"'"
+    },
+    "alibaba": {
+      "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api": "openai-completions",
+      "apiKey": "!bash -lc 'source \"$HOME/dotfiles-private/llm/env.sh\" && printf %s \"$DASHSCOPE_API_KEY\"'",
+      "compat": {
+        "thinkingFormat": "qwen",
+        "supportsDeveloperRole": false,
+        "supportsStore": false,
+        "supportsReasoningEffort": true
+      },
+      "models": [
+        {
+          "id": "qwen3.8-flash",
+          "name": "Qwen3.8 Flash (DashScope)",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 1000000,
+          "maxTokens": 131072,
+          "cost": {
+            "input": 0.11875,
+            "output": 0.40073,
+            "cacheRead": 0.01187,
+            "cacheWrite": 0.14844
+          },
+          "thinkingLevelMap": {
+            "off": null,
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": null,
+            "xhigh": "xhigh",
+            "max": null
+          }
+        }
+      ]
     }
   }
 }
