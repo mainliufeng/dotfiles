@@ -1,10 +1,9 @@
 {
   "defaultProvider": "deepseek",
-  "defaultModel": "deepseek-v4-flash",
+  "defaultModel": "deepseek-flash",
   "defaultThinkingLevel": "high",
   "enabledModels": [
-    "deepseek/deepseek-v4-flash",
-    "deepseek/deepseek-v4-pro",
+    "deepseek/deepseek-flash",
     "alibaba/qwen3.8-flash"
   ],
   "retry": {
