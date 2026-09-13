@@ -16,6 +16,8 @@ Options:
 - `--dry-run` — print the actions without changing the machine
 - `--no-relay` — do not enable the relay in `~/.paseo/config.json`
 - `--no-start` — do not start the daemon now
+- `--tailscale` — bind `daemon.listen` to this machine's Tailscale IPv4
+- `--tailscale-ip IP` — same, with an explicit address
 
 ## What it does
 
@@ -44,6 +46,42 @@ paseo.service`.
 Paseo Desktop → Settings → your host → **Pair a device** → scan the QR code
 with the Paseo app. The QR/link is the trust anchor: it carries the daemon's
 public key. Treat it like a password.
+
+## Direct connection over Tailscale
+
+Instead of the relay, the phone can reach the daemon over the tailnet. Bind the
+daemon to the Tailscale address and restart:
+
+```bash
+~/dotfiles/linux/apps/paseo/setup.sh --tailscale
+```
+
+That sets `daemon.listen` to `<tailscale-ip>:6767` and restarts `paseo.service`.
+Then, on the phone (Tailscale connected to the same tailnet):
+
+```
+Paseo -> Settings -> Add host -> Direct connection
+Host <tailscale-ip>   Port 6767   Use SSL off -> Connect
+```
+
+If the host was already paired through the relay, the direct connection is added
+to the same host.
+
+Notes:
+
+- `daemon.listen` is a single address and a startup setting, so after binding to
+  the Tailscale IP the daemon **no longer listens on `localhost:6767`**. The
+  desktop app is unaffected: it talks to its daemon over a unix socket, and the
+  shipped app treats a non-default `daemon.listen` as an additional host.
+- The default DNS-rebinding allowlist accepts `localhost`, `*.localhost` and any
+  **IP address**. Connect by IP. To use the MagicDNS name instead, add it to
+  `daemon.hostnames` (e.g. `[".tail6b9726.ts.net"]`).
+- Tailscale already encrypts and authenticates the link; Paseo's relay is
+  end-to-end encrypted, a direct connection is not. A Paseo password
+  (`paseo daemon config set-password`) is optional defense-in-depth for a shared
+  tailnet.
+- Set `"daemon": {"relay": {"enabled": false}}` and restart to drop the relay
+  once direct access works, or leave it enabled as a fallback.
 
 ## Notes
 
