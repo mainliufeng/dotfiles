@@ -1,0 +1,21 @@
+[Unit]
+Description=Happy daemon (remote control for Claude Code and Codex)
+Documentation=https://happy.engineering/docs/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Happy's own `happy daemon install` is macOS/launchd-only and needs sudo, so on
+# Linux the daemon is run in the foreground here. `daemon start-sync` is the
+# long-running process that `happy daemon start` normally spawns detached.
+#
+# PATH must contain the global npm bin dir: the daemon spawns `claude` / `codex`
+# sessions and looks them up on PATH.
+Environment=PATH=%h/.npm-global/bin:%h/.local/bin:%h/.bun/bin:%h/.opencode/bin:%h/.pyenv/shims:/usr/local/sbin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/usr/bin/node --no-warnings --no-deprecation %h/.npm-global/lib/node_modules/happy/dist/index.mjs daemon start-sync
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target
