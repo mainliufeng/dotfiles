@@ -1,0 +1,87 @@
+#!/usr/bin/env node
+// 在 agent 专用 Chrome（CDP 9222）里打开一个页面，读回内容，然后关掉这个 tab。
+// 不会碰用户日常 Chrome，也不会在用户窗口里留下残留。
+//
+//   chrome-agent-read <url>                      # 打印页面全文（innerText）
+//   chrome-agent-read <url> --eval "document.title"
+//   chrome-agent-read <url> --wait 25000         # 等更久（默认 15s，直到有内容）
+//   chrome-agent-read <url> --keep               # 读完不关 tab
+//
+// 依赖：本机 node（>=21，用内置 WebSocket），agent Chrome 已 l在 9222 上。
+import http from 'node:http';
+
+const argv = process.argv.slice(2);
+if (!argv.length || argv.includes('-h') || argv.includes('--help')) {
+  console.error('usage: chrome-agent-read <url> [--eval EXPR] [--wait MS] [--keep] [--port N]');
+  process.exit(2);
+}
+const url = argv[0];
+const opt = (name, dflt = null) => {
+  const i = argv.indexOf(name);
+  return i >= 0 && argv[i + 1] ? argv[i + 1] : dflt;
+};
+const expr = opt('--eval', 'document.body.innerText');
+const waitMs = Number(opt('--wait', 15000));
+const keep = argv.includes('--keep');
+const port = Number(opt('--port', process.env.CHROME_AGENT_PORT || 9222));
+
+const get = (path) => new Promise((res, rej) => {
+  const req = http.get({ host: '127.0.0.1', port, path, timeout: 4000 }, (r) => {
+    let b = ''; r.setEncoding('utf8');
+    r.on('data', (d) => (b += d));
+    r.on('end', () => res(b));
+  });
+  req.on('timeout', () => { req.destroy(); rej(new Error('cdp timeout')); });
+  req.on('error', (e) => rej(new Error(`agent Chrome 没在 127.0.0.1:${port} 上 → 先运行 chrome-agent (${e.message})`)));
+});
+
+let wsUrl;
+try {
+  const info = JSON.parse(await get('/json/version'));
+  wsUrl = info.webSocketDebuggerUrl;
+} catch (e) {
+  console.error(String(e.message || e));
+  process.exit(1);
+}
+
+const ws = new WebSocket(wsUrl);
+let id = 0;
+const pending = new Map();
+const listeners = [];
+const send = (method, params = {}, sessionId) => {
+  const mid = ++id;
+  return new Promise((res, rej) => {
+    pending.set(mid, { res, rej });
+    ws.send(JSON.stringify({ id: mid, method, params, ...(sessionId ? { sessionId } : {}) }));
+    setTimeout(() => { if (pending.has(mid)) { pending.delete(mid); rej(new Error('timeout ' + method)); } }, 45000);
+  });
+};
+ws.onmessage = (ev) => {
+  const m = JSON.parse(ev.data);
+  if (m.id && pending.has(m.id)) {
+    const p = pending.get(m.id); pending.delete(m.id);
+    m.error ? p.rej(new Error(JSON.stringify(m.error))) : p.res(m.result);
+  } else if (m.method) listeners.forEach((f) => f(m));
+};
+await new Promise((res, rej) => { ws.onopen = res; ws.onerror = () => rej(new Error('ws 连接失败')); });
+
+const { targetId } = await send('Target.createTarget', { url, background: true });
+const { sessionId } = await send('Target.attachToTarget', { targetId, flatten: true });
+await send('Page.enable', {}, sessionId);
+
+const started = Date.now();
+let out = '';
+while (Date.now() - started < waitMs) {
+  await new Promise((r) => setTimeout(r, 1200));
+  try {
+    const r = await send('Runtime.evaluate', { expression: expr, returnByValue: true }, sessionId);
+    out = r?.result?.value ?? '';
+  } catch { /* page still navigating */ }
+  if (out && String(out).trim() && !/正在加载|Loading…/.test(String(out))) {
+    if (expr === 'document.body.innerText' && String(out).length < 60) continue; // 还在渲染骨架
+    break;
+  }
+}
+if (!keep) await send('Target.closeTarget', { targetId });
+ws.close();
+console.log(out);

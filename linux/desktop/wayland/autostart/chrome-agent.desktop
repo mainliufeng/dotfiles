@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Chrome Agent
+Comment=Agent 专用 Chrome（独立 profile，CDP 9222，不碰日常 Chrome）
+Exec=/home/liufeng/.local/bin/chrome-agent
+Icon=google-chrome
+Terminal=false
+StartupNotify=false
+X-GNOME-Autostart-enabled=true

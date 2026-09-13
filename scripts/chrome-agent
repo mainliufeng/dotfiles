@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Agent 专用 Chrome：独立 profile + 命令行开关开 CDP + 开机自启
+#
+# 为什么不能沿用 chrome://inspect 的 toggle：
+#   通过 pref devtools.remote_debugging.user-enabled 启动的调试服务只能跑 approval 模式，
+#   每一条 CDP 连接都弹「要允许远程调试吗？」且不记忆选择，/json/* 也全部 404。
+#   命令行开关 --remote-debugging-port 走 kDefault 模式，不弹窗。
+#   但 Google 版 Chrome 拒绝在默认 user-data-dir 上用这个开关，所以必须配独立 profile。
+#
+# 用法：
+#   chrome-agent                 启动 agent 浏览器（占用 9222）
+#   chrome-agent <url>           顺手开个地址
+#   CHROME_AGENT_PORT=9333 chrome-agent    换端口
+set -euo pipefail
+
+PROFILE="${CHROME_AGENT_PROFILE:-$HOME/.local/share/chrome-agent}"
+PORT="${CHROME_AGENT_PORT:-9222}"
+CHROME_BIN="${CHROME_AGENT_BIN:-/opt/google/chrome/google-chrome}"
+DEFAULT_PROFILE="${CHROME_DEFAULT_PROFILE:-$HOME/.config/google-chrome}"
+
+# 9222 上如果坐着一个 approval 模式的调试服务（/json/version 不是 200），
+# 工具会连到它并开始弹同意框 —— 这种情况直接拒绝启动。
+if command -v curl >/dev/null 2>&1; then
+  code="$(curl -s -o /dev/null -m 2 -w '%{http_code}' "http://127.0.0.1:${PORT}/json/version" 2>/dev/null)" || code=000
+  case "$code" in
+    200|000) ;;
+    *)
+      cat >&2 <<EOF
+[chrome-agent] 端口 $PORT 上有一个 approval 模式的调试服务（HTTP $code），
+              很可能是你自己的 Chrome 又把远程调试开关打开了。
+              先关掉它：chrome://inspect#remote-debugging，或退出那个 Chrome。
+EOF
+      exit 1
+      ;;
+  esac
+fi
+
+# 你自己 Chrome 还开着时，顺手把它那个 approval 模式的开关清掉（必须它退出后才能写，
+# 否则 Chrome 会用内存里的值把 Local State 整份回写覆盖）。
+lock="$DEFAULT_PROFILE/SingletonLock"
+default_running=0
+if [ -L "$lock" ]; then
+  pid="$(readlink "$lock" | sed 's/.*-//')"
+  kill -0 "$pid" 2>/dev/null && default_running=1
+fi
+if [ "$default_running" = 0 ] && [ -f "$DEFAULT_PROFILE/Local State" ]; then
+  python3 - "$DEFAULT_PROFILE/Local State" <<'PY'
+import json, pathlib, sys
+p = pathlib.Path(sys.argv[1])
+try:
+    d = json.loads(p.read_text())
+except Exception:
+    raise SystemExit(0)
+rd = d.setdefault("devtools", {}).setdefault("remote_debugging", {})
+if rd.get("user-enabled") is not False:
+    rd["user-enabled"] = False
+    p.write_text(json.dumps(d))
+    print("[chrome-agent] 已关闭默认 profile 的 approval 模式远程调试", file=sys.stderr)
+PY
+fi
+
+mkdir -p "$PROFILE"
+
+exec "$CHROME_BIN" \
+  --user-data-dir="$PROFILE" \
+  --remote-debugging-port="$PORT" \
+  --remote-allow-origins='*' \
+  --restore-last-session \
+  --no-first-run \
+  --no-default-browser-check \
+  "$@"
