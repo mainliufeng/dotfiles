@@ -90,6 +90,34 @@ if [[ "$need_install" == "1" ]]; then
   fi
 fi
 
+# 1b. Unreleased upstream CLI fix --------------------------------------------
+# Upstream commit e9adf8db "fix(cli): allow five seconds for daemon health
+# checks" (2026-09-07) is on main but not in any npm release yet. The 2s probe
+# in checkIfDaemonRunningAndCleanupStaleState() makes a daemon-spawned session
+# declare a healthy daemon stale while the machine is busy: it deletes
+# daemon.state.json and starts a rival daemon, so sessions show up in the phone
+# app but never receive messages. This is the only CLI change on main since
+# 1.2.3, so patching the two bundle entry points is equivalent to a source
+# build. Remove this step once `npm view happy version` passes 1.2.3.
+apply_unreleased_cli_fix() {
+  local dist="$npm_root/happy/dist" f
+  [[ -d "$dist" ]] || return 0
+  for f in "$dist"/index-*.mjs "$dist"/index-*.cjs; do
+    [[ -f "$f" ]] || continue
+    grep -q 'HTTP health check failed' "$f" || continue
+    grep -q 'AbortSignal.timeout(2e3)' "$f" || continue
+    cp -n "$f" "$f.orig-pre-healthcheck-fix" 2>/dev/null || true
+    sed -i 's/AbortSignal\.timeout(2e3)/AbortSignal.timeout(5e3)/' "$f"
+    echo "[happy] patched $(basename "$f"): daemon health probe 2000ms -> 5000ms"
+  done
+}
+
+if [[ "$dry_run" == "1" ]]; then
+  echo "[dry-run] patch daemon health probe 2000ms -> 5000ms in $npm_root/happy/dist"
+else
+  apply_unreleased_cli_fix
+fi
+
 # 2. Service -----------------------------------------------------------------
 run "$module_dir/link.sh"
 

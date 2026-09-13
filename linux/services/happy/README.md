@@ -56,6 +56,30 @@ allowlisted. Two consequences on this machine:
   "claude native binary not installed" and `happy claude` cannot start. Fix with
   `node "$(npm root -g)/@anthropic-ai/claude-code/install.cjs"`.
 
+## Unreleased upstream fix applied by this module
+
+`setup.sh` patches two numbers in the installed bundle. Upstream commit
+`e9adf8db` — *"fix(cli): allow five seconds for daemon health checks"*
+(2026-09-07) — is on `main` but in no npm release yet (1.2.3 is still latest).
+
+What it fixes: a daemon-spawned session runs `checkIfDaemonRunningAndCleanupStaleState()`,
+which probes the parent daemon on `127.0.0.1:<port>/list` with a **2 s** timeout.
+On a busy machine that probe can miss, the child then treats a perfectly healthy
+daemon as stale, deletes `daemon.state.json` and starts a rival daemon. The
+symptom is exactly *"sessions appear in the phone app but never receive the
+user's message"* (upstream issue #1654). The patch raises the probe to **5 s**:
+
+```
+- signal: AbortSignal.timeout(2e3)
++ signal: AbortSignal.timeout(5e3)
+```
+
+This is the **only** CLI change on `main` since 1.2.3, so patching the two bundle
+entry points is equivalent to a source build. The step is idempotent, skips when
+the pattern is absent, and keeps a pristine copy next to the file as
+`index-*.mjs.orig-pre-healthcheck-fix`. Delete it once
+`npm view happy version` returns something newer than 1.2.3.
+
 ## Using it
 
 - Sessions started here (`happy claude`, `happy codex`) can be taken over from
