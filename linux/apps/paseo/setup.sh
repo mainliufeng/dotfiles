@@ -30,9 +30,10 @@ Options:
   --dry-run          Print the actions without changing the machine
   --no-relay         Do not enable the relay (phone access stays off until enabled)
   --no-start         Do not start the daemon now
-  --tailscale        Bind daemon.listen to this machine's Tailscale IPv4 and
-                     restart the daemon, so the phone can connect directly over
-                     the tailnet instead of using the relay
+  --tailscale        Bind daemon.listen to this machine's Tailscale IPv4,
+                     allowlist the tailnet's MagicDNS suffix, and restart the
+                     daemon, so the phone can connect directly over the tailnet
+                     instead of using the relay
   --tailscale-ip IP  Same as --tailscale with an explicit address
   -h, --help         Show this help
 EOF
@@ -87,6 +88,22 @@ if [[ -n "$tailscale_ip" ]]; then
   echo "[paseo] Tailscale listen address: ${tailscale_ip}:6767"
 fi
 
+# MagicDNS name, used to extend the daemon host allowlist so the phone can
+# connect by name instead of by IP. Paseo's DNS-rebinding guard only accepts
+# localhost, *.localhost and bare IP addresses by default.
+tailscale_dns_name=""
+tailscale_hostname_suffix=""
+if command -v tailscale >/dev/null 2>&1; then
+  tailscale_dns_name="$(tailscale status --json 2>/dev/null \
+    | python3 -c 'import json,sys; print(json.load(sys.stdin).get("Self",{}).get("DNSName","").rstrip("."))' \
+    2>/dev/null || true)"
+  if [[ "$tailscale_dns_name" == *.* ]]; then
+    tailscale_hostname_suffix=".${tailscale_dns_name#*.}"
+  else
+    tailscale_dns_name=""
+  fi
+fi
+
 # 1. Package -----------------------------------------------------------------
 if pacman -Q "$package" >/dev/null 2>&1; then
   echo "[paseo] already installed: $(pacman -Q "$package" | awk '{print $2}')"
@@ -113,11 +130,13 @@ if [[ "$enable_relay" == "1" || -n "$tailscale_ip" ]]; then
   if [[ "$dry_run" == "1" ]]; then
     [[ "$enable_relay" == "1" ]] && echo "[dry-run] set daemon.relay.enabled=true in $config_file"
     [[ -n "$tailscale_ip" ]] && echo "[dry-run] set daemon.listen=${tailscale_ip}:6767 in $config_file"
+    [[ -n "$tailscale_hostname_suffix" ]] && echo "[dry-run] add ${tailscale_hostname_suffix} to daemon.hostnames in $config_file"
   else
     mkdir -p "$paseo_home"
     PASEO_CONFIG_FILE="$config_file" \
     PASEO_SET_RELAY="$enable_relay" \
     PASEO_SET_LISTEN="$tailscale_ip" \
+    PASEO_SET_HOSTNAMES="$tailscale_hostname_suffix" \
     python3 - <<'PY'
 import json
 import os
@@ -147,6 +166,16 @@ if listen:
     daemon["listen"] = f"{listen}:6767"
     print(f"[paseo] daemon.listen={daemon['listen']}")
 
+suffix = os.environ.get("PASEO_SET_HOSTNAMES", "").strip()
+if suffix:
+    hostnames = daemon.get("hostnames")
+    if not isinstance(hostnames, list):
+        hostnames = []
+    if suffix not in hostnames:
+        hostnames.append(suffix)
+    daemon["hostnames"] = hostnames
+    print(f"[paseo] daemon.hostnames += {suffix}")
+
 path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 os.chmod(path, 0o600)
 PY
@@ -174,10 +203,20 @@ cat <<'EOF'
 
 [paseo] done.
 
-Phone access:
+Phone access (Tailscale connected on the phone):
   Relay  — Paseo Desktop -> Settings -> your host -> Pair a device -> scan the QR
   Direct — Paseo app -> Settings -> Add host -> Direct connection
-           Host <tailscale-ip>  Port 6767  SSL off  (Tailscale connected on the phone)
+           Port 6767, Use SSL off, then Host:
+EOF
+
+if [[ -n "$tailscale_dns_name" ]]; then
+  echo "             ${tailscale_dns_name}   (MagicDNS name)"
+fi
+if [[ -n "$tailscale_ip" ]]; then
+  echo "             ${tailscale_ip}   (IP)"
+fi
+
+cat <<'EOF'
 
 Treat the pairing QR/link like a password: it carries the daemon public key.
 EOF

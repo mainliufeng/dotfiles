@@ -16,7 +16,8 @@ Options:
 - `--dry-run` — print the actions without changing the machine
 - `--no-relay` — do not enable the relay in `~/.paseo/config.json`
 - `--no-start` — do not start the daemon now
-- `--tailscale` — bind `daemon.listen` to this machine's Tailscale IPv4
+- `--tailscale` — bind `daemon.listen` to this machine's Tailscale IPv4 and
+  allowlist the tailnet's MagicDNS suffix
 - `--tailscale-ip IP` — same, with an explicit address
 
 ## What it does
@@ -50,18 +51,21 @@ public key. Treat it like a password.
 ## Direct connection over Tailscale
 
 Instead of the relay, the phone can reach the daemon over the tailnet. Bind the
-daemon to the Tailscale address and restart:
+daemon to the Tailscale address, allowlist the tailnet's MagicDNS suffix, and
+restart:
 
 ```bash
 ~/dotfiles/linux/apps/paseo/setup.sh --tailscale
 ```
 
-That sets `daemon.listen` to `<tailscale-ip>:6767` and restarts `paseo.service`.
-Then, on the phone (Tailscale connected to the same tailnet):
+That sets `daemon.listen` to `<tailscale-ip>:6767`, appends the MagicDNS suffix
+(e.g. `.tail6b9726.ts.net`) to `daemon.hostnames`, and restarts `paseo.service`.
+Then, on the phone (Tailscale connected to the same tailnet, MagicDNS on):
 
 ```
 Paseo -> Settings -> Add host -> Direct connection
-Host <tailscale-ip>   Port 6767   Use SSL off -> Connect
+Port 6767   Use SSL off
+Host liufeng-82tk.tail6b9726.ts.net   (or the 100.x.y.z IP)
 ```
 
 If the host was already paired through the relay, the direct connection is added
@@ -73,12 +77,16 @@ Notes:
   the Tailscale IP the daemon **no longer listens on `localhost:6767`**. The
   desktop app is unaffected: it talks to its daemon over a unix socket, and the
   shipped app treats a non-default `daemon.listen` as an additional host.
-- The default DNS-rebinding allowlist accepts `localhost`, `*.localhost` and any
-  **IP address**. Connect by IP. To use the MagicDNS name instead, add it to
-  `daemon.hostnames` (e.g. `[".tail6b9726.ts.net"]`).
+- Connecting **by name** needs `daemon.hostnames` to accept it: Paseo's
+  DNS-rebinding guard only allows `localhost`, `*.localhost` and bare IPs by
+  default. A leading dot is a suffix rule, so `.tail6b9726.ts.net` covers
+  `liufeng-82tk.tail6b9726.ts.net` and survives a hostname change. Hostnames are
+  runtime-safe and were applied with `paseo daemon reload` (no restart).
+- The phone must have **MagicDNS enabled** to resolve the name; the IP always
+  works.
 - Tailscale already encrypts and authenticates the link; Paseo's relay is
   end-to-end encrypted, a direct connection is not. A Paseo password
-  (`paseo daemon config set-password`) is optional defense-in-depth for a shared
+  (`paseo daemon set-password`) is optional defense-in-depth for a shared
   tailnet.
 - Set `"daemon": {"relay": {"enabled": false}}` and restart to drop the relay
   once direct access works, or leave it enabled as a fallback.
