@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Log BaiduPCS-Go in using the cookies of the agent Chrome (chrome-agent).
+# You must be logged in at https://pan.baidu.com in that browser first.
+#
+#   baidu-login            # log in with cookies from pan.baidu.com
+#   BaiduPCS-Go who        # verify
+#
+# After this, transfer a share and download it:
+#   BaiduPCS-Go transfer 'https://pan.baidu.com/s/XXXX' pwd
+#   BaiduPCS-Go download '/path/inside/your/pan' --saveto "$HOME/Downloads/pan/baidu"
+
+COOKIES="$(chrome-cookies pan.baidu.com)"
+if [[ "$COOKIES" != *"BDUSS="* ]]; then
+  echo "[baidu-login] no BDUSS cookie found — log in to pan.baidu.com in the" >&2
+  echo "[baidu-login] agent browser (chrome-agent) and retry." >&2
+  exit 1
+fi
+
+BaiduPCS-Go login -cookies="$COOKIES"
+BaiduPCS-Go who

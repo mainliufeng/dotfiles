@@ -1,0 +1,207 @@
+#!/usr/bin/env python3
+"""Download a Quark (夸克网盘) share link straight to local disk.
+
+It does NOT "转存" the share into your own drive, so it works even when your
+account is full or still on the free 10 GiB tier.
+
+The trick: Quark caps web-UI downloads of *shared* files at ~50 MiB per file
+for non-members (error 23018), but the desktop-client User-Agent lifts that
+cap. This script sends the client UA for both the API and the CDN request.
+
+Usage:
+  quark-dl [options] <share-url-or-pwd_id> [passcode]
+
+Options:
+  -o, --out DIR     output directory (default: .)
+  -j, --jobs N      parallel file downloads (default: 3)
+  --cookie VALUE    full Cookie header value
+  --cookie-file F   file containing the Cookie header value
+  --only SUBSTR     only download paths containing SUBSTR (repeatable)
+  --list            only print the tree, do not download
+  -h, --help
+
+Cookie resolution order:
+  1. --cookie / --cookie-file
+  2. $KUAKE_COOKIE
+  3. `chrome-cookies pan.quark.cn` against the agent Chrome (CDP :9222)
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import time
+import urllib.parse
+import urllib.request
+from concurrent.futures import ThreadPoolExecutor
+
+# Desktop-client UA: lifts the free-account per-file download cap.
+UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) quark-cloud-drive/2.5.20 Chrome/100.0.4896.160 "
+      "Electron/18.3.5.12 Safari/537.36 Channel/pckk_other_ch")
+BASE = "https://drive-pc.quark.cn/1/clouddrive"
+REFERER = "https://pan.quark.cn/"
+
+
+def log(*a):
+    print(*a, file=sys.stderr, flush=True)
+
+
+def resolve_cookie(args) -> str:
+    if args.cookie:
+        return args.cookie.strip()
+    if args.cookie_file and os.path.exists(args.cookie_file):
+        return open(args.cookie_file).read().strip()
+    if os.environ.get("KUAKE_COOKIE", "").strip():
+        return os.environ["KUAKE_COOKIE"].strip()
+    helper = shutil.which("chrome-cookies")
+    if helper:
+        out = subprocess.run([helper, "pan.quark.cn"], capture_output=True, text=True)
+        if out.returncode == 0 and out.stdout.strip():
+            return out.stdout.strip()
+    sys.exit("no Quark cookie: pass --cookie, set $KUAKE_COOKIE, or install "
+             "the chrome-cookies helper and run the agent browser")
+
+
+def pwd_id_of(arg: str) -> str:
+    m = re.search(r"/(?:s|list/share)/([0-9a-zA-Z]+)", arg)
+    return m.group(1) if m else arg
+
+
+class Quark:
+    def __init__(self, cookie: str, pwd_id: str, passcode: str = ""):
+        self.cookie = cookie
+        self.pwd_id = pwd_id
+        self.passcode = passcode
+        self.stoken = self._token()
+
+    def _req(self, path, params, body=None, tries=5):
+        url = path + "?" + urllib.parse.urlencode(params)
+        data = json.dumps(body).encode() if body is not None else None
+        last = None
+        for i in range(tries):
+            req = urllib.request.Request(url, data=data,
+                                         method="POST" if data else "GET")
+            req.add_header("cookie", self.cookie)
+            req.add_header("user-agent", UA)
+            req.add_header("referer", REFERER)
+            if data:
+                req.add_header("content-type", "application/json")
+            try:
+                with urllib.request.urlopen(req, timeout=30) as r:
+                    return json.loads(r.read())
+            except Exception as e:  # noqa: BLE001
+                last = e
+                time.sleep(1.5 * (i + 1))
+        raise RuntimeError(f"request failed: {path}: {last}")
+
+    def _token(self):
+        d = self._req(f"{BASE}/share/sharepage/token", {"pr": "ucpro", "fr": "pc"},
+                      {"pwd_id": self.pwd_id, "passcode": self.passcode})
+        if d.get("code") != 0:
+            sys.exit(f"share token failed: {d.get('message')} ({d.get('code')})")
+        return d["data"]["stoken"]
+
+    def listdir(self, pdir_fid: str):
+        out, page = [], 1
+        while True:
+            d = self._req(f"{BASE}/share/sharepage/detail", {
+                "pr": "ucpro", "fr": "pc", "pwd_id": self.pwd_id,
+                "stoken": self.stoken, "pdir_fid": pdir_fid, "force": "0",
+                "_page": str(page), "_size": "100", "_fetch_banner": "0",
+                "_fetch_share": "0", "_fetch_total": "1"})
+            data = d.get("data") or {}
+            lst = data.get("list") or []
+            out.extend(lst)
+            if len(lst) < 100 or not (data.get("metadata") or {}).get("_has_more"):
+                break
+            page += 1
+        return out
+
+    def walk(self, pdir_fid="0", prefix=""):
+        for it in self.listdir(pdir_fid):
+            name = it["file_name"]
+            is_dir = it.get("file_type") == 0 and it.get("size", 0) == 0
+            if is_dir:
+                yield from self.walk(it["fid"], prefix + name + "/")
+            else:
+                yield (prefix + name, it["fid"],
+                       it.get("share_fid_token", ""), it.get("size", 0))
+
+    def download_url(self, fid, fid_token):
+        d = self._req(f"{BASE}/file/share/download", {"pr": "ucpro", "fr": "pc"},
+                      {"fids": [fid], "pwd_id": self.pwd_id,
+                       "stoken": self.stoken, "fids_token": [fid_token]})
+        return d["data"][0]["download_url"]
+
+
+def fetch(q: Quark, fid, fid_token, dest: str, size: int) -> bool:
+    """Download one file, resuming and re-signing the URL as needed."""
+    if os.path.exists(dest) and os.path.getsize(dest) == size:
+        log(f"  skip (done) {dest}")
+        return True
+    os.makedirs(os.path.dirname(dest) or ".", exist_ok=True)
+    for attempt in range(1, 7):
+        url = q.download_url(fid, fid_token)
+        cmd = ["curl", "-fL", "-C", "-", "--retry", "5", "--retry-delay", "3",
+               "--retry-all-errors", "-o", dest, url,
+               "-H", f"user-agent: {UA}", "-H", f"referer: {REFERER}",
+               "-H", f"cookie: {q.cookie}", "--silent", "--show-error"]
+        rc = subprocess.run(cmd).returncode
+        if rc == 0 or (os.path.exists(dest) and os.path.getsize(dest) == size):
+            return True
+        log(f"  retry {attempt}/6 (curl={rc}) {dest}")
+        time.sleep(3 * attempt)
+    return False
+
+
+def main():
+    ap = argparse.ArgumentParser(add_help=True)
+    ap.add_argument("share", help="share URL or pwd_id")
+    ap.add_argument("passcode", nargs="?", default="")
+    ap.add_argument("-o", "--out", default=".")
+    ap.add_argument("-j", "--jobs", type=int, default=3)
+    ap.add_argument("--cookie")
+    ap.add_argument("--cookie-file")
+    ap.add_argument("--only", action="append", default=[])
+    ap.add_argument("--list", action="store_true")
+    args = ap.parse_args()
+
+    q = Quark(resolve_cookie(args), pwd_id_of(args.share), args.passcode)
+    files = list(q.walk())
+    if args.only:
+        files = [f for f in files if any(s in f[0] for s in args.only)]
+    total = sum(f[3] for f in files)
+    log(f"{len(files)} files, {total / 2**30:.2f} GiB")
+    for p, _fid, _t, s in files:
+        log(f"  {s:>14,}  {p}")
+    if args.list:
+        return
+
+    log(f"downloading to {os.path.abspath(args.out)} with {args.jobs} job(s)")
+    fails = []
+    with ThreadPoolExecutor(max_workers=args.jobs) as ex:
+        futs = {ex.submit(fetch, q, fid, tok, os.path.join(args.out, p), size): p
+                for p, fid, tok, size in files}
+        for fut, p in futs.items():
+            try:
+                if not fut.result():
+                    fails.append(p)
+                    log(f"FAILED {p}")
+            except Exception as e:  # noqa: BLE001
+                fails.append(p)
+                log(f"ERROR {p}: {e}")
+    if fails:
+        log(f"{len(fails)} file(s) failed:")
+        for p in fails:
+            log(f"  {p}")
+        sys.exit(1)
+    log("done")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,83 @@
+#!/usr/bin/env node
+// Extract cookies for one or more domains from a running Chrome/Chromium that
+// has the DevTools protocol enabled.
+//
+//   chrome-cookies pan.quark.cn
+//   chrome-cookies baidu.com --header
+//   chrome-cookies pan.baidu.com --port 9222 --json
+//
+// Output:
+//   default  "name=value; name2=value2" (one line, ready for a Cookie header)
+//   --json   JSON array of {name,value,domain,path,expires}
+//
+// This talks to Chrome over CDP, so it returns HttpOnly cookies too and works
+// while the browser is running. Start the agent browser with `chrome-agent`
+// (port 9222) if it is not already up.
+
+const args = process.argv.slice(2);
+const opts = { port: "9222", json: false, header: false, domains: [] };
+for (let i = 0; i < args.length; i++) {
+  const a = args[i];
+  if (a === "--port") opts.port = args[++i];
+  else if (a === "--json") opts.json = true;
+  else if (a === "--header") opts.header = true;
+  else if (a === "-h" || a === "--help") {
+    console.log("usage: chrome-cookies <domain>... [--port N] [--json|--header]");
+    process.exit(0);
+  } else if (!a.startsWith("-")) opts.domains.push(a);
+}
+if (opts.domains.length === 0) {
+  console.error("usage: chrome-cookies <domain>... [--port N] [--json|--header]");
+  process.exit(2);
+}
+
+let ver;
+try {
+  ver = await (await fetch(`http://127.0.0.1:${opts.port}/json/version`)).json();
+} catch {
+  console.error(`[chrome-cookies] no CDP endpoint on 127.0.0.1:${opts.port}. ` +
+    `Start the agent browser (chrome-agent) first.`);
+  process.exit(3);
+}
+
+const ws = new WebSocket(ver.webSocketDebuggerUrl);
+let id = 0;
+const pending = new Map();
+const send = (method, params = {}) =>
+  new Promise((res, rej) => {
+    const mid = ++id;
+    pending.set(mid, { res, rej });
+    ws.send(JSON.stringify({ id: mid, method, params }));
+  });
+ws.addEventListener("message", (ev) => {
+  const m = JSON.parse(ev.data);
+  if (m.id && pending.has(m.id)) {
+    const p = pending.get(m.id);
+    pending.delete(m.id);
+    m.error ? p.rej(new Error(JSON.stringify(m.error))) : p.res(m.result);
+  }
+});
+await new Promise((r) => ws.addEventListener("open", r));
+const { cookies } = await send("Storage.getCookies");
+ws.close();
+
+const matches = (cd) => {
+  const d = cd.replace(/^\./, "");
+  return opts.domains.some((f) => d === f || d.endsWith("." + f) ||
+    f.endsWith("." + d) || d.includes(f));
+};
+// De-dup by name+path+domain, keeping the longest-lived entry.
+const byKey = new Map();
+for (const c of cookies.filter((c) => matches(c.domain))) {
+  const key = `${c.domain}|${c.path}|${c.name}`;
+  const prev = byKey.get(key);
+  if (!prev || (c.expires ?? -1) > (prev.expires ?? -1)) byKey.set(key, c);
+}
+const sel = [...byKey.values()];
+
+if (opts.json) {
+  console.log(JSON.stringify(sel.map(({ name, value, domain, path, expires }) =>
+    ({ name, value, domain, path, expires }))));
+} else {
+  console.log(sel.map((c) => `${c.name}=${c.value}`).join("; "));
+}
