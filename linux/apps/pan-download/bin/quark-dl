@@ -133,10 +133,25 @@ class Quark:
                        it.get("share_fid_token", ""), it.get("size", 0))
 
     def download_url(self, fid, fid_token):
-        d = self._req(f"{BASE}/file/share/download", {"pr": "ucpro", "fr": "pc"},
-                      {"fids": [fid], "pwd_id": self.pwd_id,
-                       "stoken": self.stoken, "fids_token": [fid_token]})
-        return d["data"][0]["download_url"]
+        # The share stoken can expire during a long run; refresh it and retry
+        # instead of letting one failure cascade into every remaining file.
+        last = None
+        for attempt in (1, 2):
+            try:
+                d = self._req(f"{BASE}/file/share/download",
+                              {"pr": "ucpro", "fr": "pc"},
+                              {"fids": [fid], "pwd_id": self.pwd_id,
+                               "stoken": self.stoken, "fids_token": [fid_token]})
+                if d.get("data"):
+                    return d["data"][0]["download_url"]
+                last = d.get("message") or d.get("code")
+            except RuntimeError as e:  # network/HTTP failure
+                last = e
+            if attempt == 1:
+                log(f"  refreshing share token (reason: {last})")
+                time.sleep(2)
+                self.stoken = self._token()
+        raise RuntimeError(f"download url failed: {last}")
 
 
 def fetch(q: Quark, fid, fid_token, dest: str, size: int) -> bool:
