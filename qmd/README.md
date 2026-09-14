@@ -6,7 +6,9 @@
 ./setup.sh
 ```
 
-模块固定使用 Bun 安装 QMD `2.5.3`，并创建四个 collection：文章正文投影、Topics、Synthesis 和 Sources。文章正文由 Knowledge 仓库脚本从 canonical HTML 生成到 `~/.cache/knowledge-qmd/articles/`；QMD SQLite 索引和模型也只保留在本机 cache。
+模块固定使用 Bun 安装 QMD `2.5.3`，并创建四个 collection：文章正文投影、Topics、Synthesis 和 Sources。
+
+同时把 `~/Documents/vaults/` 下的外源 Obsidian 库（`gefei-knowledge`、`gefei-ask`）注册成同名 collection —— 它们不是 Knowledge Entity，但共用同一套 QMD 索引，Agent 可以用同样的 `qmd search/query` 搜到。vault 不存在时自动跳过。文章正文由 Knowledge 仓库脚本从 canonical HTML 生成到 `~/.cache/knowledge-qmd/articles/`；QMD SQLite 索引和模型也只保留在本机 cache。
 
 `qmd` 已加入 `modules/common.txt`，因此每台笔记本运行 `~/dotfiles/setup.sh --common-only` 都会幂等完成安装、collection 配置和 BM25 初始化。Knowledge 的 `scripts/knowledge-search.mjs` 也会在搜索前自检并自动调用本模块；新 clone 后可显式运行 `node scripts/knowledge-search.mjs init`。
 

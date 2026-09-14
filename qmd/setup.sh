@@ -27,6 +27,39 @@ if ! command -v qmd >/dev/null 2>&1; then
   exit 1
 fi
 
+# External Obsidian vaults under ~/Documents/vaults are raw reference material,
+# not Knowledge Entities, but they share this QMD index so agents can search
+# them with the same qmd commands. Registered before the Knowledge check so
+# they survive even when the Knowledge repo is absent.
+ensure_vault_collection() {
+  local name="$1"
+  local path="$2"
+  local context="$3"
+
+  [[ -d "$path" ]] || return 0
+
+  local current=""
+  local current_path=""
+  current="$(qmd collection show "$name" 2>/dev/null || true)"
+  if [[ -n "$current" ]]; then
+    current_path="$(printf '%s\n' "$current" | sed -n 's/^  Path:[[:space:]]*//p')"
+    if [[ "$current_path" != "$path" ]]; then
+      echo "[qmd] replacing stale vault collection: $name"
+      qmd collection remove "$name"
+      current=""
+    fi
+  fi
+  if [[ -z "$current" ]]; then
+    qmd collection add "$path" --name "$name" --mask "**/*.md"
+  fi
+  qmd context add "qmd://$name/" "$context" >/dev/null
+}
+
+ensure_vault_collection "gefei-knowledge" "$HOME/Documents/vaults/gefei-knowledge" \
+  "哥飞社群（SEO/出海）外部参考库：养网站防老、网站出海每日分享、网站出海深度总结、结构化知识库。外源素材，不是 Knowledge Entity；引用时标注来源。"
+ensure_vault_collection "gefei-ask" "$HOME/Documents/vaults/gefei-ask" \
+  "哥飞问大咖问答合集：社群问答整理稿与学习路线。外源素材，不是 Knowledge Entity。"
+
 if [[ ! -d "$KNOWLEDGE_ROOT" ]]; then
   echo "[qmd] Knowledge repo not found; CLI installed without collections: $KNOWLEDGE_ROOT"
   exit 0
