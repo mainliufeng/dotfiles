@@ -9,6 +9,7 @@ linux/apps/chatgpt-desktop
 linux/apps/dingtalk
 linux/apps/pan-download
 linux/apps/screenshot-ocr
+linux/apps/paseo
 linux/desktop/awesome
 linux/desktop/gnome
 linux/desktop/hyprland

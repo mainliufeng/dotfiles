@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Paseo Daemon
+Comment=Keep the Paseo daemon running in the background
+Exec=systemctl --user start paseo.service
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
