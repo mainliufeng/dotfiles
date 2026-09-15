@@ -48,6 +48,27 @@ Tailscale Serve 不做路径重写，所以给它根路径 = 独占一个 HTTPS 
 Tailscale 只允许 **443 / 8443 / 10000** 三个 HTTPS 端口；443 现在归入口页，
 8443 归 dsh，10000 归 Entity Index —— 已用满。
 
+## 每个站点都能装成 App
+
+入口页、两个 Quartz 库、Workbench 自带 manifest + service worker，直接可装。
+Entity Index 和 dsh 是别人的服务、没有 manifest，由 **`tailnet-pwa-proxy`** 反向
+代理注入：
+
+```
+:10000/ -> 127.0.0.1:8095 (pwa-proxy) -> http://100.79.161.127:8787  (Entity Index)
+:8443/  -> 127.0.0.1:8096 (pwa-proxy) -> http://127.0.0.1:8789        (dsh)
+```
+
+代理做三件事：自己提供 `/__pwa/{manifest,icon,sw.js,register.js}`、把 PWA 的
+`<head>` 标签注入 `text/html` 响应、其余原样透传（cookie / 重定向 / SSE 都不动）。
+要包装新服务就加一行 [wrapped.tsv](wrapped.tsv)，然后跑 `bash setup.sh`。
+
+两个坑：
+- 上游可能无视 `Accept-Encoding: identity` 仍返回 gzip（`serve-knowledge.mjs` 就是），
+  代理必须先解压再注入。
+- SW 文件在 `/__pwa/` 下却要控制整个 origin，必须回 `Service-Worker-Allowed: /`，
+  否则浏览器拒绝注册。
+
 ## 排障
 
 ```bash
