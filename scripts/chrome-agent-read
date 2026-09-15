@@ -53,13 +53,15 @@ const send = (method, params = {}, sessionId) => {
   return new Promise((res, rej) => {
     pending.set(mid, { res, rej });
     ws.send(JSON.stringify({ id: mid, method, params, ...(sessionId ? { sessionId } : {}) }));
-    setTimeout(() => { if (pending.has(mid)) { pending.delete(mid); rej(new Error('timeout ' + method)); } }, 45000);
+    const timer = setTimeout(() => { if (pending.has(mid)) { pending.delete(mid); rej(new Error('timeout ' + method)); } }, 45000);
+    pending.get(mid).timer = timer;
   });
 };
 ws.onmessage = (ev) => {
   const m = JSON.parse(ev.data);
   if (m.id && pending.has(m.id)) {
     const p = pending.get(m.id); pending.delete(m.id);
+    clearTimeout(p.timer);
     m.error ? p.rej(new Error(JSON.stringify(m.error))) : p.res(m.result);
   } else if (m.method) listeners.forEach((f) => f(m));
 };
@@ -69,11 +71,26 @@ const { targetId } = await send('Target.createTarget', { url, background: true }
 const { sessionId } = await send('Target.attachToTarget', { targetId, flatten: true });
 await send('Page.enable', {}, sessionId);
 
-const started = Date.now();
+let started = Date.now();
+let retries = 0;
+let networkError = false;
 let out = '';
 while (Date.now() - started < waitMs) {
   await new Promise((r) => setTimeout(r, 1200));
   try {
+    const state = await send('Runtime.evaluate', { expression: 'JSON.stringify({url:location.href,text:document.body?.innerText || ""})', returnByValue: true }, sessionId);
+    const page = JSON.parse(state.result.value);
+    networkError = page.url.startsWith('chrome-error:') || /ERR_CONNECTION_CLOSED|ERR_CONNECTION_RESET|ERR_TIMED_OUT|ERR_PROXY_CONNECTION_FAILED|ERR_TUNNEL_CONNECTION_FAILED/.test(page.text);
+    if (networkError) {
+      out = page.text;
+      if (retries >= 2) break;
+      retries++;
+      console.error(`Browser network error; retry ${retries}/2`);
+      await new Promise((r) => setTimeout(r, retries * 2000));
+      await send('Page.navigate', { url }, sessionId);
+      started = Date.now();
+      continue;
+    }
     const r = await send('Runtime.evaluate', { expression: expr, returnByValue: true }, sessionId);
     out = r?.result?.value ?? '';
   } catch { /* page still navigating */ }
@@ -85,3 +102,4 @@ while (Date.now() - started < waitMs) {
 if (!keep) await send('Target.closeTarget', { targetId });
 ws.close();
 console.log(out);
+if (networkError || !String(out).trim()) process.exitCode = 1;
