@@ -1,0 +1,164 @@
+#!/usr/bin/env python3
+"""Generate the Tailnet portal page from sites.tsv.
+
+Writes `<out>/index.html` plus the PWA assets (manifest, icon, service worker)
+so the portal itself can be installed as an app on the phone.
+
+Usage: tailnet-portal-build            # uses ../sites.tsv
+Env:   TAILNET_PORTAL_OUT, TAILNET_PORTAL_SITES
+"""
+from __future__ import annotations
+
+import html
+import os
+import shutil
+import subprocess
+import sys
+import time
+
+HERE = os.path.dirname(os.path.realpath(__file__))
+MODULE = os.path.dirname(HERE)
+ASSETS = os.path.join(MODULE, "assets")
+SITES = os.environ.get("TAILNET_PORTAL_SITES", os.path.join(MODULE, "sites.tsv"))
+OUT = os.path.abspath(os.environ.get("TAILNET_PORTAL_OUT",
+                                     os.path.expanduser("~/Code/self/tailnet-portal")))
+
+
+def tailnet_host() -> str:
+    try:
+        out = subprocess.run(["tailscale", "status", "--json"],
+                             capture_output=True, text=True, timeout=10)
+        import json
+
+        return json.loads(out.stdout)["Self"]["DNSName"].rstrip(".")
+    except Exception:  # noqa: BLE001
+        return "100.79.161.127"
+
+
+def read_sites(host: str):
+    sites = []
+    with open(SITES, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split("|")
+            if len(parts) < 3:
+                continue
+            name, href, desc = parts[0].strip(), parts[1].strip(), parts[2].strip()
+            sites.append((name, href.replace("@host", host), desc))
+    return sites
+
+
+PAGE = """<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>{title}</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="theme-color" content="#101216">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="{short}">
+<style>
+  :root {{
+    --bg:#0f1013; --card:#191b20; --card-hover:#20232a; --line:#2a2d34;
+    --ink:#e8eaee; --muted:#8a9099; --accent:#7b97aa;
+  }}
+  @media (prefers-color-scheme: light) {{
+    :root {{ --bg:#f6f7f9; --card:#fff; --card-hover:#f0f2f5; --line:#e4e6ea;
+             --ink:#15171a; --muted:#6b7280; --accent:#284b63; }}
+  }}
+  * {{ box-sizing:border-box; }}
+  body {{
+    margin:0; padding:calc(32px + env(safe-area-inset-top)) 18px
+           calc(32px + env(safe-area-inset-bottom));
+    background:var(--bg); color:var(--ink); min-height:100vh;
+    font:16px/1.5 system-ui,-apple-system,"Noto Sans CJK SC","PingFang SC",sans-serif;
+    -webkit-text-size-adjust:100%;
+  }}
+  .wrap {{ max-width:640px; margin:0 auto; }}
+  header {{ margin-bottom:22px; }}
+  h1 {{ font-size:26px; margin:0 0 6px; letter-spacing:-.5px; }}
+  .sub {{ color:var(--muted); font-size:13px; }}
+  .sub code {{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }}
+  ul {{ list-style:none; padding:0; margin:0; }}
+  li {{ margin-bottom:10px; }}
+  a.card {{
+    display:block; text-decoration:none; color:inherit;
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:16px 18px; transition:background .15s,border-color .15s;
+  }}
+  a.card:hover, a.card:active {{ background:var(--card-hover); border-color:var(--accent); }}
+  .name {{ font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px; }}
+  .name::after {{ content:"↗"; color:var(--muted); font-size:13px; font-weight:400; }}
+  .desc {{ color:var(--muted); font-size:13px; margin-top:5px; }}
+  footer {{ color:var(--muted); font-size:12px; margin-top:26px; text-align:center; }}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>{title}</h1>
+    <div class="sub">Tailscale 内网 · <code>{host}</code></div>
+  </header>
+  <ul>
+{cards}
+  </ul>
+  <footer>生成于 {ts} · 只有 tailnet 内可访问</footer>
+</div>
+<script>if("serviceWorker" in navigator){{navigator.serviceWorker.register("sw.js").catch(function(){{}})}}</script>
+</body>
+</html>
+"""
+
+
+def main() -> None:
+    host = tailnet_host()
+    sites = read_sites(host)
+    os.makedirs(OUT, exist_ok=True)
+
+    cards = "\n".join(
+        f'    <li><a class="card" href="{html.escape(href)}">'
+        f'<div class="name">{html.escape(name)}</div>'
+        f'<div class="desc">{html.escape(desc)}</div></a></li>'
+        for name, href, desc in sites
+    )
+    page = PAGE.format(title="入口", short="入口", host=html.escape(host),
+                       cards=cards, ts=time.strftime("%Y-%m-%d %H:%M"))
+    with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8") as fh:
+        fh.write(page)
+
+    manifest = """{
+  "name": "Tailnet 入口",
+  "short_name": "入口",
+  "description": "liufeng 的 tailnet 站点入口",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#101216",
+  "theme_color": "#101216",
+  "icons": [
+    {"src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
+"""
+    with open(os.path.join(OUT, "manifest.webmanifest"), "w", encoding="utf-8") as fh:
+        fh.write(manifest)
+
+    shutil.copyfile(os.path.join(ASSETS, "icon.png"), os.path.join(OUT, "icon.png"))
+    shutil.copyfile(os.path.join(ASSETS, "sw.js"), os.path.join(OUT, "sw.js"))
+
+    print(f"[portal] {len(sites)} sites -> {OUT}/index.html (host {host})")
+    for name, href, _ in sites:
+        print(f"         {name}: {href}")
+
+
+if __name__ == "__main__":
+    main()

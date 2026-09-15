@@ -10,6 +10,7 @@ linux/apps/dingtalk
 linux/apps/pan-download
 linux/apps/quartz-web
 linux/apps/screenshot-ocr
+linux/apps/tailnet-portal
 linux/apps/paseo
 linux/desktop/awesome
 linux/desktop/gnome

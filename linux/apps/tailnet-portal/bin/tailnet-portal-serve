@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+"""Serve the generated Tailnet portal on 127.0.0.1 + the Tailscale address.
+
+Runs under `systemd --user` (see ../setup.sh); `tailscale serve` proxies it at
+the tailnet root with HTTPS so the portal can be installed as an app.
+
+Env: TAILNET_PORTAL_OUT, TAILNET_PORTAL_PORT, TAILNET_PORTAL_BIND
+"""
+from __future__ import annotations
+
+import os
+import signal
+import subprocess
+import sys
+import threading
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+
+ROOT = os.path.abspath(os.environ.get("TAILNET_PORTAL_OUT",
+                                      os.path.expanduser("~/Code/self/tailnet-portal")))
+PORT = int(os.environ.get("TAILNET_PORTAL_PORT", "8093"))
+
+
+def tailscale_ip() -> str | None:
+    try:
+        out = subprocess.run(["tailscale", "ip", "-4"], capture_output=True, text=True, timeout=5)
+        return out.stdout.split()[0] if out.returncode == 0 and out.stdout.split() else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+class Handler(SimpleHTTPRequestHandler):
+    def __init__(self, *a, **kw):
+        super().__init__(*a, directory=ROOT, **kw)
+
+    def log_message(self, fmt, *args):
+        sys.stderr.write(f"[portal] {self.address_string()} {fmt % args}\n")
+
+
+def main() -> None:
+    if not os.path.isfile(os.path.join(ROOT, "index.html")):
+        sys.exit(f"[portal] not built yet: {ROOT}/index.html (run tailnet-portal-build)")
+
+    addrs = ["127.0.0.1"]
+    ip = tailscale_ip()
+    if ip:
+        addrs.append(ip)
+
+    servers = []
+    for addr in addrs:
+        try:
+            srv = ThreadingHTTPServer((addr, PORT), Handler)
+        except OSError as exc:
+            print(f"[portal] cannot bind {addr}:{PORT}: {exc}", file=sys.stderr)
+            continue
+        servers.append(srv)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        print(f"[portal] http://{addr}:{PORT}/ -> {ROOT}", file=sys.stderr)
+
+    if not servers:
+        sys.exit("[portal] nothing to serve")
+
+    stop = threading.Event()
+    signal.signal(signal.SIGTERM, lambda *_: stop.set())
+    signal.signal(signal.SIGINT, lambda *_: stop.set())
+    stop.wait()
+    for srv in servers:
+        srv.shutdown()
+
+
+if __name__ == "__main__":
+    main()

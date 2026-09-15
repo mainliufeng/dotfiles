@@ -1,0 +1,13 @@
+# Tailnet 入口页站点清单
+# 格式: 名称|链接|描述
+#
+# 链接可以写：
+#   /path/                站点根下的相对路径
+#   https://@host:8443/   带端口时用 @host 占位，构建时替换成 tailnet 域名
+#
+# 以 # 开头的行忽略。
+Knowledge Workbench|/workbench/|文章、调研、选题的编辑工作台
+Knowledge Entity Index|https://@host:10000/|Research / Source / Article / Topic、关系图谱与项目机会
+哥飞 · 出海知识库|/gefei-knowledge/|SEO/出海公众号归档，1747 页，带图谱与全文搜索
+哥飞 · 问大咖|/gefei-ask/|社群问答合集与学习路线
+dsh · DeepSeek Harness|https://@host:8443/|Harness 网页版，需登录
