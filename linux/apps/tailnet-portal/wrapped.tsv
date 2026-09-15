@@ -1,7 +1,10 @@
 # 需要"套壳成 App"的上游服务（非本仓库自己的服务）
-# 格式: 名称|上游地址|本地端口|App 名称|App 短名|图标文件(assets/ 下)
+# 格式: 名称|上游地址|本地端口|App 名称|App 短名|图标文件(assets/ 下)|token 日志(可选)
 #
-# 这些上游没有 manifest / service worker，由 tailnet-pwa-proxy 反向代理注入，
-# 从而可以「安装成 App」。它们都跑在各自端口/根路径下，所以 start_url 用 /。
-entity|http://100.79.161.127:8787|8095|Knowledge Entity Index|Entity|icon-entity.png
-dsh|http://127.0.0.1:8789|8096|dsh · DeepSeek Harness|dsh|icon-dsh.png
+# token 日志：上游要求 `?token=` 认证时，填它启动时打印 token 的日志文件；
+# 代理遇到 401 会自动带着 token 跳一次，浏览器拿到 cookie 后就正常了。
+# token 每次重启都会变，所以必须是运行时从日志里读，不能写死。
+#
+# 这些上游都跑在各自端口/根路径下，所以 start_url 用 /。
+entity|http://100.79.161.127:8787|8095|Knowledge Entity Index|Entity|icon-entity.png|
+dsh|http://127.0.0.1:8789|8096|dsh · DeepSeek Harness|dsh|icon-dsh.png|~/.dsh/web-8789.log

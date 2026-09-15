@@ -20,6 +20,7 @@ from __future__ import annotations
 import gzip
 import http.client
 import os
+import re
 import signal
 import sys
 import threading
@@ -78,9 +79,25 @@ def read_conf():
             if len(parts) < 6:
                 continue
             name, upstream, port, app, short, icon = (p.strip() for p in parts[:6])
+            token_log = parts[6].strip() if len(parts) > 6 else ""
             sites.append({"name": name, "upstream": upstream, "port": int(port),
-                          "app": app, "short": short, "icon": icon})
+                          "app": app, "short": short, "icon": icon,
+                          "token_log": os.path.expanduser(token_log) if token_log else ""})
     return sites
+
+
+def read_token(path: str) -> str | None:
+    """Read the `?token=...` an upstream printed on startup. Re-read every time
+    because the token changes on restart."""
+    if not path:
+        return None
+    try:
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            text = fh.read()
+    except OSError:
+        return None
+    match = re.search(r"[?&]token=([A-Za-z0-9_.\-]+)", text)
+    return match.group(1) if match else None
 
 
 def make_handler(site):
@@ -140,6 +157,23 @@ def make_handler(site):
                 return self._local(f"upstream error: {exc}".encode(), "text/plain", 502)
 
             ctype = resp.getheader("Content-Type", "")
+
+            # Upstream wants `?token=`: bounce once so the browser picks up the
+            # auth cookie, instead of showing "authentication required".
+            if resp.status == 401 and site["token_log"] and "token=" not in self.path:
+                token = read_token(site["token_log"])
+                conn.close()
+                if token:
+                    location = "/?token=" + token
+                    self.send_response(303)
+                    self.send_header("Location", location)
+                    self.send_header("Content-Length", "0")
+                    self.send_header("Cache-Control", "no-store")
+                    self.end_headers()
+                    return
+                return self._local(b"upstream requires auth and no token found in "
+                                   + site["token_log"].encode(), "text/plain", 502)
+
             passthrough = [(k, v) for k, v in resp.getheaders()
                            if k.lower() not in HOP_BY_HOP
                            and k.lower() not in ("content-length", "content-encoding")]

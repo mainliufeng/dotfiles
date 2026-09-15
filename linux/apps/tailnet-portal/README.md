@@ -63,7 +63,11 @@ Entity Index 和 dsh 是别人的服务、没有 manifest，由 **`tailnet-pwa-p
 `<head>` 标签注入 `text/html` 响应、其余原样透传（cookie / 重定向 / SSE 都不动）。
 要包装新服务就加一行 [wrapped.tsv](wrapped.tsv)，然后跑 `bash setup.sh`。
 
-两个坑：
+如果上游要求 `?token=` 认证（dsh 就是），在 wrapped.tsv 最后一列填它启动时
+**打印 token 的日志文件**。代理遇到 401 会自动带着 token 跳一次，浏览器拿到 cookie
+后就不再需要 token。token 每次重启都会变，所以是每次请求现读日志，不写死。
+
+三个坑：
 - 上游可能无视 `Accept-Encoding: identity` 仍返回 gzip（`serve-knowledge.mjs` 就是），
   代理必须先解压再注入。
 - SW 文件在 `/__pwa/` 下却要控制整个 origin，必须回 `Service-Worker-Allowed: /`，
