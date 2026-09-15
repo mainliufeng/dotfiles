@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# Build the Quartz sites declared in sites.conf.
+#
+#   quartz-web-build            # rebuild every site
+#   quartz-web-build gefei-ask  # rebuild one site
+#
+# One Quartz checkout (QUARTZ_DIR) serves all sites: for each build we write a
+# per-site quartz.config.yaml from assets/quartz.config.base.yaml, point Quartz
+# at the vault directory, and render into
+#   $QUARTZ_WEB_OUT/<name>/public
+# The vault itself is only ever read.
+set -euo pipefail
+
+HERE="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+QUARTZ_DIR="${QUARTZ_DIR:-$HOME/Code/source/quartz}"
+OUT_ROOT="${QUARTZ_WEB_OUT:-$HOME/Code/self/quartz-sites}"
+SITES_CONF="${QUARTZ_WEB_SITES:-$HERE/sites.conf}"
+BASE_CFG="$HERE/assets/quartz.config.base.yaml"
+# esbuild deadlocks in service mode when Quartz fans out to every core; keep it low.
+CONCURRENCY="${QUARTZ_WEB_CONCURRENCY:-2}"
+
+[[ -f "$BASE_CFG" ]] || { echo "[quartz-web] missing config template: $BASE_CFG" >&2; exit 1; }
+[[ -f "$QUARTZ_DIR/package.json" ]] || { echo "[quartz-web] no Quartz checkout at $QUARTZ_DIR" >&2; exit 1; }
+[[ -f "$SITES_CONF" ]] || { echo "[quartz-web] missing site list: $SITES_CONF" >&2; exit 1; }
+
+dns_name() {
+  command -v tailscale >/dev/null 2>&1 || return 0
+  tailscale status --json 2>/dev/null | python3 -c \
+    'import json,sys; print(json.load(sys.stdin)["Self"]["DNSName"].rstrip("."))' 2>/dev/null || true
+}
+
+HOSTNAME_BASE="$(dns_name)"
+HOSTNAME_BASE="${HOSTNAME_BASE:-100.79.161.127}"
+
+build_site() {
+  local name="$1" vault_rel="$2" title="$3" short="$4" lport="$5" base_path="$6"
+  local vault="$HOME/$vault_rel"
+  local dir="$OUT_ROOT/$name"
+  local out="$dir/public"
+
+  if [[ ! -d "$vault" ]]; then
+    echo "[skip] $name: vault not found: $vault" >&2
+    return 0
+  fi
+
+  mkdir -p "$dir"
+  echo "[build] $name  (https://${HOSTNAME_BASE}${base_path}/)"
+  sed -e "s|__PAGE_TITLE__|${title}|" \
+      -e "s|__BASE_URL__|${HOSTNAME_BASE}${base_path}|" \
+      "$BASE_CFG" > "$QUARTZ_DIR/quartz.config.yaml"
+
+  rm -rf "$out"
+  if ! ( cd "$QUARTZ_DIR" && npx quartz build -d "$vault" -o "$out" \
+           --baseDir "$base_path" --concurrency "$CONCURRENCY" ) > "$dir/build.log" 2>&1; then
+    echo "[fail] $name: see $dir/build.log" >&2
+    return 1
+  fi
+
+  python3 "$HERE/bin/quartz-web-postprocess" "$out" "$vault" "$name" "$title" "$short" \
+    "$base_path" >> "$dir/build.log" 2>&1
+  echo "[ok]   $name: $(find "$out" -name '*.html' | wc -l) pages, $(du -sh "$out" | cut -f1)"
+}
+
+mkdir -p "$OUT_ROOT"
+target="${1:-all}"
+status=0
+while IFS='|' read -r name vault_rel title short lport base_path; do
+  [[ -z "${name//[[:space:]]/}" || "$name" == \#* ]] && continue
+  [[ "$target" != "all" && "$target" != "$name" ]] && continue
+  build_site "$name" "$vault_rel" "$title" "$short" "$lport" "$base_path" || status=1
+done < "$SITES_CONF"
+
+exit "$status"

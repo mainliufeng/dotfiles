@@ -1,0 +1,167 @@
+#!/usr/bin/env python3
+"""Post-process a Quartz build so the site is browsable and installable as an app.
+
+Given a built site directory, its source vault and the public path prefix it is
+served under, this:
+
+  1. copies the PWA assets (manifest, icon, service worker) into the site root;
+  2. injects the "add to home screen" <head> tags into every generated page;
+  3. writes a root `index.html` — a redirect to the vault's home note when it
+     has one, otherwise a landing page listing the top-level folders.
+
+Everything is prefixed with the public path because the site is served under
+`https://<tailnet>/<prefix>/` (Tailscale Serve strips the prefix before it
+reaches the local server, but the browser must still see the full path).
+
+Quartz links to clean URLs (no `.html`), and its `shortest` link resolution can
+put a note at a different path than its folder, so the home note is resolved by
+scanning the vault rather than guessing.
+
+Usage: quartz-web-postprocess <site_dir> <vault_dir> <name> <title> <short> <base_path>
+"""
+from __future__ import annotations
+
+import html
+import os
+import shutil
+import sys
+import urllib.parse
+
+HERE = os.path.dirname(os.path.realpath(__file__))
+ASSETS = os.path.join(HERE, "..", "assets")
+
+HOME_NAMES = ("index.md", "首页.md", "Home.md", "home.md", "README.md", "readme.md")
+
+HEAD_TAGS = (
+    '<link rel="manifest" href="{prefix}/manifest.webmanifest">'
+    '<link rel="icon" href="{prefix}/icon.png">'
+    '<link rel="apple-touch-icon" href="{prefix}/icon.png">'
+    '<meta name="theme-color" content="#161618">'
+    '<meta name="mobile-web-app-capable" content="yes">'
+    '<meta name="apple-mobile-web-app-capable" content="yes">'
+    '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">'
+    '<meta name="apple-mobile-web-app-title" content="{short}">'
+    '<script>if("serviceWorker" in navigator){{navigator.serviceWorker'
+    '.register("{prefix}/sw.js").catch(function(){{}})}}</script>'
+)
+
+
+def find_home(vault: str) -> str | None:
+    """Return the vault-relative path of the home note, if any."""
+    for depth in (0, 1):
+        for name in HOME_NAMES:
+            if depth == 0:
+                if os.path.isfile(os.path.join(vault, name)):
+                    return name
+            else:
+                for entry in sorted(os.listdir(vault)):
+                    if not os.path.isdir(os.path.join(vault, entry)):
+                        continue
+                    if os.path.isfile(os.path.join(vault, entry, name)):
+                        return os.path.join(entry, name)
+    return None
+
+
+def write_redirect(path: str, title: str, url: str) -> None:
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(
+            '<!doctype html><html lang="zh"><head><meta charset="utf-8">'
+            f'<meta http-equiv="refresh" content="0; url={html.escape(url)}">'
+            f"<title>{html.escape(title)}</title></head>"
+            f'<body><a href="{html.escape(url)}">进入 {html.escape(title)}</a></body></html>\n'
+        )
+
+
+def write_listing(path: str, vault: str, title: str, prefix: str) -> None:
+    """Landing page for a vault without a home note (e.g. a folder-only vault)."""
+    entries = []
+    for entry in sorted(os.listdir(vault)):
+        full = os.path.join(vault, entry)
+        if entry.startswith(".") or entry.startswith("Untitled"):
+            continue
+        if os.path.isdir(full):
+            href = prefix + "/" + urllib.parse.quote(entry) + "/"
+            n = sum(len(f) for _, _, f in os.walk(full))
+            entries.append((entry, href, f"{n} 个文件"))
+        elif entry.lower().endswith((".base", ".canvas")):
+            continue
+    rows = "\n".join(
+        f'<li><a href="{href}">{html.escape(label)}</a> <span>{meta}</span></li>'
+        for label, href, meta in entries
+    )
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(f"""<!doctype html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{html.escape(title)}</title>
+<style>
+ body{{font-family:system-ui,-apple-system,"Noto Sans CJK SC",sans-serif;margin:0;
+   padding:32px 20px;background:#faf8f8;color:#2b2b2b}}
+ @media (prefers-color-scheme:dark){{body{{background:#161618;color:#ebebec}}}}
+ h1{{font-size:22px;margin:0 0 4px}} p.sub{{color:#888;margin:0 0 24px;font-size:13px}}
+ ul{{list-style:none;padding:0;max-width:640px}}
+ li{{display:flex;justify-content:space-between;gap:12px;padding:14px 16px;margin-bottom:8px;
+   background:#fff;border-radius:10px;box-shadow:0 1px 4px #0001}}
+ @media (prefers-color-scheme:dark){{li{{background:#232326;box-shadow:none}}}}
+ a{{text-decoration:none;color:#284b63;font-weight:600}}
+ @media (prefers-color-scheme:dark){{a{{color:#7b97aa}}}}
+ span{{color:#999;font-size:12px;white-space:nowrap}}
+</style></head><body>
+<h1>{html.escape(title)}</h1>
+<p class="sub">Quartz 只读镜像 · 目录</p>
+<ul>
+{rows}
+</ul>
+</body></html>
+""")
+
+
+def main() -> None:
+    site_dir, vault, name, title, short, base_path = sys.argv[1:7]
+    prefix = base_path.rstrip("/")
+
+    # 1. PWA assets
+    shutil.copyfile(os.path.join(ASSETS, "icon.png"), os.path.join(site_dir, "icon.png"))
+    shutil.copyfile(os.path.join(ASSETS, "sw.js"), os.path.join(site_dir, "sw.js"))
+    tmpl = open(os.path.join(ASSETS, "manifest.webmanifest.tmpl"), encoding="utf-8").read()
+    manifest = (
+        tmpl.replace("__APP_NAME__", title)
+        .replace("__APP_SHORT_NAME__", short)
+        .replace("__APP_DESC__", f"{title} · Quartz 只读镜像")
+        .replace("__START_URL__", prefix + "/")
+        .replace("__SCOPE__", prefix + "/")
+    )
+    with open(os.path.join(site_dir, "manifest.webmanifest"), "w", encoding="utf-8") as fh:
+        fh.write(manifest)
+
+    # 2. inject head tags
+    tags = HEAD_TAGS.format(short=html.escape(short), prefix=prefix)
+    injected = 0
+    for dirpath, _dirnames, filenames in os.walk(site_dir):
+        for fn in filenames:
+            if not fn.endswith(".html"):
+                continue
+            p = os.path.join(dirpath, fn)
+            src = open(p, encoding="utf-8").read()
+            if 'rel="manifest"' in src:
+                continue
+            i = src.find("</head>")
+            if i < 0:
+                continue
+            with open(p, "w", encoding="utf-8") as fh:
+                fh.write(src[:i] + tags + src[i:])
+            injected += 1
+
+    # 3. root index
+    home = find_home(vault)
+    index = os.path.join(site_dir, "index.html")
+    if home:
+        url = prefix + "/" + urllib.parse.quote(home[:-3])  # strip .md -> clean URL
+        write_redirect(index, title, url)
+    else:
+        write_listing(index, vault, title, prefix)
+    print(f"[post] {name}: prefix={prefix or '/'} PWA tags in {injected} pages, "
+          f"home={home or '(listing)'}")
+
+
+if __name__ == "__main__":
+    main()
