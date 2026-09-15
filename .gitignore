@@ -14,3 +14,4 @@ codex/agents_md/node_modules/
 .worktrees/
 .cache/
 .tmp/
+__pycache__/
