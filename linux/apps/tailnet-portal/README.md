@@ -3,13 +3,29 @@
 Tailnet 的**入口页**（front door），手机装成一个 App 用。
 
 ```
-https://liufeng-82tk.tail6b9726.ts.net/          ← 入口页（本模块）
-├── /workbench/       Knowledge Workbench（从根路径挪过来）
+https://liufeng-82tk.tail6b9726.ts.net/           → 302 → /home/（入口页）
+├── /home/          入口页（本模块，scope 限定在这里）
+├── /workbench/     Knowledge Workbench
 ├── /gefei-knowledge/ 哥飞 · 出海知识库（Quartz）
 ├── /gefei-ask/       哥飞 · 问大咖（Quartz）
-├── :10000/           Knowledge Entity Index（绝对路径，需独占端口）
-└── :8443/            dsh · DeepSeek Harness
+├── :10000/         Knowledge Entity Index（绝对路径，需独占端口）
+└── :8443/          dsh · DeepSeek Harness
 ```
+
+## 为什么入口页不能占根路径
+
+**PWA 的 scope 不能互相嵌套。** 入口页如果 scope 是 `/`，就把 `/gefei-*`、`/workbench`
+全包在自己的作用域里；在入口 App 的窗口里打开子站再「安装」，Chrome 认为还在同一个
+App 范围内，于是**当成更新同一个 App**（表现为：首页图标变成了知识库，没多出新 App）。
+
+所以入口页挪到 `/home/`（scope `/home/`），和子站成为**兄弟**而不是父子：从入口 App 点卡片
+会跳出到浏览器/子 App，安装就是独立 App。根路径 302 到 `/home/`，便于直接输域名。
+
+`:10000` 和 `:8443` 因为**端口不同 = 不同 origin**，各自的 scope `/` 与 443 上的路径互不干扰，
+所以它们可以占根路径。
+
+⚠️ 另一个坑：manifest 里写相对 `"id": "."` 时 Chrome 会把它解析成 **origin 根 `/`**
+（而不是 manifest 所在目录），反而制造嵌套。**不要写显式 `id`**，用默认值（= `start_url`）即可。
 
 ## 命令
 
@@ -31,7 +47,6 @@ tailnet-portal-build && systemctl --user restart tailnet-portal.service
 替换成 tailnet 域名，避免把域名写死进公共仓库）。
 
 ## 为什么 Workbench 挪到了 /workbench
-
 入口页需要根路径。Workbench 原来占着 `/`，它的 `index.html`／`manifest`／`app.js`
 用的是绝对路径（`/manifest.webmanifest`、`/sw.js`），挪到子路径会让它们指回根。
 已把它们改成**相对路径**（`manifest.webmanifest`、`start_url: "."`），这样它在

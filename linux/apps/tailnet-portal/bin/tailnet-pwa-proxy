@@ -55,6 +55,7 @@ REGISTER_JS = (
 MANIFEST = """{
   "name": "%(name)s",
   "short_name": "%(short)s",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

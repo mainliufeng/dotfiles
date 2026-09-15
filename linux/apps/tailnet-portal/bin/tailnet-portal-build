@@ -19,6 +19,7 @@ import time
 HERE = os.path.dirname(os.path.realpath(__file__))
 MODULE = os.path.dirname(HERE)
 ASSETS = os.path.join(MODULE, "assets")
+PORTAL_BASE = os.environ.get("TAILNET_PORTAL_BASE", "/home")
 SITES = os.environ.get("TAILNET_PORTAL_SITES", os.path.join(MODULE, "sites.tsv"))
 OUT = os.path.abspath(os.environ.get("TAILNET_PORTAL_OUT",
                                      os.path.expanduser("~/Code/self/tailnet-portal")))
@@ -131,15 +132,26 @@ def main() -> None:
     )
     page = PAGE.format(title="入口", short="入口", host=html.escape(host),
                        cards=cards, ts=time.strftime("%Y-%m-%d %H:%M"))
-    with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8") as fh:
+    # The portal is NOT served from the origin root on purpose: an app whose
+    # scope is "/" would contain every other site on this origin, and Chrome
+    # then treats installing a child site as an *update* of the portal instead
+    # of a separate app. Living at /home/ keeps the scopes siblings.
+    os.makedirs(os.path.join(OUT, PORTAL_BASE.strip("/")), exist_ok=True)
+    with open(os.path.join(OUT, PORTAL_BASE.strip("/"), "index.html"), "w", encoding="utf-8") as fh:
         fh.write(page)
+    with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8") as fh:
+        fh.write('<!doctype html><html lang="zh"><head><meta charset="utf-8">'
+                 f'<meta http-equiv="refresh" content="0; url={PORTAL_BASE}/">'
+                 f'<title>入口</title></head><body>'
+                 f'<a href="{PORTAL_BASE}/">进入入口页</a></body></html>\n')
 
     manifest = """{
   "name": "Tailnet 入口",
   "short_name": "入口",
   "description": "liufeng 的 tailnet 站点入口",
-  "start_url": "/",
-  "scope": "/",
+  "id": "__BASE__/",
+  "start_url": "__BASE__/",
+  "scope": "__BASE__/",
   "display": "standalone",
   "background_color": "#101216",
   "theme_color": "#101216",
@@ -149,11 +161,13 @@ def main() -> None:
   ]
 }
 """
-    with open(os.path.join(OUT, "manifest.webmanifest"), "w", encoding="utf-8") as fh:
-        fh.write(manifest)
+    with open(os.path.join(OUT, PORTAL_BASE.strip("/"), "manifest.webmanifest"),
+              "w", encoding="utf-8") as fh:
+        fh.write(manifest.replace("__BASE__", PORTAL_BASE))
 
-    shutil.copyfile(os.path.join(ASSETS, "icon.png"), os.path.join(OUT, "icon.png"))
-    shutil.copyfile(os.path.join(ASSETS, "sw.js"), os.path.join(OUT, "sw.js"))
+    home = os.path.join(OUT, PORTAL_BASE.strip("/"))
+    shutil.copyfile(os.path.join(ASSETS, "icon.png"), os.path.join(home, "icon.png"))
+    shutil.copyfile(os.path.join(ASSETS, "sw.js"), os.path.join(home, "sw.js"))
 
     print(f"[portal] {len(sites)} sites -> {OUT}/index.html (host {host})")
     for name, href, _ in sites:
