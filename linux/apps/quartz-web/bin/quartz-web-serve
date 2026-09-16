@@ -6,6 +6,8 @@ Runs one HTTP listener per site on 127.0.0.1 and on the Tailscale address (so
 Each listener adds what Quartz needs from a static host:
 
   * clean URL  -> `<path>.html` (and `<path>/index.html`)
+  * folder URL -> 301 to its slashed form, so Quartz's page-relative links
+                  (`../foo`) resolve against the right directory
   * unknown    -> `404.html` (status 404, like GitHub Pages, so the SPA runs)
 
 It is designed to run under `systemd --user` (see ../setup.sh).
@@ -19,6 +21,7 @@ import os
 import signal
 import sys
 import threading
+import urllib.parse
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 HERE = os.path.dirname(os.path.realpath(__file__))
@@ -52,6 +55,54 @@ def make_handler(root: str):
             if os.path.isfile(p + ".html"):
                 return p + ".html"
             return p
+
+        def send_head(self):
+            # Quartz emits page-relative links (`../foo`, `../index-<hash>.css`),
+            # so the URL of a folder page must end in `/` — otherwise the browser
+            # resolves those links one directory too high and they 404.  Serving
+            # a directory without its slash is what defeats that (the stdlib
+            # redirects, but translate_path above resolves the dir to its
+            # index.html first, so the redirect never fires).
+            raw = super().translate_path(self.path)
+            if os.path.isdir(raw):
+                if not os.path.isfile(os.path.join(raw, "index.html")):
+                    # Directories without an index.html only exist because of the
+                    # alias-redirect trees Quartz emits for non-lowercase paths.
+                    # Never list their files; if a sibling folder differs only in
+                    # case (the vault's `MOC索引` vs Quartz's `moc索引` slug), send
+                    # the reader to the folder page that does exist.
+                    parent, name = os.path.split(raw.rstrip("/"))
+                    if os.path.isdir(parent) and name:
+                        for sibling in sorted(os.listdir(parent)):
+                            if sibling == name or sibling.lower() != name.lower():
+                                continue
+                            if os.path.isfile(os.path.join(parent, sibling, "index.html")):
+                                # The target is resolved against the request URL, so
+                                # a request that already ends in `/` must step back
+                                # out of the folder it is looking at.
+                                up = "../" if urllib.parse.urlsplit(self.path).path.endswith("/") else ""
+                                self.send_response(301)
+                                self.send_header("Location", up + urllib.parse.quote(sibling) + "/")
+                                self.send_header("Content-Length", "0")
+                                self.end_headers()
+                                return None
+                    self.send_error(404)
+                    return None
+                if not urllib.parse.urlsplit(self.path).path.endswith("/"):
+                    parts = urllib.parse.urlsplit(self.path)
+                    # Send a path-relative target (last segment + `/`), not a
+                    # root-absolute one: Tailscale Serve strips this site's URL
+                    # prefix before forwarding, so we cannot tell `/gefei-knowledge`
+                    # from `/`, but the browser resolves a relative Location against
+                    # the prefixed URL it actually requested.
+                    segment = parts.path.rstrip("/").rsplit("/", 1)[-1]
+                    location = segment + "/" + (f"?{parts.query}" if parts.query else "")
+                    self.send_response(301)
+                    self.send_header("Location", location)
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+                    return None
+            return super().send_head()
 
         def send_error(self, code, message=None, explain=None):
             if code == 404:

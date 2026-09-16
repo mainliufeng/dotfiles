@@ -7,7 +7,9 @@ served under, this:
   1. copies the PWA assets (manifest, icon, service worker) into the site root;
   2. injects the "add to home screen" <head> tags into every generated page;
   3. writes a root `index.html` — a redirect to the vault's home note when it
-     has one, otherwise a landing page listing the top-level folders.
+     has one, otherwise a landing page listing the top-level folders;
+  4. repairs internal links that point at no page in the build (see
+     `repair_internal_links`).
 
 Everything is prefixed with the public path because the site is served under
 `https://<tailnet>/<prefix>/` (Tailscale Serve strips the prefix before it
@@ -23,6 +25,7 @@ from __future__ import annotations
 
 import html
 import os
+import re
 import shutil
 import sys
 import urllib.parse
@@ -115,6 +118,183 @@ def write_listing(path: str, vault: str, title: str, prefix: str) -> None:
 """)
 
 
+ANCHOR_TAG_RE = re.compile(r"<a\b[^>]*>")
+HREF_ATTR_RE = re.compile(r'(href=")([^"]*)(")')
+SLUG_ATTR_RE = re.compile(r'(data-slug=")([^"]*)(")')
+EXTERNAL_PREFIXES = ("mailto:", "tel:", "http:", "https:", "data:", "javascript:", "//", "#")
+# AliasRedirects emits a tiny page with a meta refresh at every path a note is
+# *not* served from (Quartz lowercases slugs, the vault does not).  Such a page
+# is a valid link target, but a real page is the better one to point at.
+STUB_MARKER = 'http-equiv="refresh"'
+STUB_MAX_BYTES = 4096
+
+
+def _servable(site_dir: str, url_path: str) -> bool:
+    """True when quartz-web-serve would find a page at this site-relative path."""
+    full = os.path.join(site_dir, url_path)
+    if os.path.isfile(full):
+        return True
+    if os.path.isdir(full) and os.path.isfile(os.path.join(full, "index.html")):
+        return True
+    return os.path.isfile(full + ".html")
+
+
+def _is_redirect_stub(path: str) -> bool:
+    """True for the tiny meta-refresh pages AliasRedirects emits."""
+    if os.path.getsize(path) >= STUB_MAX_BYTES:
+        return False
+    with open(path, encoding="utf-8", errors="replace") as fh:
+        return STUB_MARKER in fh.read()
+
+
+def _page_index(site_dir: str) -> dict[str, dict[str, bool]]:
+    """basename(lowercased) -> {site-relative path: is_redirect_stub}."""
+    index: dict[str, dict[str, bool]] = {}
+    for dirpath, _dirnames, filenames in os.walk(site_dir):
+        rel_dir = os.path.relpath(dirpath, site_dir)
+        rel_dir = "" if rel_dir == "." else rel_dir.replace(os.sep, "/")
+        candidates = []
+        if "index.html" in filenames:
+            candidates.append((os.path.join(dirpath, "index.html"), rel_dir))
+        for fn in filenames:
+            if fn.endswith(".html") and fn != "index.html":
+                path = f"{rel_dir}/{fn[:-5]}".lstrip("/")
+                candidates.append((os.path.join(dirpath, fn), path))
+        for full, path in candidates:
+            if not path or path == "404":
+                continue
+            try:
+                stub = _is_redirect_stub(full)
+            except OSError:
+                stub = False
+            index.setdefault(os.path.basename(path).lower(), {})[path] = stub
+    return index
+
+
+def _page_url(prefix: str, rel_path: str) -> str:
+    """Browser URL of a built page (folder pages end in `/`, like the clean URL)."""
+    if rel_path.endswith("index.html"):
+        return f"{prefix}/{rel_path[:-len('index.html')]}"
+    return f"{prefix}/{rel_path}"
+
+
+def _pick_target(
+    index: dict[str, dict[str, bool]], src_slug: str, base: str
+) -> str | None:
+    """Best existing page whose basename is `base`, or None.
+
+    Mirrors how Obsidian resolves a bare `[[note]]`: prefer the only match, then
+    a sibling of the linking note, then the shallowest path.  Redirect stubs are
+    only used when there is no real page to point at.
+    """
+    found = index.get(base, {})
+    candidates = [p for p in found if p != src_slug]
+    if not candidates:
+        return None
+    pool = [p for p in candidates if not found[p]] or candidates
+    siblings = [p for p in pool if os.path.dirname(p) == os.path.dirname(src_slug)]
+    if len(pool) == 1:
+        return pool[0]
+    if len(siblings) == 1:
+        return siblings[0]
+    return min(pool, key=lambda p: (p.count("/"), p))
+
+
+def repair_internal_links(site_dir: str, prefix: str) -> tuple[int, int]:
+    """Point internal links at a page that exists in the build.
+
+    Quartz's `shortest` link resolution falls back to a site-absolute path when
+    a bare `[[note]]` matches more than one file (this vault has 392 duplicated
+    basenames, e.g. `知识库/首页.md` vs `知识库/SOP主线/首页.md`) and when the
+    case of a linked folder differs from its slug.  It also emits tag links
+    relative to the wrong depth.  None of those paths exist, so the link lands
+    on `404.html`.  Rather than editing the vault (read-only by design), fix the
+    hrefs in the build: resolve them the way Obsidian would.
+    """
+    index = _page_index(site_dir)
+    pages = links = 0
+
+    def rewrite_tag(tag: str, page_url: str, src_slug: str) -> str:
+        href_match = HREF_ATTR_RE.search(tag)
+        if href_match is None:
+            return tag
+        raw = html.unescape(href_match.group(2))
+        if not raw or raw.startswith(EXTERNAL_PREFIXES):
+            return tag
+        split = urllib.parse.urlsplit(urllib.parse.urljoin(page_url, raw))
+        path = urllib.parse.unquote(split.path)
+        if not path.startswith("/"):
+            path = "/" + path
+
+        rel: str | None = None
+        if path.startswith(prefix + "/") or path == prefix:
+            rel = path[len(prefix) :].lstrip("/")
+            if _servable(site_dir, rel):
+                return tag
+        else:
+            # Relative link that climbed out of the mounted prefix, e.g. a tag
+            # link Quartz rendered relative to the wrong depth.
+            inner = path.lstrip("/")
+            if _servable(site_dir, inner):
+                return _set_attrs(tag, inner, split.fragment, prefix, site_dir)
+            rel = inner
+
+        base = rel.rstrip("/").split("/")[-1].lower()
+        target = _pick_target(index, src_slug, base)
+        if target is None:
+            return tag
+        if target == src_slug:
+            return tag
+        return _set_attrs(tag, target, split.fragment, prefix, site_dir)
+
+    for dirpath, _dirnames, filenames in os.walk(site_dir):
+        for fn in filenames:
+            if not fn.endswith(".html"):
+                continue
+            full = os.path.join(dirpath, fn)
+            rel_path = os.path.relpath(full, site_dir).replace(os.sep, "/")
+            src_slug = rel_path[:-5]
+            if src_slug.endswith("/index"):
+                src_slug = src_slug[: -len("/index")]
+            page_url = _page_url(prefix, rel_path)
+            src = open(full, encoding="utf-8").read()
+            changed = 0
+
+            def sub(match: re.Match[str]) -> str:
+                nonlocal changed
+                new = rewrite_tag(match.group(0), page_url, src_slug)
+                if new != match.group(0):
+                    changed += 1
+                return new
+
+            new_src = ANCHOR_TAG_RE.sub(sub, src)
+            if changed:
+                with open(full, "w", encoding="utf-8") as fh:
+                    fh.write(new_src)
+                pages += 1
+                links += changed
+    return pages, links
+
+
+def _set_attrs(tag: str, target: str, fragment: str, prefix: str, site_dir: str) -> str:
+    """Repoint one `<a>` at `target` (a site-relative path) plus its data-slug.
+
+    Both the URL and the slug keep a trailing `/` for folder pages: Quartz uses
+    that form for its own folder links, and the SPA/popover code relies on it
+    (a folder URL without the slash makes every relative link on the page
+    resolve one directory too high).
+    """
+    is_dir = os.path.isdir(os.path.join(site_dir, target))
+    tail = "/" if is_dir else ""
+    href = f"{prefix}/{target}{tail}" + (f"#{fragment}" if fragment else "")
+    escaped = html.escape(href, quote=True)
+    tag = HREF_ATTR_RE.sub(lambda m: m.group(1) + escaped + m.group(3), tag, count=1)
+    if SLUG_ATTR_RE.search(tag):
+        slug = html.escape(f"{target}{tail}", quote=True)
+        tag = SLUG_ATTR_RE.sub(lambda m: m.group(1) + slug + m.group(3), tag, count=1)
+    return tag
+
+
 def main() -> None:
     site_dir, vault, name, title, short, base_path = sys.argv[1:7]
     prefix = base_path.rstrip("/")
@@ -129,6 +309,7 @@ def main() -> None:
         .replace("__APP_DESC__", f"{title} · Quartz 只读镜像")
         .replace("__START_URL__", prefix + "/")
         .replace("__SCOPE__", prefix + "/")
+        .replace("__ICON__", prefix + "/icon.png")
     )
     with open(os.path.join(site_dir, "manifest.webmanifest"), "w", encoding="utf-8") as fh:
         fh.write(manifest)
@@ -159,8 +340,13 @@ def main() -> None:
         write_redirect(index, title, url)
     else:
         write_listing(index, vault, title, prefix)
-    print(f"[post] {name}: prefix={prefix or '/'} PWA tags in {injected} pages, "
-          f"home={home or '(listing)'}")
+    # 4. internal links that would 404
+    pages, links = repair_internal_links(site_dir, prefix)
+
+    print(
+        f"[post] {name}: prefix={prefix or '/'} PWA tags in {injected} pages, "
+        f"home={home or '(listing)'}, repaired {links} links in {pages} pages"
+    )
 
 
 if __name__ == "__main__":

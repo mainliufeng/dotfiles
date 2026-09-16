@@ -11,6 +11,17 @@ configuration:
     - private
     - templates
     - .obsidian
+    # Obsidian scratch files.  An empty `.base` renders as a table of *every*
+    # note, whose `author: [[...]]` cells become links to notes this vault does
+    # not contain; the vault's own tooling already treats "Untitled" as scratch.
+    - "Untitled*.base"
+    - "**/Untitled*.base"
+    - "Untitled*.canvas"
+    - "**/Untitled*.canvas"
+    - "未命名*.base"
+    - "**/未命名*.base"
+    - "未命名*.canvas"
+    - "**/未命名*.canvas"
   theme:
     fontOrigin: local
     cdnCaching: false
