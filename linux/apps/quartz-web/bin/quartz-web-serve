@@ -8,7 +8,13 @@ Each listener adds what Quartz needs from a static host:
   * clean URL  -> `<path>.html` (and `<path>/index.html`)
   * folder URL -> 301 to its slashed form, so Quartz's page-relative links
                   (`../foo`) resolve against the right directory
+  * stale URL  -> a page name that no longer exists (a link a browser cached
+                  before a rebuild, e.g. `/首页` for an ambiguous `[[首页]]`)
+                  gets a 302 to the shallowest page with that name
   * unknown    -> `404.html` (status 404, like GitHub Pages, so the SPA runs)
+
+Responses carry `Cache-Control: no-cache` so a page a phone has open cannot
+keep handing out links that a rebuild has since fixed.
 
 It is designed to run under `systemd --user` (see ../setup.sh).
 
@@ -41,8 +47,20 @@ def tailscale_ip() -> str | None:
 
 def make_handler(root: str):
     class Handler(SimpleHTTPRequestHandler):
+        # basename(lowercased) -> page paths; built on the first 404 (see
+        # send_error).  A class attribute is per-site here: make_handler makes
+        # a fresh class for every site.
+        _by_basename = None
+
         def __init__(self, *a, **kw):
             super().__init__(*a, directory=root, **kw)
+
+        def end_headers(self):
+            # Every URL keeps its name across rebuilds, and a page cached by a
+            # phone must not keep handing out links we have since fixed, so make
+            # clients revalidate (`If-Modified-Since` -> cheap 304).
+            self.send_header("Cache-Control", "no-cache")
+            super().end_headers()
 
         def translate_path(self, path):
             p = super().translate_path(path)
@@ -104,8 +122,50 @@ def make_handler(root: str):
                     return None
             return super().send_head()
 
+        def _legacy_target(self) -> str | None:
+            """Resolve a request for a page that no longer exists by basename.
+
+            Quartz used to emit links like `/首页` for an ambiguous `[[首页]]`
+            (and it still does inside pages a browser cached before the fix), so
+            serve those URLs by redirecting to the shallowest page with that
+            name instead of a 404 page.
+            """
+            if Handler._by_basename is None:
+                index: dict[str, list[str]] = {}
+                for dirpath, _dirnames, filenames in os.walk(root):
+                    rel = os.path.relpath(dirpath, root).replace(os.sep, "/")
+                    rel = "" if rel == "." else rel
+                    if rel and "index.html" in filenames:
+                        index.setdefault(os.path.basename(rel).lower(), []).append(rel)
+                    for fn in filenames:
+                        if not fn.endswith(".html") or fn in ("index.html", "404.html"):
+                            continue
+                        path = f"{rel}/{fn[:-5]}".lstrip("/")
+                        index.setdefault(fn[:-5].lower(), []).append(path)
+                Handler._by_basename = index
+
+            req = urllib.parse.unquote(urllib.parse.urlsplit(self.path).path)
+            name = req.rstrip("/").rsplit("/", 1)[-1]
+            if name.endswith(".html"):
+                name = name[:-5]
+            hits = Handler._by_basename.get(name.lower())
+            if not hits:
+                return None
+            target = min(hits, key=lambda p: (p.count("/"), p))
+            depth = req.strip("/").count("/")
+            return "../" * depth + urllib.parse.quote(target)
+
         def send_error(self, code, message=None, explain=None):
             if code == 404:
+                legacy = self._legacy_target()
+                if legacy:
+                    # 302, not 301: which page a name resolves to can change
+                    # when the vault is rebuilt.
+                    self.send_response(302)
+                    self.send_header("Location", legacy)
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+                    return
                 fallback = os.path.join(root, "404.html")
                 if os.path.isfile(fallback):
                     with open(fallback, "rb") as fh:
