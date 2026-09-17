@@ -1,0 +1,258 @@
+#!/usr/bin/env python3
+"""Static server for the gefei-media PWA (see gefei-media-build).
+
+Why not `python3 -m http.server`: **videos need HTTP Range**. Without 206
+partial responses mobile Safari/Chrome either refuse to start playback or
+cannot seek, so this handler implements single-range requests, plus ETag /
+Last-Modified revalidation and `no-cache` for HTML so a phone never keeps a
+stale listing.
+
+Binds 127.0.0.1 and the Tailscale IPv4 address only (never the LAN), matching
+quartz-web-serve, and is meant to run under `systemd --user`.
+
+Usage: gefei-media-serve [--root DIR] [--port N]
+Env:   GEFEI_MEDIA_ROOT, GEFEI_MEDIA_PORT, GEFEI_MEDIA_BIND
+"""
+from __future__ import annotations
+
+import argparse
+import email.utils
+import html
+import mimetypes
+import os
+import re
+import socket
+import sys
+import threading
+import time
+from http import HTTPStatus
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import quote, unquote, urlsplit
+
+HERE = os.path.dirname(os.path.realpath(__file__))
+RANGE_RE = re.compile(r"bytes=(\d*)-(\d*)$")
+CHUNK = 256 * 1024
+
+
+def human_size(n: int) -> str:
+    for u in ("B", "KB", "MB", "GB"):
+        if n < 1024 or u == "GB":
+            return f"{n:.0f} {u}" if u in ("B", "KB") else f"{n:.1f} {u}"
+        n /= 1024.0
+    return f"{n:.1f} GB"
+
+
+def log(*a):
+    print(*a, file=sys.stderr, flush=True)
+
+
+def load_conf() -> dict:
+    conf_file = os.environ.get("GEFEI_MEDIA_CONF", os.path.join(HERE, "..", "sites.conf"))
+    conf = {"root": "~/Documents/gefei-share", "port": 8097}
+    if os.path.exists(conf_file):
+        for line in open(conf_file, encoding="utf-8"):
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split("|")
+            if len(parts) >= 6:
+                root = parts[1]
+                if not root.startswith(("/", "~")):
+                    root = os.path.join("~", root)
+                conf["root"], conf["port"] = os.path.expanduser(root), int(parts[2])
+    return conf
+
+
+CONF = load_conf()
+
+
+def tailscale_ip() -> str | None:
+    try:
+        import subprocess
+        out = subprocess.run(["tailscale", "ip", "-4"], capture_output=True, text=True, timeout=5)
+        return out.stdout.split()[0] if out.returncode == 0 and out.stdout.split() else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+class Handler(BaseHTTPRequestHandler):
+    server_version = "gefei-media/1.0"
+    protocol_version = "HTTP/1.1"
+
+    # ---- helpers -----------------------------------------------------------
+    def resolve(self) -> tuple[str | None, bool]:
+        """-> (绝对路径, 是否目录)；越界或不存在返回 (None, False)"""
+        path = unquote(urlsplit(self.path).path)
+        full = os.path.realpath(os.path.join(self.root, path.lstrip("/")))
+        root = os.path.realpath(self.root)
+        allowed = (full == root or full.startswith(root + os.sep)
+                   or full.startswith(os.path.realpath(self.media_root) + os.sep))
+        if not allowed or not os.path.exists(full):
+            return None, False
+        if os.path.isdir(full):
+            return full, True
+        return (full, False) if os.path.isfile(full) else (None, False)
+
+    def listing(self, full: str) -> str:
+        """媒体目录（图片/文本/音频/代码）给一个极简目录页，手机上能翻。"""
+        rel = os.path.relpath(full, os.path.realpath(self.media_root))
+        try:
+            names = sorted(os.listdir(full), key=lambda n: (not os.path.isdir(os.path.join(full, n)), n))
+        except OSError:
+            names = []
+        cap = 800
+        rows = []
+        for n in names[:cap]:
+            sub = os.path.join(full, n)
+            is_dir = os.path.isdir(sub)
+            href = quote(n) + ("/" if is_dir else "")
+            size = "" if is_dir else f' <span class=sz>{human_size(os.path.getsize(sub))}</span>'
+            rows.append(f'<li><a href="{href}">{"📁 " if is_dir else ""}{html.escape(n)}</a>{size}</li>')
+        more = f"<p class=more>… 共 {len(names)} 项，只列出前 {cap} 项</p>" if len(names) > cap else ""
+        return f"""<!doctype html><html lang=zh><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>{html.escape(rel)}</title><link rel=stylesheet href="/style.css"></head>
+<body class=doc><p><a href="/">← 返回列表</a></p><h1>{html.escape(rel)}</h1>
+<p class=count>{len(names)} 项</p><ul class=files>{''.join(rows)}</ul>{more}</body></html>"""
+
+    def send_headers(self, size: int, ctype: str, status=HTTPStatus.OK, extra=None) -> None:
+        self.send_response(status)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Accept-Ranges", "bytes")
+        self.send_header("Content-Length", str(size))
+        if ctype.startswith("text/html") or self.path.endswith((".webmanifest", "sw.js")):
+            self.send_header("Cache-Control", "no-cache")
+        else:
+            self.send_header("Cache-Control", "public, max-age=86400")
+        for k, v in (extra or {}).items():
+            self.send_header(k, v)
+        self.end_headers()
+
+    # ---- verbs -------------------------------------------------------------
+    def do_HEAD(self) -> None:  # noqa: N802
+        self.respond(body=False)
+
+    def do_GET(self) -> None:  # noqa: N802
+        self.respond(body=True)
+
+    def respond(self, body: bool) -> None:
+        full, is_dir = self.resolve()
+        if is_dir:
+            data = self.listing(full).encode()
+            self.send_headers(len(data), "text/html; charset=utf-8")
+            if body:
+                self.wfile.write(data)
+            return
+        if full is None:
+            page = os.path.join(self.root, "404.html")
+            if os.path.exists(page):
+                data = open(page, "rb").read()
+                self.send_headers(len(data), "text/html; charset=utf-8", HTTPStatus.NOT_FOUND)
+                if body:
+                    self.wfile.write(data)
+            else:
+                self.send_error(HTTPStatus.NOT_FOUND)
+            return
+
+        st = os.stat(full)
+        size = st.st_size
+        ctype = mimetypes.guess_type(full)[0] or "application/octet-stream"
+        if ctype.startswith("text/") or ctype.endswith(("json", "javascript", "xml")):
+            ctype += "; charset=utf-8"
+        lm = email.utils.formatdate(st.st_mtime, usegmt=True)
+        etag = f'"{int(st.st_mtime)}-{size}"'
+
+        inm = self.headers.get("If-None-Match")
+        if inm and etag in inm.split(","):
+            self.send_response(HTTPStatus.NOT_MODIFIED)
+            self.send_header("ETag", etag)
+            self.end_headers()
+            return
+
+        rng = self.headers.get("Range", "")
+        m = RANGE_RE.match(rng.strip()) if rng else None
+        if m:
+            start_s, end_s = m.groups()
+            if start_s:
+                start = int(start_s)
+                end = int(end_s) if end_s else size - 1
+            else:  # suffix range: bytes=-N
+                start = max(size - int(end_s or 0), 0)
+                end = size - 1
+            if start >= size or start > end:
+                self.send_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
+                self.send_header("Content-Range", f"bytes */{size}")
+                self.end_headers()
+                return
+            end = min(end, size - 1)
+            length = end - start + 1
+            self.send_headers(length, ctype, HTTPStatus.PARTIAL_CONTENT,
+                              {"Content-Range": f"bytes {start}-{end}/{size}",
+                               "Last-Modified": lm, "ETag": etag})
+            if body:
+                self.stream(full, start, length)
+            return
+
+        self.send_headers(size, ctype, extra={"Last-Modified": lm, "ETag": etag})
+        if body:
+            self.stream(full, 0, size)
+
+    def stream(self, path: str, offset: int, length: int) -> None:
+        try:
+            with open(path, "rb") as fh:
+                fh.seek(offset)
+                left = length
+                while left > 0:
+                    buf = fh.read(min(CHUNK, left))
+                    if not buf:
+                        break
+                    self.wfile.write(buf)
+                    left -= len(buf)
+        except (BrokenPipeError, ConnectionResetError):
+            pass  # 手机锁屏/切走时会直接断，属正常
+
+    def log_message(self, fmt: str, *args) -> None:  # noqa: A003
+        if os.environ.get("GEFEI_MEDIA_VERBOSE"):
+            log(f"{self.address_string()} {fmt % args}")
+
+
+def serve(root: str, port: int, bind_hosts: list[str]) -> None:
+    Handler.root = root
+    Handler.media_root = os.path.dirname(root.rstrip("/"))
+    servers = []
+    for host in bind_hosts:
+        try:
+            srv = ThreadingHTTPServer((host, port), Handler)
+        except OSError as e:
+            log(f"bind {host}:{port} 失败: {e}")
+            continue
+        servers.append(srv)
+        log(f"listening on http://{host}:{port}  (root={root})")
+    if not servers:
+        sys.exit(1)
+    for srv in servers[1:]:
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        servers[0].serve_forever()
+    except KeyboardInterrupt:
+        pass
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--root", default=os.environ.get("GEFEI_MEDIA_ROOT",
+                                                    os.path.join(os.path.expanduser(CONF["root"]), ".web")))
+    ap.add_argument("--port", type=int, default=int(os.environ.get("GEFEI_MEDIA_PORT", CONF["port"])))
+    ap.add_argument("--bind", default=os.environ.get("GEFEI_MEDIA_BIND", ""))
+    args = ap.parse_args()
+    root = os.path.realpath(os.path.expanduser(args.root))
+    if not os.path.isdir(root):
+        sys.exit(f"站点目录不存在: {root}（先跑 gefei-media-build）")
+    hosts = [h for h in args.bind.split(",") if h] or [h for h in
+             ["127.0.0.1", tailscale_ip()] if h]
+    serve(root, args.port, hosts)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

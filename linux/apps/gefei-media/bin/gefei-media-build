@@ -1,0 +1,605 @@
+#!/usr/bin/env python3
+"""Build the phone-friendly media site for a local share dump.
+
+    gefei-media-build [--root DIR] [--out DIR]
+
+Turns a media tree like
+
+    ~/Documents/gefei-share/
+    ├── 视频/场次A/x.mp4          (mp4 preferred, ts fallback)
+    ├── 文档/**.{pdf,docx,xlsx,pptx,txt}
+    ├── 图片/**.{png,jpg}
+    ├── 文本/**.{json,html}
+    └── 音频/**.mp3
+
+into a PWA-ready static site at `<root>/.web/` that a plain static server can
+host behind Tailscale: one entry page with a sticky player, client-side search,
+`<details>` sections, thumbnails, plus server-side-free document viewers
+(PDF shown inline by the browser, docx via pandoc, xlsx/pptx rendered from the
+OOXML zip by this script).
+
+Everything is cached by (path, size, mtime) in `.web/cache.json`, so rebuilds
+only pay for what changed.
+"""
+from __future__ import annotations
+
+import argparse
+import base64
+import html
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import zipfile
+from xml.etree import ElementTree as ET
+
+HERE = os.path.dirname(os.path.realpath(__file__))
+ASSETS = os.path.join(HERE, "..", "assets")
+VIDEO_EXT = {".mp4", ".m4v", ".webm", ".mov", ".mkv"}
+DOC_EXT = {".pdf", ".docx", ".xlsx", ".pptx", ".txt", ".csv"}
+IMG_EXT = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
+AUDIO_EXT = {".mp3", ".m4a", ".wav", ".aac", ".flac"}
+SKIP_DIRS = {".web", "原始压缩包"}
+
+
+def log(*a):
+    print(*a, file=sys.stderr, flush=True)
+
+
+def human(n: int) -> str:
+    for unit in ("B", "KB", "MB", "GB", "TB"):
+        if n < 1024 or unit == "TB":
+            return f"{n:.0f} {unit}" if unit in ("B", "KB") else f"{n:.1f} {unit}"
+        n /= 1024.0
+    return f"{n:.1f} TB"
+
+
+def fmt_dur(seconds: float) -> str:
+    s = int(round(seconds))
+    h, rem = divmod(s, 3600)
+    m, sec = divmod(rem, 60)
+    return f"{h}:{m:02d}:{sec:02d}" if h else f"{m}:{sec:02d}"
+
+
+# ---------------------------------------------------------------- ffprobe/ffmpeg
+def probe_duration(path: str) -> float:
+    try:
+        out = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+             "-of", "csv=p=0", path],
+            capture_output=True, text=True, timeout=60).stdout.strip()
+        return float(out) if out else 0.0
+    except Exception:  # noqa: BLE001
+        return 0.0
+
+
+def make_thumb(path: str, dest: str, duration: float) -> bool:
+    if os.path.exists(dest) and os.path.getsize(dest) > 0:
+        return True
+    at = 60.0 if duration <= 0 else min(max(duration * 0.15, 5.0), 600.0)
+    cmd = ["ffmpeg", "-v", "error", "-y", "-ss", f"{at:.1f}", "-i", path,
+           "-frames:v", "1", "-vf", "scale=480:-2", "-q:v", "6", dest]
+    try:
+        return subprocess.run(cmd, capture_output=True, timeout=180).returncode == 0 \
+            and os.path.exists(dest) and os.path.getsize(dest) > 0
+    except Exception:  # noqa: BLE001
+        return False
+
+
+# ---------------------------------------------------------------- OOXML readers
+def _zip_text(zf: zipfile.ZipFile, name: str) -> str:
+    try:
+        return zf.read(name).decode("utf-8", "replace")
+    except KeyError:
+        return ""
+
+
+def _shared_strings(zf: zipfile.ZipFile) -> list[str]:
+    xml = _zip_text(zf, "xl/sharedStrings.xml")
+    if not xml:
+        return []
+    root = ET.fromstring(xml)
+    ns = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+    out = []
+    for si in root.findall(f"{ns}si"):
+        out.append("".join(t.text or "" for t in si.iter(f"{ns}t")))
+    return out
+
+
+def xlsx_to_html(path: str, max_rows: int = 200, max_cols: int = 40) -> str:
+    ns = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+    with zipfile.ZipFile(path) as zf:
+        shared = _shared_strings(zf)
+        sheets = [n for n in zf.namelist() if re.match(r"xl/worksheets/sheet\d+\.xml$", n)]
+        sheets.sort(key=lambda n: int(re.search(r"(\d+)", os.path.basename(n)).group(1)))
+        parts = []
+        for idx, name in enumerate(sheets[:12], 1):
+            root = ET.fromstring(_zip_text(zf, name))
+            rows = []
+            truncated = False
+            for r_i, row in enumerate(root.iter(f"{ns}row")):
+                if r_i >= max_rows:
+                    truncated = True
+                    break
+                cells = []
+                for c_i, c in enumerate(row.findall(f"{ns}c")):
+                    if c_i >= max_cols:
+                        truncated = True
+                        break
+                    v = c.find(f"{ns}v")
+                    is_t = c.find(f"{ns}is")
+                    val = ""
+                    if c.get("t") == "s" and v is not None:
+                        i = int(v.text or 0)
+                        val = shared[i] if 0 <= i < len(shared) else ""
+                    elif is_t is not None:
+                        val = "".join(t.text or "" for t in is_t.iter(f"{ns}t"))
+                    elif v is not None:
+                        val = v.text or ""
+                    cells.append(f"<td>{html.escape(val)}</td>")
+                if cells:
+                    rows.append("<tr>" + "".join(cells) + "</tr>")
+            if rows:
+                note = " <em>（表格较大，只显示前 %d 行 × %d 列）</em>" % (max_rows, max_cols) if truncated else ""
+                parts.append(f"<h3>Sheet {idx}{note}</h3><div class=tw><table>"
+                             + "".join(rows) + "</table></div>")
+        return "".join(parts) or "<p>（空表格）</p>"
+
+
+def _img_data_uri(data: bytes, ext: str, max_w: int = 1280) -> str | None:
+    """把内嵌图缩到手机友好的尺寸再转 data URI；EMF/WMF 之类交给浏览器试。"""
+    ext = ext.lstrip(".").lower()
+    if ext in ("emf", "wmf"):
+        return None
+    try:
+        import io
+        from PIL import Image
+        im = Image.open(io.BytesIO(data))
+        if im.width > max_w:
+            im = im.resize((max_w, max(1, round(im.height * max_w / im.width))), Image.LANCZOS)
+        buf = io.BytesIO()
+        im.convert("RGB").save(buf, "JPEG", quality=80, optimize=True)
+        return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
+    except Exception:  # noqa: BLE001
+        mime = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
+                "gif": "image/gif", "svg": "image/svg+xml"}.get(ext)
+        return (f"data:{mime};base64," + base64.b64encode(data).decode()) if mime else None
+
+
+def pptx_to_html(path: str, media_dir: str, max_imgs_per_slide: int = 6) -> str:
+    a = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
+    rel_ns = "{http://schemas.openxmlformats.org/package/2006/relationships}"
+    with zipfile.ZipFile(path) as zf:
+        slides = sorted([n for n in zf.namelist() if re.match(r"ppt/slides/slide\d+\.xml$", n)],
+                        key=lambda n: int(re.search(r"(\d+)", os.path.basename(n)).group(1)))
+        os.makedirs(media_dir, exist_ok=True)
+        out = []
+        for i, name in enumerate(slides, 1):
+            root = ET.fromstring(_zip_text(zf, name))
+            texts = [t.text for t in root.iter(f"{a}t") if t.text and t.text.strip()]
+            # 该 slide 引用的图片（r:embed -> ppt/media/...）
+            embeds = [e.get("{http://schemas.openxmlformats.org/officeDocument/2006/relationships}embed")
+                      for e in root.iter() if e.tag.endswith("}blip")]
+            imgs = []
+            rels = _zip_text(zf, name.replace("slides/", "slides/_rels/") + ".rels")
+            rmap = {}
+            if rels:
+                for rel in ET.fromstring(rels).findall(f"{rel_ns}Relationship"):
+                    rmap[rel.get("Id")] = rel.get("Target")
+            for e in embeds[:max_imgs_per_slide]:
+                tgt = rmap.get(e, "")
+                if not tgt:
+                    continue
+                member = os.path.normpath(os.path.join("ppt/slides", tgt)).replace("\\", "/")
+                if member not in zf.namelist():
+                    continue
+                uri = _img_data_uri(zf.read(member), os.path.splitext(member)[1])
+                if uri:
+                    imgs.append(f'<img loading=lazy src="{uri}">')
+            body = "".join(f"<p>{html.escape(t)}</p>" for t in texts)
+            out.append(f"<section class=slide><h3>第 {i} 页</h3>{body}{''.join(imgs)}</section>")
+        return "".join(out) or "<p>（没有可提取的内容）</p>"
+
+
+def convert_doc(src: str, web: str, cache: dict) -> dict:
+    """Return {'kind': 'pdf'|'html', 'href': URL} for a document."""
+    rel = os.path.relpath(src, MEDIA_ROOT)
+    ext = os.path.splitext(src)[1].lower()
+    slug = re.sub(r"[^A-Za-z0-9_.-]", "_", rel)[:120]
+    if ext == ".pdf":
+        res = {"kind": "pdf", "href": "media/" + quote_path(rel)}
+    elif ext == ".txt":
+        dest = f"docs/{slug}.html"
+        body = "<pre>" + html.escape(open(src, encoding="utf-8", errors="replace").read()) + "</pre>"
+        write_doc(web, dest, "文本", body)
+        res = {"kind": "html", "href": dest}
+    elif ext == ".docx":
+        dest = f"docs/{slug}.html"
+        os.makedirs(os.path.join(web, "docs"), exist_ok=True)
+        tmp = os.path.join(web, "docs", f".{slug}.tmp.html")
+        cmd = ["pandoc", "-f", "docx", "-t", "html5", "--embed-resources",
+               "--standalone", "--metadata", "title=" + os.path.basename(src),
+               "-o", tmp, src]
+        ok = shutil.which("pandoc") and subprocess.run(
+            cmd, capture_output=True).returncode == 0 and os.path.exists(tmp)
+        if ok:
+            shutil.move(tmp, os.path.join(web, dest.lstrip("/")))
+            res = {"kind": "html", "href": dest}
+        else:
+            res = {"kind": "download", "href": "media/" + quote_path(rel)}
+    elif ext == ".xlsx":
+        dest = f"docs/{slug}.html"
+        write_doc(web, dest, os.path.basename(src), xlsx_to_html(src))
+        res = {"kind": "html", "href": dest}
+    elif ext == ".pptx":
+        dest = f"docs/{slug}.html"
+        write_doc(web, dest, os.path.basename(src),
+                  pptx_to_html(src, os.path.join(web, "docs", "media")))
+        res = {"kind": "html", "href": dest}
+    else:
+        res = {"kind": "download", "href": "media/" + quote_path(rel)}
+    return res
+
+
+def quote_path(rel: str) -> str:
+    from urllib.parse import quote
+    return quote(rel)
+
+
+def write_doc(web: str, dest: str, title: str, body: str):
+    os.makedirs(os.path.dirname(os.path.join(web, dest.lstrip("/"))), exist_ok=True)
+    page = f"""<!doctype html><html lang=zh><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>{html.escape(title)}</title>
+<link rel=stylesheet href="../style.css"></head><body class=doc>
+<p><a href="../">← 返回列表</a></p><h1>{html.escape(title)}</h1>
+{body}
+</body></html>"""
+    with open(os.path.join(web, dest.lstrip("/")), "w", encoding="utf-8") as fh:
+        fh.write(page)
+
+
+# ---------------------------------------------------------------- page template
+STYLE = """
+:root{--bg:#161618;--fg:#e8e8ea;--dim:#9a9aa2;--card:#1f1f23;--accent:#4cc9f0;--accent2:#7c5cff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Noto Sans SC",sans-serif}
+header{position:sticky;top:0;z-index:5;background:rgba(22,22,24,.96);backdrop-filter:blur(8px);padding:10px 14px;border-bottom:1px solid #2c2c31}
+h1{font-size:17px;margin:0 0 6px}
+.stats{color:var(--dim);font-size:12px}
+#q{width:100%;margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #34343a;background:#0f0f12;color:var(--fg);font-size:15px}
+.player{margin:12px 14px;background:var(--card);border-radius:14px;overflow:hidden;display:none}
+.player.on{display:block}
+video{width:100%;display:block;background:#000;max-height:60vh}
+.ptitle{padding:8px 12px 12px;font-size:14px}
+.ptitle a{color:var(--accent)}
+details{margin:12px 14px;background:var(--card);border-radius:12px;overflow:hidden}
+summary{padding:12px 14px;cursor:pointer;font-weight:600;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"▾";float:right;color:var(--dim)}
+details[open] summary::after{content:"▴"}
+.count{color:var(--dim);font-weight:400;font-size:13px}
+ul{list-style:none;margin:0;padding:0}
+li.item{display:flex;gap:12px;padding:10px 14px;border-top:1px solid #2a2a30;align-items:center}
+li.item img.th{width:104px;height:59px;object-fit:cover;border-radius:8px;background:#000;flex:0 0 auto}
+li.item .meta{min-width:0;flex:1}
+li.item .t{font-size:14px;line-height:1.4;word-break:break-word}
+li.item .s{color:var(--dim);font-size:12px;margin-top:3px}
+li.item button{background:linear-gradient(135deg,var(--accent),var(--accent2));border:0;color:#0b0b0f;font-weight:700;border-radius:9px;padding:8px 12px;font-size:13px}
+a{color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:12px 14px}
+.grid a{background:#26262c;border-radius:10px;padding:10px;font-size:13px;text-decoration:none;color:var(--fg)}
+.grid a span{display:block;color:var(--dim);font-size:11px;margin-top:4px}
+.doc h1{font-size:20px;margin:14px}
+.doc{max-width:900px;margin:0 auto;padding:0 14px 60px}
+.doc pre{white-space:pre-wrap;word-break:break-word;background:#1f1f23;padding:12px;border-radius:10px}
+.doc table{border-collapse:collapse;font-size:13px}
+.doc td,.doc th{border:1px solid #33333a;padding:4px 8px;white-space:nowrap}
+.files{list-style:none;padding:0 14px}
+.files li{padding:7px 0;border-bottom:1px solid #2a2a30}
+.files a{text-decoration:none}
+.sz{color:var(--dim);font-size:12px}
+.more{color:var(--dim);font-size:13px}
+.tw{overflow:auto;max-height:70vh;border:1px solid #2c2c31;border-radius:10px}
+.slide{border-top:1px solid #2c2c31;padding:10px 0}
+.slide img{max-width:100%;border-radius:8px;margin-top:8px}
+.empty{padding:12px 14px;color:var(--dim);font-size:13px}
+footer{color:var(--dim);font-size:12px;text-align:center;padding:20px 14px 40px}
+"""
+
+APP_JS = """
+const q=document.getElementById('q');
+const items=[...document.querySelectorAll('li.item')];
+const secs=[...document.querySelectorAll('details')];
+function apply(){
+  const k=q.value.trim().toLowerCase();
+  items.forEach(i=>{i.style.display=!k||i.dataset.k.includes(k)?'':'none'});
+  secs.forEach(s=>{
+    const vis=[...s.querySelectorAll('li.item')].some(i=>i.style.display!=='none');
+    s.style.display=vis?'':'none';
+    if(k&&vis)s.open=true;
+  });
+}
+q.addEventListener('input',apply);
+const player=document.querySelector('.player'),vid=player.querySelector('video'),pt=player.querySelector('.ptitle span');
+document.querySelectorAll('button[data-src]').forEach(b=>b.addEventListener('click',()=>{
+  vid.src=b.dataset.src; vid.play().catch(()=>{});
+  pt.textContent=b.dataset.title;
+  player.classList.add('on');
+  player.scrollIntoView({behavior:'smooth',block:'start'});
+}));
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+"""
+
+
+def build_index(web: str, groups, docs, counts) -> None:
+    parts = []
+    for section, vids in groups:
+        rows = []
+        for v in vids:
+            k = html.escape((v["rel"] + " " + section).lower(), quote=True)
+            thumb = (f'<img class=th src="{v["thumb"]}" alt="" loading=lazy>'
+                     if v.get("thumb") else '<img class=th alt="">')
+            rows.append(
+                f'<li class=item data-k="{k}">{thumb}<div class=meta>'
+                f'<div class=t>{html.escape(v["title"])}</div>'
+                f'<div class=s>{fmt_dur(v["duration"])} · {human(v["size"])}'
+                f' · <a href="{v["href"]}" target=_blank rel=noopener>新窗口</a></div>'
+                f'</div><button data-src="{v["href"]}" data-title="{html.escape(v["title"], quote=True)}">播放</button></li>')
+        total = sum(v["size"] for v in vids)
+        parts.append(f'<details open><summary>{html.escape(section)} '
+                     f'<span class=count>· {len(vids)} 个 · {human(total)}</span></summary>'
+                     f'<ul>{"".join(rows)}</ul></details>')
+
+    doc_rows = []
+    for d in docs:
+        tag = {"pdf": "PDF", "html": "网页版", "download": "下载"}[d["kind"]]
+        extra = "" if d["kind"] != "download" else "（浏览器无法直接预览，点开下载）"
+        doc_rows.append(f'<a href="{d["href"]}" target=_blank rel=noopener>{html.escape(d["name"])}'
+                        f'<span>{tag} · {human(d["size"])}{extra}</span></a>')
+    docs_html = (f'<details><summary>文档 <span class=count>· {len(docs)} 个</span></summary>'
+                 f'<div class=grid>{"".join(doc_rows)}</div></details>') if docs else ""
+
+    others = []
+    for label, n, size, href in counts:
+        if n:
+            others.append(f'<a href="{href}" target=_blank rel=noopener>{label}'
+                          f'<span>{n} 个 · {human(size)}</span></a>')
+    others_html = (f'<details><summary>其他素材 <span class=count>· 图片 / 文本 / 音频</span></summary>'
+                   f'<div class=grid>{"".join(others)}</div></details>') if others else ""
+
+    page = f"""<!doctype html><html lang=zh><head>
+<meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name=theme-color content="#161618">
+<meta name=apple-mobile-web-app-capable content="yes">
+<meta name=apple-mobile-web-app-status-bar-style content="black-translucent">
+<title>{APP_NAME}</title>
+<link rel=manifest href="manifest.webmanifest">
+<link rel=apple-touch-icon href="icon.png">
+<link rel=stylesheet href="style.css">
+</head><body>
+<header>
+  <h1>{APP_NAME}</h1>
+  <div class=stats>{stats_line}</div>
+  <input id=q type=search placeholder="搜索讲者 / 主题 / 场次…" autocomplete=off>
+</header>
+<div class=player><video controls playsinline preload=none></video>
+  <div class=ptitle>正在播放：<span></span></div></div>
+{"".join(parts)}
+{docs_html}
+{others_html}
+<footer>数据在电脑本机 <code>{MEDIA_ROOT}</code>，经 Tailscale 只在你自己的设备间传输。<br>
+第一次打开后可用浏览器“添加到主屏幕 / 安装应用”。</footer>
+<script src="app.js"></script>
+</body></html>"""
+    with open(os.path.join(web, "index.html"), "w", encoding="utf-8") as fh:
+        fh.write(page)
+    return page
+
+
+def make_manifest() -> dict:
+    return {
+    "name": APP_NAME,
+    "short_name": APP_SHORT,
+    "description": "哥飞社群线下分享 / 直播回放视频与文档，走 Tailscale 在手机上直接看",
+    "start_url": ".",
+    "scope": ".",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#161618",
+    "theme_color": "#161618",
+    "icons": [{"src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+              {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+              {"src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}],
+    }
+
+SW = """// 只为满足可安装性；不缓存媒体（视频走 Range，缓存反而坏事）
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
+self.addEventListener("fetch", () => {});
+"""
+
+
+def main() -> int:
+    global MEDIA_ROOT, APP_NAME, APP_SHORT, stats_line
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--root", default=CONF["root"])
+    ap.add_argument("--out", default="")
+    ap.add_argument("--no-thumbs", action="store_true")
+    args = ap.parse_args()
+    MEDIA_ROOT = os.path.abspath(os.path.expanduser(args.root))
+    APP_NAME, APP_SHORT = CONF["app_name"], CONF["app_short"]
+    web = os.path.abspath(os.path.expanduser(args.out)) if args.out else os.path.join(MEDIA_ROOT, ".web")
+    os.makedirs(os.path.join(web, "thumbs"), exist_ok=True)
+    # 文档视图每次都重新生成：转换规则（限幅）会变，且量小
+    shutil.rmtree(os.path.join(web, "docs"), ignore_errors=True)
+    os.makedirs(os.path.join(web, "docs"), exist_ok=True)
+
+    cache_path = os.path.join(web, "cache.json")
+    cache = {}
+    if os.path.exists(cache_path):
+        try:
+            cache = json.load(open(cache_path, encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            cache = {}
+
+    # ---- media symlinks so the served root also exposes the payload
+    for name in ("视频", "文档", "图片", "文本", "音频", "代码"):
+        src = os.path.join(MEDIA_ROOT, name)
+        link = os.path.join(web, "media", name)
+        if os.path.isdir(src):
+            os.makedirs(os.path.join(web, "media"), exist_ok=True)
+            if os.path.islink(link) or os.path.exists(link):
+                if os.path.islink(link):
+                    os.unlink(link)
+                else:
+                    continue
+            os.symlink(os.path.relpath(src, os.path.dirname(link)), link)
+
+    # ---- videos
+    vroot = os.path.join(MEDIA_ROOT, "视频")
+    groups: dict[str, list] = {}
+    seen_names = set()
+    all_videos = []
+    for dirpath, dirnames, files in os.walk(vroot):
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+        for fn in sorted(files):
+            ext = os.path.splitext(fn)[1].lower()
+            if ext not in VIDEO_EXT:
+                continue
+            full = os.path.join(dirpath, fn)
+            # .ts 与 .mp4 同名视为同一份内容，只收 mp4
+            stem = os.path.splitext(fn)[0]
+            if os.path.exists(os.path.join(dirpath, stem + ".ts")) and ext != ".mp4":
+                continue
+            rel = os.path.relpath(full, MEDIA_ROOT)
+            section = os.path.relpath(dirpath, vroot)
+            if section == ".":
+                section = "其他 / 单集"
+            title = re.sub(r"\s*-\s*Web\.Cafe(_\d+)?$", "", stem)
+            if section.split("/")[0] == "群聊小视频":
+                inside = section.split("/")[1:]
+                origin = inside[0] if inside else "群聊"
+                when = inside[-1] if len(inside) > 1 and re.match(r"^\d{4}-\d{2}$", inside[-1]) else ""
+                section = "群聊小视频（群里转发的）"
+                title = f"{origin} {'/'.join(inside[1:])} {title}".strip()
+                if when:
+                    title = title.replace(" ", " ", 1)
+            key = f"vid::{rel}"
+            st = os.stat(full)
+            sig = f"{st.st_size}:{int(st.st_mtime)}"
+            c = cache.get(key)
+            dur = c["duration"] if c and c.get("sig") == sig and c.get("duration") else probe_duration(full)
+            tid = base64.urlsafe_b64encode(rel.encode()).decode().strip("=")[-64:]
+            thumb_rel = f"thumbs/{tid}.jpg"
+            thumb_ok = False
+            if not args.no_thumbs and (not c or c.get("sig") != sig or not os.path.exists(os.path.join(web, thumb_rel))):
+                thumb_ok = make_thumb(full, os.path.join(web, thumb_rel), dur)
+            elif os.path.exists(os.path.join(web, thumb_rel)):
+                thumb_ok = True
+            cache[key] = {"sig": sig, "duration": dur, "thumb": thumb_rel if thumb_ok else ""}
+            item = {"rel": rel, "title": title, "duration": dur, "size": st.st_size,
+                    "href": "media/" + quote_path(rel),
+                    "thumb": thumb_rel if thumb_ok else ""}
+            groups.setdefault(section, []).append(item)
+            all_videos.append(item)
+            seen_names.add(fn)
+
+    # ---- documents
+    docs = []
+    droot = os.path.join(MEDIA_ROOT, "文档")
+    if os.path.isdir(droot):
+        for dirpath, dirnames, files in os.walk(droot):
+            dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+            for fn in sorted(files):
+                ext = os.path.splitext(fn)[1].lower()
+                if ext not in DOC_EXT:
+                    continue
+                full = os.path.join(dirpath, fn)
+                res = convert_doc(full, web, cache)
+                docs.append({"name": fn, "size": os.path.getsize(full), **res})
+
+    # ---- other material (counts only, files are browsable via /media/)
+    others = []
+    for label, sub, exts in (("图片", "图片", IMG_EXT), ("文本", "文本", {".json", ".html", ".htm", ".md"}),
+                             ("音频", "音频", AUDIO_EXT), ("代码", "代码", {".zip"})):
+        d = os.path.join(MEDIA_ROOT, sub)
+        n = 0
+        total = 0
+        for dirpath, _dn, files in os.walk(d):
+            for fn in files:
+                if os.path.splitext(fn)[1].lower() in exts:
+                    try:
+                        total += os.path.getsize(os.path.join(dirpath, fn))
+                    except OSError:
+                        pass
+                    n += 1
+        if n:
+            others.append((label, n, total, f"media/{quote_path(sub)}/"))
+
+    vsize = sum(v["size"] for v in all_videos)
+    vdur = sum(v["duration"] for v in all_videos)
+    stats_line = (f"{len(all_videos)} 个视频 · {human(vsize)} · 约 {vdur/3600:.0f} 小时"
+                  f" · 文档 {len(docs)} · 更新 {__import__('time').strftime('%Y-%m-%d %H:%M')}")
+
+    build_index(web, sorted(groups.items(), key=lambda kv: (-len(kv[1]), kv[0])), docs, others)
+
+    with open(os.path.join(web, "style.css"), "w", encoding="utf-8") as fh:
+        fh.write(STYLE)
+    with open(os.path.join(web, "app.js"), "w", encoding="utf-8") as fh:
+        fh.write(APP_JS)
+    with open(os.path.join(web, "manifest.webmanifest"), "w", encoding="utf-8") as fh:
+        json.dump(make_manifest(), fh, ensure_ascii=False, indent=2)
+    with open(os.path.join(web, "sw.js"), "w", encoding="utf-8") as fh:
+        fh.write(SW)
+    icon_src = os.path.join(ASSETS, "icon.png")
+    if os.path.exists(icon_src):
+        shutil.copy2(icon_src, os.path.join(web, "icon.png"))
+        try:
+            from PIL import Image
+            Image.open(icon_src).resize((192, 192)).save(os.path.join(web, "icon-192.png"))
+        except Exception:  # noqa: BLE001
+            pass
+    # 404 → 列表页（PWA 里点错路径不至于白屏）
+    shutil.copy2(os.path.join(web, "index.html"), os.path.join(web, "404.html"))
+
+    with open(cache_path, "w", encoding="utf-8") as fh:
+        json.dump(cache, fh, ensure_ascii=False)
+
+    log(f"站点已生成: {web}")
+    log(f"  {len(all_videos)} 个视频 / {len(groups)} 个场次 / {len(docs)} 个文档 / {human(vsize)}")
+    for s, v in sorted(groups.items(), key=lambda kv: -len(kv[1])):
+        log(f"   - {s}: {len(v)} 个")
+    return 0
+
+
+def load_conf() -> dict:
+    conf_file = os.environ.get("GEFEI_MEDIA_CONF", os.path.join(HERE, "..", "sites.conf"))
+    conf = {"root": "~/Documents/gefei-share", "port": "8097", "base_path": "/gefei-media",
+            "app_name": "哥飞 · 分享视频", "app_short": "分享视频", "bind": "127.0.0.1"}
+    if os.path.exists(conf_file):
+        for line in open(conf_file, encoding="utf-8"):
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split("|")
+            if len(parts) >= 6:
+                conf.update({"root": parts[1], "port": parts[2], "base_path": parts[3],
+                             "app_name": parts[4], "app_short": parts[5]})
+    root = conf["root"]
+    if not root.startswith(("/", "~")):   # sites.conf 写的是相对 $HOME 的路径
+        root = os.path.join("~", root)
+    conf["root"] = os.path.expanduser(root)
+    return conf
+
+
+CONF = load_conf()
+MEDIA_ROOT = CONF["root"]
+APP_NAME = CONF["app_name"]
+APP_SHORT = CONF["app_short"]
+stats_line = ""
+
+if __name__ == "__main__":
+    sys.exit(main())
