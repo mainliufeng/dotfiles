@@ -4,8 +4,8 @@
 Writes `<out>/index.html` plus the PWA assets (manifest, icon, service worker)
 so the portal itself can be installed as an app on the phone.
 
-Usage: tailnet-portal-build            # uses ../sites.tsv
-Env:   TAILNET_PORTAL_OUT, TAILNET_PORTAL_SITES
+Usage: tailnet-portal-build            # uses ../sites.tsv (+ optional ../sites.local.tsv)
+Env:   TAILNET_PORTAL_OUT, TAILNET_PORTAL_SITES, TAILNET_PORTAL_SITES_LOCAL
 """
 from __future__ import annotations
 
@@ -21,6 +21,8 @@ MODULE = os.path.dirname(HERE)
 ASSETS = os.path.join(MODULE, "assets")
 PORTAL_BASE = os.environ.get("TAILNET_PORTAL_BASE", "/home")
 SITES = os.environ.get("TAILNET_PORTAL_SITES", os.path.join(MODULE, "sites.tsv"))
+# 可选：不入库的本地站点清单（本机私有服务用，sites.tsv 属于公开仓库）
+SITES_LOCAL = os.environ.get("TAILNET_PORTAL_SITES_LOCAL", os.path.join(MODULE, "sites.local.tsv"))
 OUT = os.path.abspath(os.environ.get("TAILNET_PORTAL_OUT",
                                      os.path.expanduser("~/Code/self/tailnet-portal")))
 
@@ -38,16 +40,23 @@ def tailnet_host() -> str:
 
 def read_sites(host: str):
     sites = []
-    with open(SITES, encoding="utf-8") as fh:
-        for line in fh:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            parts = line.split("|")
-            if len(parts) < 3:
-                continue
-            name, href, desc = parts[0].strip(), parts[1].strip(), parts[2].strip()
-            sites.append((name, href.replace("@host", host), desc))
+    seen = set()
+    for path in (SITES, SITES_LOCAL):
+        if not os.path.exists(path):
+            continue
+        with open(path, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                parts = line.split("|")
+                if len(parts) < 3:
+                    continue
+                name, href, desc = parts[0].strip(), parts[1].strip(), parts[2].strip()
+                if name in seen:
+                    continue
+                seen.add(name)
+                sites.append((name, href.replace("@host", host), desc))
     return sites
 
 

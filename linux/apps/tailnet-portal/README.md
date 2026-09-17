@@ -12,6 +12,8 @@ https://liufeng-82tk.tail6b9726.ts.net/           → 302 → /home/（入口页
 └── :8443/          dsh · DeepSeek Harness
 ```
 
+卡片来自两个清单：`sites.tsv`（公开，入库）和 `sites.local.tsv`（本机私有，不入库）。
+
 ## 为什么入口页不能占根路径
 
 **PWA 的 scope 不能互相嵌套。** 入口页如果 scope 是 `/`，就把 `/gefei-*`、`/workbench`
@@ -40,8 +42,11 @@ bash setup.sh            # 构建 + 装 systemd --user + 配 tailscale serve
 编辑 [sites.tsv](sites.tsv) 加一行，然后：
 
 ```bash
-tailnet-portal-build && systemctl --user restart tailnet-portal.service
+ tailnet-portal-build && systemctl --user restart tailnet-portal.service
 ```
+
+本机私有服务写 **`sites.local.tsv`**（同名格式，可选，已在 `.gitignore` 里）：
+sites.tsv 属于公开仓库，别把只在本机跑的服务写进去。两份清单按名称去重，sites.tsv 优先。
 
 链接写 `/path/`（同域相对路径），跨端口的写 `https://@host:8443/`（`@host` 在构建时
 替换成 tailnet 域名，避免把域名写死进公共仓库）。

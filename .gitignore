@@ -15,3 +15,6 @@ codex/agents_md/node_modules/
 .cache/
 .tmp/
 __pycache__/
+
+# tailnet-portal 的本机私有站点清单
+linux/apps/tailnet-portal/sites.local.tsv
