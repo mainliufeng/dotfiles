@@ -35,6 +35,7 @@ linux/hardware/yoga-pro-14s
 linux/services/docker
 linux/services/happy
 linux/services/openvpn
+linux/services/power-profile
 linux/services/redis
 linux/services/resolv
 linux/services/tailscale

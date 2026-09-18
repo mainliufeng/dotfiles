@@ -1,0 +1,70 @@
+#!/bin/sh
+# Read or set the ACPI platform profile (Lenovo "thermal mode").
+#
+#   platform-profile              show the current profile and the choices
+#   platform-profile --choices    print the available choices only
+#   platform-profile balanced     select a profile, validated against the choices
+#
+# Installed as /usr/local/bin/platform-profile by
+# ~/dotfiles/linux/services/power-profile/setup.sh, and called by
+# platform-profile.service at boot and by the udev rule on AC transitions.
+#
+# The kernel accepts a profile only from platform_profile_choices, and silently
+# keeps the old value when asked for anything else, so a bad value is validated
+# here instead of being written and read back as "unchanged".
+set -eu
+
+profile_file=/sys/firmware/acpi/platform_profile
+choices_file=/sys/firmware/acpi/platform_profile_choices
+
+if [ ! -e "$profile_file" ]; then
+  echo "platform-profile: $profile_file is missing; this machine exposes no ACPI platform profile" >&2
+  exit 1
+fi
+
+current_profile() { cat "$profile_file"; }
+available_profiles() { cat "$choices_file" 2>/dev/null || true; }
+
+case "${1:-}" in
+  --choices)
+    available_profiles
+    echo
+    exit 0
+    ;;
+  "")
+    printf 'current: %s\nchoices: %s\n' "$(current_profile)" "$(available_profiles)"
+    exit 0
+    ;;
+esac
+
+requested="$1"
+available="$(available_profiles)"
+
+if [ -z "$available" ]; then
+  echo "platform-profile: $choices_file is unreadable; refusing to guess a valid profile" >&2
+  exit 1
+fi
+
+case " $available " in
+  *" $requested "*) ;;
+  *)
+    echo "platform-profile: '$requested' is not one of: $available" >&2
+    exit 1
+    ;;
+esac
+
+if [ "$(current_profile)" = "$requested" ]; then
+  echo "platform-profile: already $requested"
+  exit 0
+fi
+
+# No trailing newline: sysfs attribute stores compare the whole buffer.
+printf '%s' "$requested" > "$profile_file"
+
+applied="$(current_profile)"
+if [ "$applied" != "$requested" ]; then
+  echo "platform-profile: wrote '$requested' but the kernel still reports '$applied'" >&2
+  exit 1
+fi
+
+echo "platform-profile: $applied"

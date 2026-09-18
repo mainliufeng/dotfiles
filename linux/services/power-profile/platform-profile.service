@@ -1,0 +1,23 @@
+[Unit]
+Description=Apply the ACPI platform profile
+Documentation=file:///usr/local/bin/platform-profile
+# The attribute only exists on machines whose firmware publishes an ACPI
+# platform profile, so the unit is skipped elsewhere (e.g. the Yoga).
+ConditionPathExists=/sys/firmware/acpi/platform_profile
+After=sysinit.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# Nothing on this machine manages the platform profile: power-profiles-daemon,
+# tuned, TLP and powerdevil are all absent, so without this unit every boot
+# keeps whatever the EC/BIOS booted with ("low-power" on the X1, which caps the
+# package at 2.4 GHz and held it at 95 C). Override the value with
+# `systemctl edit platform-profile.service`.
+Environment=PLATFORM_PROFILE=balanced
+ExecStart=/usr/local/bin/platform-profile ${PLATFORM_PROFILE}
+# Read the value back, so the journal records what the kernel accepted.
+ExecStartPost=/usr/local/bin/platform-profile
+
+[Install]
+WantedBy=multi-user.target

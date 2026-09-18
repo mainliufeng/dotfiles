@@ -1,0 +1,10 @@
+# Re-apply the ACPI platform profile when the charger is plugged or unplugged.
+#
+# The EC may select a platform profile on its own during an AC transition, which
+# silently undoes platform-profile.service until the next boot. The profile
+# attribute itself is a firmware attribute (/sys/firmware/acpi/platform_profile)
+# with no udev device and no uevent, so the AC adapter is what can be watched.
+#
+# try-restart, not restart: a machine where the module was disabled or removed
+# must not have the unit resurrected by a charger event.
+ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}=="Mains", RUN+="/usr/bin/systemctl --no-block try-restart platform-profile.service"
