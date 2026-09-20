@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# jev-ultrafast 安装/修复。
+#
+# 布局：源码固定在 ~/Code/source/jev-ultrafast（第三方上游仓库），
+#       全局命令 `jev` 由 uv tool 以 editable 方式指向那份源码。
+#
+# 为什么用 editable + 保留源码目录：
+#   - pyproject 的 wheel 里没有 examples/，非 editable 装完拿不到
+#     examples/run.py（jev-browser skill 用它跑一次性目标）。
+#   - 源码留在 ~/Code/source，符合本地目录约定（~/Code/self 放自建仓库）。
+#
+# 用法：
+#   install-jev-ultrafast            安装/修复（幂等）
+#   install-jev-ultrafast --update   先 git pull --ff-only，再重装
+#   install-jev-ultrafast --check    只检查现状，不改动任何文件
+set -euo pipefail
+
+SRC="${JEV_SRC:-$HOME/Code/source/jev-ultrafast}"
+REPO="${JEV_REPO:-https://github.com/browser-use/jev-ultrafast.git}"
+ENV_FILE="$SRC/.env"
+CDP_URL="${JEV_CDP_URL:-http://127.0.0.1:9222}"
+DAEMON_NAME="${JEV_BU_NAME:-jev}"
+
+UPDATE=0
+CHECK=0
+for arg in "$@"; do
+  case "$arg" in
+    --update) UPDATE=1 ;;
+    --check)  CHECK=1 ;;
+    -h|--help) sed -n '2,18p' "$0"; exit 0 ;;
+    *) echo "unknown arg: $arg" >&2; exit 2 ;;
+  esac
+done
+
+say() { printf '[jev] %s\n' "$*"; }
+
+# 1. 源码
+if [ -d "$SRC/.git" ]; then
+  say "源码已在 $SRC"
+else
+  if [ "$CHECK" = 1 ]; then say "缺源码：$SRC"; exit 1; fi
+  say "克隆 $REPO → $SRC"
+  mkdir -p "$(dirname "$SRC")"
+  git clone --depth 1 "$REPO" "$SRC"
+fi
+
+if [ "$UPDATE" = 1 ] && [ "$CHECK" = 0 ]; then
+  say "更新源码 (git pull --ff-only)"
+  git -C "$SRC" pull --ff-only
+fi
+
+# 2. .env：密钥 + agent 浏览器接线
+#    BU_CDP_URL 写死端点：不写就会先扫用户日常 Chrome 的调试口，
+#    且可能在 agent Chrome 没开时走「启动本地 Chrome」的恢复路径。
+#    BU_NAME 用独立 daemon，避免和别的工具抢 browser-harness 的「当前 tab」。
+if [ ! -f "$ENV_FILE" ]; then
+  if [ "$CHECK" = 1 ]; then say "缺 $ENV_FILE"; exit 1; fi
+  cp "$SRC/.env.example" "$ENV_FILE"
+  say "已从 .env.example 创建 $ENV_FILE —— 需要填 TYPESAFE_API_KEY / TEXT_MODEL_API_KEY"
+fi
+
+if [ "$CHECK" = 0 ]; then
+  chmod 600 "$ENV_FILE"
+  ensure_env() { # key value
+    if grep -q "^$1=" "$ENV_FILE"; then
+      say "已有 $1=$(grep "^$1=" "$ENV_FILE" | head -1 | cut -d= -f2-)"
+    else
+      printf '%s=%s\n' "$1" "$2" >> "$ENV_FILE"
+      say "补上 $1=$2"
+    fi
+  }
+  ensure_env BU_CDP_URL "$CDP_URL"
+  ensure_env BU_NAME "$DAEMON_NAME"
+fi
+
+# 3. 仓库 venv（examples/run.py、pytest 用）
+if [ "$CHECK" = 0 ]; then
+  say "uv sync（仓库 venv）"
+  ( cd "$SRC" && uv sync --quiet )
+fi
+
+# 4. 全局命令
+if [ "$CHECK" = 0 ]; then
+  say "uv tool install --editable（全局 jev 命令）"
+  uv tool install --editable --force "$SRC" >/dev/null
+fi
+
+# 5. 验证
+command -v jev >/dev/null || { say "jev 命令不在 PATH，检查 ~/.local/bin 是否在 PATH 里"; exit 1; }
+say "jev → $(command -v jev)"
+code="$(curl -s -o /dev/null -m 2 -w '%{http_code}' "$CDP_URL/json/version" 2>/dev/null || true)"
+case "${code:-000}" in
+  200)  say "agent 浏览器在线：$CDP_URL" ;;
+  000)  say "agent 浏览器没在跑 —— 先执行 chrome-agent" ;;
+  *)    say "注意：$CDP_URL 上是 approval 模式的调试服务（HTTP $code），按 chrome-agent 的提示处理后再用" ;;
+esac
+say "手动跑：cd $SRC && uv run jev   （inspector http://127.0.0.1:8766）"
+say "一次性目标：cd $SRC && uv run --env-file .env python examples/run.py --url URL --goal '目标'"
