@@ -83,6 +83,35 @@ configure_hotwords() {
     fi
 }
 
+# --- LLM 后处理（技术纠错）-------------------------------------------------
+# 凭据放 dotfiles-private，不进这个仓库。
+configure_llm() {
+    local env_file="$HOME/dotfiles-private/deepseek/env.sh"
+    if [ ! -f "$env_file" ]; then
+        echo "[skip] LLM 后处理：找不到 $env_file（缺少 DeepSeek 凭据）"
+        return 0
+    fi
+    # shellcheck disable=SC1090
+    source "$env_file"
+
+    vinput llm remove deepseek >/dev/null 2>&1 || true
+    # thinking 关闭：DeepSeek Flash 默认会输出推理链，单句延迟从 ~2.6s 降到 ~0.7s
+    vinput llm add deepseek \
+        -u "${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}" \
+        -k "$DEEPSEEK_API_KEY" \
+        -e '{"thinking":{"type":"disabled"}}' >/dev/null
+
+    vinput scene edit tech-polish --prompt "$(cat "$ROOT_DIR/polish-prompt.md")" \
+        --provider deepseek --model deepseek-flash --count 1 --timeout 15000 2>/dev/null \
+      || vinput scene add --id tech-polish --label "技术纠错（DeepSeek Flash）" \
+            --prompt "$(cat "$ROOT_DIR/polish-prompt.md")" \
+            --provider deepseek --model deepseek-flash --count 1 --timeout 15000 >/dev/null
+
+    # 热词纠不回来的同音字/术语交给 LLM；不需要时用 `vinput scene use __raw__` 关掉
+    vinput scene use tech-polish >/dev/null
+    echo "[ok] LLM 后处理：deepseek/deepseek-flash，场景 tech-polish 已激活"
+}
+
 restart_stack() {
     systemctl --user enable --now vinput-daemon.service
     systemctl --user restart vinput-daemon.service
@@ -103,6 +132,8 @@ verify() {
     echo "pass 2 model:  $(vinput refine get 2>/dev/null | tail -1)"
     echo "hotwords:      $(vinput hotword get 2>/dev/null | tail -1)"
     echo "capture:       $(vinput device list 2>/dev/null | grep '\[\*\]' | awk '{print $1}')"
+    echo "llm provider:  $(vinput llm list 2>/dev/null | tail -n +2 | awk '{print $1}' | tr '\n' ' ')"
+    echo "active scene:  $(python3 -c "import json,os;print(json.load(open(os.path.expanduser('~/.config/vinput/config.json')))['scenes']['active_scene'])" 2>/dev/null)"
     echo
     echo "Usage: hold Right-Alt and speak, release to insert."
     echo "Debug both passes:  journalctl --user -u vinput-daemon | grep -E 'pass 1|pass 2'"
@@ -115,6 +146,7 @@ main() {
     build_and_install
     configure_models
     configure_hotwords
+    configure_llm
     restart_stack
     verify
     echo "vinput (two-pass) is ready."
