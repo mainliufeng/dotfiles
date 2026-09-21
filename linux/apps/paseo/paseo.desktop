@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Paseo
+Comment=One interface for all your Claude Code, Codex and OpenCode agents
+# Absolute path on purpose. The packaged entry uses `Exec=paseo %U`, which now
+# resolves through PATH to the bundled node CLI (see link.sh) and would start
+# nothing visible. /usr/bin/paseo is the Electron GUI wrapper.
+Exec=/usr/bin/paseo %U
+Terminal=false
+Type=Application
+Icon=paseo
+StartupWMClass=Paseo
+Categories=Development;

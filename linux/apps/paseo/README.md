@@ -25,7 +25,8 @@ Options:
 1. Installs `paseo-bin` through `yay` (falls back to `paru`).
 2. Symlinks `paseo-daemon.desktop` into `~/.config/autostart/`, so the daemon
    starts together with the graphical session (KDE Plasma honours XDG
-   autostart entries).
+   autostart entries), plus the CLI/PATH shadows and the applications-menu
+   entry described below.
 3. Sets `daemon.relay.enabled: true` in `~/.paseo/config.json`, creating the
    file if needed. The relay is how the phone reaches this machine.
 4. Starts `paseo.service` right away.
@@ -90,6 +91,39 @@ Notes:
   tailnet.
 - Set `"daemon": {"relay": {"enabled": false}}` and restart to drop the relay
   once direct access works, or leave it enabled as a fallback.
+
+## `paseo` runs the CLI, `paseo-gui` opens the app
+
+The package installs `/usr/bin/paseo` as the Electron **GUI** wrapper: every
+invocation boots the app, which is a window — even for CLI subcommands. Agents
+(Claude, Codex, Pi) load Paseo's bundled `paseo` skill and call the CLI from
+scripts, so `paseo ls`, `paseo run`, `paseo send` used to spray windows: the
+burst shows up as repeated `[desktop] app startup` lines in
+`~/.config/Paseo/logs/main.log` and one extra `Paseo --type=renderer` process
+per call.
+
+The app also ships the real CLI at `/opt/Paseo/resources/bin/paseo`, which runs
+the same entrypoint as plain Node (`ELECTRON_RUN_AS_NODE=1`). `link.sh` therefore:
+
+- shadows `paseo` in `~/.local/bin` with that node CLI — `~/.local/bin` precedes
+  `/usr/bin` for the session and for every agent the daemon spawns, so scripts
+  and skills keep calling `paseo` and no longer get the GUI;
+- links `~/.local/share/applications/paseo.desktop` (an absolute-path copy of the
+  packaged entry) so the applications menu still opens the GUI;
+- links `~/.local/bin/paseo-gui` for deliberately opening the app from a shell.
+
+This lives in dotfiles rather than in the skills for a reason: Paseo-managed
+skill files (`.paseo-managed-files.json`) are rewritten by the app, and the
+shadow is a plain PATH entry that survives `paseo-bin` upgrades.
+
+Check it in a login shell — `which -a paseo` should list `~/.local/bin/paseo`
+first, and `paseo ls` should add no new `app startup` line:
+
+```bash
+grep -c '\[desktop\] app startup' ~/.config/Paseo/logs/main.log   # before
+paseo ls >/dev/null
+grep -c '\[desktop\] app startup' ~/.config/Paseo/logs/main.log   # same number
+```
 
 ## Notes
 
