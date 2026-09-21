@@ -91,14 +91,23 @@ configure_llm() {
         echo "[skip] LLM 后处理：找不到 $env_file（缺少 DeepSeek 凭据）"
         return 0
     fi
+
+    # 密钥只放在 dotfiles-private，通过 systemd EnvironmentFile 注入 daemon；
+    # config.json 里存的是 `$DEEPSEEK_API_KEY` 这个引用，不是明文。
+    mkdir -p "$HOME/.config/systemd/user/vinput-daemon.service.d"
+    cat >"$HOME/.config/systemd/user/vinput-daemon.service.d/llm-env.conf" <<EOF
+[Service]
+EnvironmentFile=-%h/dotfiles-private/deepseek/env.sh
+EOF
+
     # shellcheck disable=SC1090
     source "$env_file"
+    local base_url="${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}"
 
     vinput llm remove deepseek >/dev/null 2>&1 || true
-    # thinking 关闭：DeepSeek Flash 默认会输出推理链，单句延迟从 ~2.6s 降到 ~0.7s
-    vinput llm add deepseek \
-        -u "${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}" \
-        -k "$DEEPSEEK_API_KEY" \
+    # extra-body 关掉推理链：DeepSeek Flash 默认输出 reasoning_content，
+    # 同一句纠错实测 2.6s → 0.7s，准确率不变。
+    vinput llm add deepseek -u "$base_url" -k '$DEEPSEEK_API_KEY' \
         -e '{"thinking":{"type":"disabled"}}' >/dev/null
 
     vinput scene edit tech-polish --prompt "$(cat "$ROOT_DIR/polish-prompt.md")" \
@@ -107,9 +116,9 @@ configure_llm() {
             --prompt "$(cat "$ROOT_DIR/polish-prompt.md")" \
             --provider deepseek --model deepseek-flash --count 1 --timeout 15000 >/dev/null
 
-    # 热词纠不回来的同音字/术语交给 LLM；不需要时用 `vinput scene use __raw__` 关掉
+    # 热词纠不回来的同音字/术语交给 LLM；用 `vinput scene use __raw__` 可关掉
     vinput scene use tech-polish >/dev/null
-    echo "[ok] LLM 后处理：deepseek/deepseek-flash，场景 tech-polish 已激活"
+    echo "[ok] LLM 后处理：deepseek/deepseek-flash（密钥走环境变量），场景 tech-polish 已激活"
 }
 
 restart_stack() {
