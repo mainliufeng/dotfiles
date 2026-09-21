@@ -120,11 +120,14 @@ EOF
         -e '{"thinking":{"type":"disabled"}}' >/dev/null
 
     vinput scene edit tech-polish --prompt "$(cat "$ROOT_DIR/polish-prompt.md")" \
-        --provider deepseek --model deepseek-flash --count 1 --timeout 15000 2>/dev/null \
+        --provider deepseek --model deepseek-flash --count 1 --timeout 15000 \\
+        --raw-cand false 2>/dev/null \
       || vinput scene add --id tech-polish --label "技术纠错（DeepSeek Flash）" \
             --prompt "$(cat "$ROOT_DIR/polish-prompt.md")" \
-            --provider deepseek --model deepseek-flash --count 1 --timeout 15000 >/dev/null
+            --provider deepseek --model deepseek-flash --count 1 --timeout 15000 \\
+            --raw-cand false >/dev/null
 
+    # raw-cand=false：只把 LLM 结果作为候选，避免每句都弹"原始 vs 改写"的选择菜单
     # 热词纠不回来的同音字/术语交给 LLM；用 `vinput scene use __raw__` 可关掉
     vinput scene use tech-polish >/dev/null
     echo "[ok] LLM 后处理：deepseek/deepseek-flash（密钥走环境变量），场景 tech-polish 已激活"
