@@ -14,11 +14,11 @@
 #   6. restarts fcitx5 so the addon is actually loaded
 #
 # Full guide (with screenshots):
-#   https://github.com/mainliufeng/fcitx5-vinput/blob/feat/issue-1-two-pass-refinement/docs/install-and-config-zh.md
+#   https://github.com/mainliufeng/fcitx5-vinput/blob/main/docs/install-and-config-zh.md
 set -euo pipefail
 
 REPO="${VINPUT_REPO:-https://github.com/mainliufeng/fcitx5-vinput.git}"
-BRANCH="${VINPUT_BRANCH:-feat/issue-1-two-pass-refinement}"
+BRANCH="${VINPUT_BRANCH:-main}"
 SRC="${VINPUT_SRC:-$HOME/.cache/fcitx5-vinput}"
 STREAM_MODEL="${VINPUT_STREAM_MODEL:-onnx-xasr-zh-en-960ms-punct-stream}"
 REFINE_MODEL="${VINPUT_REFINE_MODEL:-onnx-xasr-zh-en-punct-int8-off}"

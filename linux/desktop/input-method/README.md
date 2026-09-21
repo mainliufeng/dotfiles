@@ -70,6 +70,6 @@ ps -o pid,lstart -p $(pgrep -x fcitx5)
 完整的安装 / 配置 / 排错文档（带截图）在 fork 仓库里：
 
 `apps/voice-input/docs/install-and-config-zh.md`
-（GitHub: <https://github.com/mainliufeng/fcitx5-vinput/blob/feat/issue-1-two-pass-refinement/docs/install-and-config-zh.md>）
+（GitHub: <https://github.com/mainliufeng/fcitx5-vinput/blob/main/docs/install-and-config-zh.md>）
 
 上游项目：<https://github.com/xifan2333/fcitx5-vinput>（GPL-3.0）
