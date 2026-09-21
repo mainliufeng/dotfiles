@@ -94,13 +94,22 @@ Notes:
 
 ## `paseo` runs the CLI, `paseo-gui` opens the app
 
-The package installs `/usr/bin/paseo` as the Electron **GUI** wrapper: every
-invocation boots the app, which is a window — even for CLI subcommands. Agents
-(Claude, Codex, Pi) load Paseo's bundled `paseo` skill and call the CLI from
-scripts, so `paseo ls`, `paseo run`, `paseo send` used to spray windows: the
-burst shows up as repeated `[desktop] app startup` lines in
-`~/.config/Paseo/logs/main.log` and one extra `Paseo --type=renderer` process
-per call.
+The package installs `/usr/bin/paseo` as the Electron **GUI** wrapper: it boots
+the app instead of running a CLI. When the arguments carry a directory — and
+every agent-facing subcommand takes `--cwd <path>`, `--workspace`, or a project
+path — the already-running app receives them as an *open project* request and
+opens a **project window**. Agents (Claude, Codex, Pi) load Paseo's bundled
+`paseo` skill and call exactly those subcommands from scripts
+(`paseo run --cwd …`, `paseo send …`, `paseo schedule create … --cwd …`), so the
+screen filled up with windows. The daemon log records each one:
+
+```
+[open-project] second-instance openProjectPath: /home/liufeng/Code/self/mobius
+```
+
+`~/.config/Paseo/logs/main.log` holds 24 of them for this machine, 15 of them one
+burst for `mobius`. Even a path-less `paseo ls` still boots the app and logs
+`[desktop] app startup` (a window flash).
 
 The app also ships the real CLI at `/opt/Paseo/resources/bin/paseo`, which runs
 the same entrypoint as plain Node (`ELECTRON_RUN_AS_NODE=1`). `link.sh` therefore:
@@ -117,12 +126,16 @@ skill files (`.paseo-managed-files.json`) are rewritten by the app, and the
 shadow is a plain PATH entry that survives `paseo-bin` upgrades.
 
 Check it in a login shell — `which -a paseo` should list `~/.local/bin/paseo`
-first, and `paseo ls` should add no new `app startup` line:
+first — and A/B the window itself:
 
 ```bash
-grep -c '\[desktop\] app startup' ~/.config/Paseo/logs/main.log   # before
-paseo ls >/dev/null
-grep -c '\[desktop\] app startup' ~/.config/Paseo/logs/main.log   # same number
+log=~/.config/Paseo/logs/main.log; mkdir -p /tmp/x
+
+/usr/bin/paseo script ls --cwd /tmp/x    # +1 openProjectPath event, 弹出一个项目窗口
+paseo          script ls --cwd /tmp/x    # +0，无窗口，且真的执行了子命令
+
+grep -c 'second-instance openProjectPath' "$log"
+grep -c '\[desktop\] app startup'         "$log"   # 连打 10 次 paseo 也不涨
 ```
 
 ## Notes
