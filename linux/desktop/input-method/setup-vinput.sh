@@ -94,10 +94,19 @@ configure_llm() {
 
     # 密钥只放在 dotfiles-private，通过 systemd EnvironmentFile 注入 daemon；
     # config.json 里存的是 `$DEEPSEEK_API_KEY` 这个引用，不是明文。
+    # systemd 的 EnvironmentFile 只认 KEY=value，不认 shell 的 export/"..."。
+    # 所以从 dotfiles-private 的 shell 文件派生一份 systemd 格式的（0600），
+    # 私密文件仍是唯一真源，这里只是派生物。
+    mkdir -p "$HOME/.config/vinput"
+    sed -E 's/^[[:space:]]*export[[:space:]]+//; s/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/\1=\2/' "$env_file" \
+      | sed -E 's/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/\1=\2/' \
+      | sed -E 's/^([A-Za-z_][A-Za-z0-9_]*)=\"(.*)\"$/\1=\2/' >"$HOME/.config/vinput/llm.env"
+    chmod 600 "$HOME/.config/vinput/llm.env"
+
     mkdir -p "$HOME/.config/systemd/user/vinput-daemon.service.d"
     cat >"$HOME/.config/systemd/user/vinput-daemon.service.d/llm-env.conf" <<EOF
 [Service]
-EnvironmentFile=-%h/dotfiles-private/deepseek/env.sh
+EnvironmentFile=-%h/.config/vinput/llm.env
 EOF
 
     # shellcheck disable=SC1090
