@@ -1,0 +1,19 @@
+[Unit]
+Description=Periodically reap stale tabs in the agent Chrome
+
+[Timer]
+# 15 分钟一轮，配合脚本里的 TTL（普通页 45 分钟、搜索页 10 分钟）。
+# TTL 是「连续观察到闲置多久」而不是页面年龄，所以第一次跑只登记、不动手，
+# 真正的关闭从下一个周期才开始 —— 首次部署不会误伤正在用的 tab。
+#
+# 用 OnCalendar（挂钟）而不是 OnUnitActiveSec（单调钟）：单调钟在休眠期间不走，
+# 而这台机器经常合盖，用单调钟会变成「醒来后还要等 15 分钟」。
+OnCalendar=*:0/15
+# 休眠/关机错过的当次，醒来后补跑一次。重复跑是幂等的。
+Persistent=true
+# 错开整点，别和别的 timer 撞在同一秒。
+RandomizedDelaySec=120
+Unit=chrome-agent-reaper.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,353 @@
+#!/usr/bin/env node
+// 回收 agent 专用 Chrome（CDP 9222）里的陈旧 tab。
+//
+// 为什么需要它：Chrome 的 Memory Saver 对「挂了 DevTools 的 tab」不生效，
+// 而 chrome-devtools-mcp 走 --browserUrl 会把**它驱动的每个** tab 都 auto-attach 上
+// （实测 70 个 tab 里 69 个 attached=true）。结果是 Memory Saver 名义上开着、
+// 实际一个 tab 都不敢丢，profile 一路涨到几十个 tab / 十几 GB。
+// 既然自动回收靠不住，就按策略手动收。
+//
+// 用法：
+//   chrome-agent-reap                  按策略回收（systemd timer 定时跑的就是它）
+//   chrome-agent-reap --dry-run        只报告，不改动、不写状态
+//   chrome-agent-reap --json           机器可读输出
+//   chrome-agent-reap --quit-if-idle   没有任何 CDP 客户端连着、且闲置够久时，直接关掉整个浏览器
+//
+// 参数（都可用同名大写环境变量覆盖，如 CHROME_AGENT_REAP_TTL=30）：
+//   --port N           CDP 端口，默认 9222
+//   --ttl MIN          普通 tab 的闲置上限，默认 45 分钟
+//   --ttl-search MIN   搜索页 / about:blank 的上限，默认 10 分钟
+//   --keep h1,h2       永不回收的域名后缀（逗号分隔）
+//   --idle-min MIN     --quit-if-idle 的闲置门槛，默认 60 分钟
+//   --state PATH       状态文件，默认 ~/.cache/chrome-agent/reap-state.json
+//
+// 安全设计：
+//   1. TTL 是**观察到的闲置时长**，不是页面年龄。第一次跑只登记、不关任何东西；
+//      必须连续观察到同一个 tab 闲置满 TTL 才动手。首次部署绝不会误伤。
+//   2. 「有活动」= URL 变了（导航）或页面的 resource 计数变了。任一命中就把闲置
+//      时钟拨回现在，所以 agent 正在推进的页面不会被关。
+//   3. 只对已经 attached 的 tab 做探测。未 attached 的可能是被 Memory Saver
+//      丢掉的休眠页，attach 会把它们唤醒并重新加载 —— 那等于白干。
+//   4. 至少留 1 个 tab（关空会连带退出窗口；要关浏览器用 --quit-if-idle）。
+//   5. 浏览器不在 / 端口不通，安静退出 0，不会把 timer 弄成 failed。
+//
+// 关于 document.visibilityState —— 这台机器上它是坏的，不要用它当保护条件：
+//   实测 agent Chrome 只有 1 个窗口（Browser.getWindowForTarget 的 windowId 唯一），
+//   但 54 个 tab **全部**返回 visibilityState === 'visible'，其中 30 个还返回
+//   document.hasFocus() === true。一个 tab strip 里不可能都是前台标签，说明这个
+//   Wayland 会话下 Chrome 的可见性/焦点跟踪没在反映真实状态。
+//   所以本脚本**不**拿 visibilityState 当「正在使用」的判据（否则什么都关不掉）；
+//   只在它自洽时（visible 数 <= 窗口数）才把它当额外保护。见 trustVisibility。
+//
+// 依赖：本机 node（>=21，用内置 WebSocket）、iproute2 的 ss（只有 --quit-if-idle 用得上）。
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
+
+const argv = process.argv.slice(2);
+if (argv.includes('-h') || argv.includes('--help')) {
+  const src = fs.readFileSync(new URL(import.meta.url), 'utf8');
+  console.log(src.slice(src.indexOf('// 用法：'), src.indexOf('// 依赖：')).replace(/^\/\/ ?/gm, ''));
+  process.exit(0);
+}
+
+const opt = (name, dflt) => {
+  const i = argv.indexOf(name);
+  return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[i + 1] : dflt;
+};
+const env = (name, dflt) => process.env[name] ?? dflt;
+
+const PORT = Number(opt('--port', env('CHROME_AGENT_PORT', 9222)));
+const TTL_MIN = Number(opt('--ttl', env('CHROME_AGENT_REAP_TTL', 45)));
+const TTL_SEARCH_MIN = Number(opt('--ttl-search', env('CHROME_AGENT_REAP_TTL_SEARCH', 10)));
+const IDLE_MIN = Number(opt('--idle-min', env('CHROME_AGENT_REAP_IDLE_MIN', 60)));
+const KEEP = String(opt('--keep', env('CHROME_AGENT_KEEP', '')))
+  .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+const STATE_PATH = opt('--state', env('CHROME_AGENT_REAP_STATE',
+  path.join(os.homedir(), '.cache', 'chrome-agent', 'reap-state.json')));
+const DRY_RUN = argv.includes('--dry-run');
+const AS_JSON = argv.includes('--json');
+const QUIT_IF_IDLE = argv.includes('--quit-if-idle');
+
+// 搜索页 / 中转页：agent 拿完结果就没用了，TTL 给短一点。
+// 只用引擎域名，**不要**写 google.com —— 它会把 aistudio.google.com 这类应用也拖进来。
+const SEARCH_ENGINE_HOSTS = ['bing.com', 'duckduckgo.com', 'baidu.com', 'sogou.com', 'so.com',
+  'yandex.com', 'ecosia.org', 'startpage.com', 'search.brave.com', 'mwmbl.org', 'mojeek.com'];
+// 长得像搜索页但不是：Search Console 是工作台（/search-console/... 会被 /search 前缀误命中）。
+const NOT_SEARCH_HOSTS = ['search.google.com', 'aistudio.google.com', 'console.google.com'];
+const THROWAWAY_SCHEMES = ['about:blank', 'about:newtab', 'chrome://newtab', 'chrome://new-tab-page'];
+// 绝不回收：调试页、扩展页（关掉会丢状态）、以及 devtools 自身的页。
+const SKIP_PREFIXES = ['devtools://', 'chrome-extension://', 'chrome-untrusted://', 'view-source:'];
+
+const log = (...a) => { if (!AS_JSON) console.log('[reap]', ...a); };
+
+const get = (p) => new Promise((res, rej) => {
+  const req = http.get({ host: '127.0.0.1', port: PORT, path: p, timeout: 4000 }, (r) => {
+    let b = ''; r.setEncoding('utf8');
+    r.on('data', (d) => (b += d));
+    r.on('end', () => res(b));
+  });
+  req.on('timeout', () => { req.destroy(); rej(new Error('cdp timeout')); });
+  req.on('error', rej);
+});
+
+function readState() {
+  try { return JSON.parse(fs.readFileSync(STATE_PATH, 'utf8')); } catch { return {}; }
+}
+function writeState(state) {
+  if (DRY_RUN) return;
+  fs.mkdirSync(path.dirname(STATE_PATH), { recursive: true });
+  const tmp = `${STATE_PATH}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(state, null, 2));
+  fs.renameSync(tmp, STATE_PATH);
+}
+
+// 除了我自己，还有谁连着 CDP。有客户端 = 有 agent 可能正在用，别关浏览器。
+// 用 client 侧那行统计（Peer 指向本端口、进程不是我）：server 侧那行的 owner 是
+// chrome，认不出来。列序为 Recv-Q Send-Q Local Peer Process，索引 3 才是 Peer。
+function otherCdpClients() {
+  let out;
+  try {
+    out = execFileSync('ss', ['-Htnp', 'state', 'established'], { encoding: 'utf8', timeout: 5000 });
+  } catch {
+    return null; // ss 不可用 → 不知道，调用方按「不确定」处理
+  }
+  const me = process.pid;
+  return out.split('\n').filter((line) => {
+    if (!line.trim()) return false;
+    const peer = line.trim().split(/\s+/)[3] || '';
+    if (!peer.endsWith(`:${PORT}`)) return false;
+    return !line.includes(`pid=${me},`);
+  }).length;
+}
+
+const hostOf = (url) => { try { return new URL(url).host.toLowerCase(); } catch { return ''; } };
+
+function isSearch(url) {
+  if (THROWAWAY_SCHEMES.some((p) => url === p || url.startsWith(`${p}?`))) return true;
+  let u;
+  try { u = new URL(url); } catch { return false; }
+  const h = u.host.toLowerCase();
+  if (NOT_SEARCH_HOSTS.some((s) => h === s || h.endsWith(`.${s}`))) return false;
+  if (SEARCH_ENGINE_HOSTS.some((s) => h === s || h.endsWith(`.${s}`))) return true;
+  // Google 系：只有 /search 路径才算搜索（/search-console 不算，见上）。
+  if (/(^|\.)google\.[a-z]{2,}(\.[a-z]{2,})?$/.test(h) && /^\/search(\/|$)/.test(u.pathname)) return true;
+  // 通用：带查询参数的搜索/中转页（如 github.com/search?q=...）。
+  return /[?&](q|query|wd|p|text)=/.test(url) && /\/(search|html|s)(\/|$)/.test(u.pathname);
+}
+
+const ttlFor = (url) => (isSearch(url) ? TTL_SEARCH_MIN : TTL_MIN) * 60_000;
+
+function shouldSkip(url, host) {
+  if (SKIP_PREFIXES.some((p) => url.startsWith(p))) return 'protected-scheme';
+  if (KEEP.some((k) => host === k || host.endsWith(`.${k}`))) return 'keep-list';
+  return null;
+}
+
+async function main() {
+  let info;
+  try {
+    info = JSON.parse(await get('/json/version'));
+  } catch {
+    log(`端口 ${PORT} 上没有 CDP 服务，无需回收`);
+    return { skipped: 'no-browser' };
+  }
+
+  const ws = new WebSocket(info.webSocketDebuggerUrl);
+  let id = 0;
+  const pending = new Map();
+  const send = (method, params = {}, sessionId) => new Promise((res, rej) => {
+    const mid = ++id;
+    const t = setTimeout(() => {
+      if (pending.has(mid)) { pending.delete(mid); rej(new Error(`timeout ${method}`)); }
+    }, 15000);
+    pending.set(mid, { res, rej, t });
+    ws.send(JSON.stringify({ id: mid, method, params, ...(sessionId ? { sessionId } : {}) }));
+  });
+  ws.onmessage = (ev) => {
+    const m = JSON.parse(ev.data);
+    if (m.id && pending.has(m.id)) {
+      const p = pending.get(m.id); pending.delete(m.id); clearTimeout(p.t);
+      m.error ? p.rej(new Error(JSON.stringify(m.error).slice(0, 120))) : p.res(m.result);
+    }
+  };
+  await new Promise((res, rej) => { ws.onopen = res; ws.onerror = () => rej(new Error('ws 连接失败')); });
+
+  const now = Date.now();
+  const state = readState();
+  const prevTabs = state.tabs || {};
+
+  // 客户端计数要在自己的连接建立**之后**取：这样我自己那行一定在，才排除得干净。
+  const clients = otherCdpClients();
+
+  const { targetInfos } = await send('Target.getTargets');
+  const pages = targetInfos.filter((t) => t.type === 'page');
+
+  const nextTabs = {};
+  for (const t of pages) {
+    const prior = prevTabs[t.targetId];
+    nextTabs[t.targetId] = {
+      firstSeen: prior?.firstSeen ?? now,
+      lastSeen: now,
+      url: (t.url || '').slice(0, 200),
+      host: hostOf(t.url || ''),
+    };
+  }
+
+  // 诊断用：窗口数。visibilityState 只有在这个数 >= visible 数时才可信。
+  const windowIds = new Set();
+  for (const t of pages) {
+    try {
+      const r = await send('Browser.getWindowForTarget', { targetId: t.targetId });
+      if (r?.windowId !== undefined) windowIds.add(r.windowId);
+    } catch { /* 新协议下个别 target 不支持，忽略 */ }
+  }
+
+  // 探测：一次 evaluate 同时拿 visibility 和 resource 计数。
+  const PROBE = 'JSON.stringify({v:document.visibilityState,n:performance.getEntriesByType("resource").length})';
+  let visibleCount = 0;
+  for (const t of pages) {
+    const url = t.url || '';
+    if (shouldSkip(url, hostOf(url)) || !t.attached) continue;
+    try {
+      const { sessionId } = await send('Target.attachToTarget', { targetId: t.targetId, flatten: true });
+      try {
+        const r = await send('Runtime.evaluate', { expression: PROBE, returnByValue: true }, sessionId);
+        const probe = JSON.parse(r?.result?.value ?? '{}');
+        const rec = nextTabs[t.targetId];
+        rec.res = probe.n;
+        if (probe.v === 'visible') { rec.visible = true; visibleCount++; }
+      } finally {
+        await send('Target.detachFromTarget', { sessionId }).catch(() => {});
+      }
+    } catch { /* tab 可能已经没了，按无信号处理 */ }
+  }
+
+  // visible 数多于窗口数 = 信号不自洽（本机就是：1 个窗口、54 个 visible），
+  // 此时忽略 visibility，否则最后一个 tab 都关不掉。
+  const windowCount = windowIds.size;
+  const trustVisibility = windowCount > 0 && visibleCount <= windowCount;
+
+  const closed = [];
+  const kept = [];
+  let remaining = pages.length;
+
+  for (const t of pages) {
+    const url = t.url || '';
+    const host = hostOf(url);
+    const rec = nextTabs[t.targetId];
+    const prior = prevTabs[t.targetId];
+    const skip = shouldSkip(url, host);
+
+    // 活动 = 换过 URL，或页面的 resource 计数变了。任一命中就把闲置时钟拨回现在，
+    // 否则 age 会从「第一次见」一路增长，把 agent 正在推进的 tab 也关掉。
+    // 注意比的是上一轮记下的值，不是本轮刚写回去的。
+    const navigated = prior !== undefined && prior.url !== url.slice(0, 200);
+    const resChanged = prior?.res !== undefined && rec.res !== undefined && prior.res !== rec.res;
+    if (prior !== undefined && (navigated || resChanged)) rec.firstSeen = now;
+
+    const age = now - rec.firstSeen;
+    if (skip) { kept.push([host, skip]); continue; }
+    if (age < ttlFor(url)) { kept.push([host, 'within-ttl']); continue; }
+    if (trustVisibility && rec.visible) { kept.push([host, 'visible']); continue; }
+    if (remaining <= 1) { kept.push([host, 'last-tab']); continue; }
+
+    if (DRY_RUN) {
+      closed.push({ host, url: url.slice(0, 120), ageMin: Math.round(age / 60000), dryRun: true });
+      remaining--;
+      continue;
+    }
+    try {
+      await send('Target.closeTarget', { targetId: t.targetId });
+      closed.push({ host, url: url.slice(0, 120), ageMin: Math.round(age / 60000) });
+      delete nextTabs[t.targetId];
+      remaining--;
+    } catch (e) {
+      kept.push([host, `close-failed:${e.message}`]);
+    }
+  }
+
+  // --quit-if-idle：没人连着 CDP 且闲置够久，就把浏览器整个收掉——那才是内存的大头。
+  let quit = null;
+  if (QUIT_IF_IDLE) {
+    if (clients === null) {
+      quit = 'skipped:ss-unavailable';
+    } else if (clients > 0) {
+      quit = `skipped:${clients}-client(s)`;
+    } else {
+      const idleMs = now - (state.lastClientSeen ?? now);
+      if (idleMs >= IDLE_MIN * 60_000) {
+        log(`无 CDP 客户端且闲置 ${Math.round(idleMs / 60000)} 分钟 → 关闭浏览器`);
+        if (!DRY_RUN) {
+          try { await send('Browser.close'); } catch { /* 连接会先断，正常 */ }
+        }
+        quit = `closed:idle-${Math.round(idleMs / 60000)}min`;
+      } else {
+        quit = `skipped:idle-${Math.round(idleMs / 60000)}min<${IDLE_MIN}min`;
+      }
+    }
+  }
+  if (clients !== null && clients > 0) state.lastClientSeen = now;
+  state.tabs = nextTabs;
+  writeState(state);
+
+  const result = {
+    port: PORT,
+    tabs: pages.length,
+    registered: pages.filter((t) => !prevTabs[t.targetId]).length,
+    closed,
+    keptByReason: kept.reduce((a, [, r]) => { a[r] = (a[r] || 0) + 1; return a; }, {}),
+    otherClients: clients,
+    windows: windowCount,
+    visibleReported: visibleCount,
+    trustVisibility,
+    quit,
+  };
+
+  ws.close();
+
+  if (AS_JSON) {
+    console.log(JSON.stringify(result, null, 2));
+  } else {
+    log(`tab ${pages.length} 个，新登记 ${result.registered} 个，关闭 ${closed.length} 个` +
+      (DRY_RUN ? '（dry-run）' : ''));
+    for (const c of closed) log(`  关闭 ${c.host || '(no-host)'}  闲置 ${c.ageMin} 分钟  ${c.url}`);
+    const summary = Object.entries(result.keptByReason).map(([k, v]) => `${k}=${v}`).join(' ');
+    if (summary) log(`  保留：${summary}`);
+    if (!trustVisibility) {
+      log(`  visibility 信号不自洽（窗口 ${windowCount} / 报 visible ${visibleCount}）→ 本轮忽略它`);
+    }
+    if (quit) log(`  quit-if-idle: ${quit}`);
+    if (result.registered === pages.length && !closed.length) {
+      log('  首次登记，本轮不动手；下一个 TTL 周期起才会关闭。');
+    }
+  }
+  return result;
+}
+
+// 只在作为 CLI 直接执行时跑 main；被 import 时导出纯函数，方便单测
+// （URL 分类这类字符串逻辑用真实页面回归太慢，见 README 的自测片段）。
+//
+// 两边都要 realpath：本脚本是通过 ~/.local/bin 的 symlink 调用的，而 Node 对 ESM
+// 会把 import.meta.url 解析成真实路径。直接比字面路径的话 symlink 调用会静默不跑
+// main() —— 不报错、没输出、exit 0，看起来像“跑成功了但什么都没做”。
+const isMain = (() => {
+  try {
+    return Boolean(process.argv[1])
+      && fs.realpathSync(path.resolve(process.argv[1]))
+        === fs.realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+})();
+if (isMain) {
+  main().catch((e) => {
+    console.error('[reap] 出错：', e.message);
+    process.exitCode = 1;
+  });
+}
+
+export { isSearch, shouldSkip, ttlFor, hostOf, otherCdpClients, main };

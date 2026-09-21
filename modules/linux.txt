@@ -32,6 +32,7 @@ linux/hardware/howdy
 linux/hardware/libinput
 linux/hardware/light
 linux/hardware/yoga-pro-14s
+linux/services/chrome-agent-reaper
 linux/services/docker
 linux/services/happy
 linux/services/openvpn

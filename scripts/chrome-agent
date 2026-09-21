@@ -11,6 +11,12 @@
 #   chrome-agent                 启动 agent 浏览器（占用 9222）
 #   chrome-agent <url>           顺手开个地址
 #   CHROME_AGENT_PORT=9333 chrome-agent    换端口
+#   CHROME_AGENT_RESTORE=1 chrome-agent    恢复上次会话（默认不恢复，见下）
+#
+# tab 用完就关：陈旧 tab 由 chrome-agent-reaper 定时回收
+# （~/dotfiles/linux/services/chrome-agent-reaper/）。所以这里默认**不**带
+# --restore-last-session —— 带上就会把上一轮攒下的几十个 tab 原样捞回来，
+# 回收等于白做。
 set -euo pipefail
 
 PROFILE="${CHROME_AGENT_PROFILE:-$HOME/.local/share/chrome-agent}"
@@ -61,11 +67,17 @@ fi
 
 mkdir -p "$PROFILE"
 
+# 默认 NTP 起步：不把上一轮的垃圾 tab 捞回来。
+restore=()
+if [ "${CHROME_AGENT_RESTORE:-0}" = "1" ]; then
+  restore=(--restore-last-session)
+fi
+
 exec "$CHROME_BIN" \
   --user-data-dir="$PROFILE" \
   --remote-debugging-port="$PORT" \
   --remote-allow-origins='*' \
-  --restore-last-session \
+  ${restore[@]+"${restore[@]}"} \
   --no-first-run \
   --no-default-browser-check \
   "$@"

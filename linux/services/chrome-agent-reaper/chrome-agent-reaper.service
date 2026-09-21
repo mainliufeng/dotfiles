@@ -1,0 +1,20 @@
+[Unit]
+Description=Reap stale tabs in the agent Chrome (CDP 9222)
+Documentation=file:%h/dotfiles/linux/services/chrome-agent-reaper/README.md
+# 被回收的是图形会话里的 agent 浏览器。会话不在时端口本来就不通，
+# 脚本会安静退出 0，所以这里跟着 graphical-session 走就够了。
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+# 显式写 node 路径：systemd user service 不读 ~/.zshrc。
+ExecStart=/usr/bin/node %h/dotfiles/scripts/chrome-agent-reap --quit-if-idle --idle-min 60
+# 回收是尽力而为。浏览器没起来、端口被占、ss 不可用都属于正常情况，
+# 不该让 timer 在 journal 里刷成 failed。
+SuccessExitStatus=0 1
+TimeoutStartSec=180
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target
