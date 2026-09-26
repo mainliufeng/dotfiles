@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# vocal-enhance — 会议/直播录像人声增强
+#
+# 处理链: DeepFilterNet3 神经降噪 -> EBU R128 两遍归一化 -> 回封
+# 视频流直接复制、不重编码，所以画质零损失、音画同步不变。
+#
+# 用法:
+#   vocal-enhance input.mp4                  # 输出到同目录 <name>_人声增强.mp4
+#   vocal-enhance input.mp4 -o out/          # 指定输出目录
+#   vocal-enhance input.mp4 --lufs -14       # 平台上传用 -14 LUFS (默认 -16)
+#   vocal-enhance input.mp4 --atten 30       # 更强降噪 (噪声重时; 默认 20)
+#   vocal-enhance input.mp4 --atten 100      # 全量抑制 (最安静, 语音保真略降)
+#   vocal-enhance input.mp4 --only-audio     # 只输出增强后的音频 (m4a)
+#
+# 依赖: ffmpeg / ffprobe 在 PATH 里; 同目录或 ~/.local/share 下有 .venv
+#       (跑一次 setup.sh 就会建好)。可用 DF_PY 环境变量覆盖 venv 的 python。
+#
+# 参数为什么是 20: 见 README「atten_lim 为什么是 20」。
+set -euo pipefail
+
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+ROOT_DIR="$(dirname "$SELF")/.."
+
+# venv 查找顺序: $DF_PY > 模块内 .venv > ~/.local/share/vocal-enhance/.venv
+if [[ -z "${DF_PY:-}" ]]; then
+  for cand in "$ROOT_DIR/.venv/bin/python" \
+              "$HOME/.local/share/vocal-enhance/.venv/bin/python"; do
+    [[ -x "$cand" ]] && DF_PY="$cand" && break
+  done
+fi
+
+ATTEN="${ATTEN:-20}"
+LUFS="${LUFS:--16}"
+OUTDIR=""
+ONLY_AUDIO=0
+SR=48000
+
+usage(){ sed -n '2,20p' "$SELF" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
+
+IN=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help) usage 0 ;;
+    -o|--out) OUTDIR="$2"; shift 2 ;;
+    --lufs)   LUFS="$2"; shift 2 ;;
+    --atten)  ATTEN="$2"; shift 2 ;;
+    --only-audio) ONLY_AUDIO=1; shift ;;
+    -*) echo "未知参数: $1" >&2; usage 1 ;;
+    *) IN="$1"; shift ;;
+  esac
+done
+
+[[ -n "$IN" ]] || usage 1
+[[ -f "$IN" ]] || { echo "找不到文件: $IN" >&2; exit 1; }
+for c in ffmpeg ffprobe; do
+  command -v "$c" >/dev/null || { echo "缺少 $c（系统依赖）" >&2; exit 1; }
+done
+[[ -n "${DF_PY:-}" && -x "$DF_PY" ]] || {
+  echo "找不到 DeepFilterNet 的 venv。" >&2
+  echo "在本模块目录跑一次 ./setup.sh，或用 DF_PY=<venv>/bin/python 指定。" >&2
+  exit 1
+}
+
+ABS_IN=$(readlink -f "$IN")
+BASE=$(basename "$ABS_IN"); STEM="${BASE%.*}"
+OUTDIR="${OUTDIR:-$(dirname "$ABS_IN")}"
+mkdir -p "$OUTDIR"
+WORK=$(mktemp -d); trap 'rm -rf "$WORK"' EXIT
+
+echo "── 输入 : $ABS_IN"
+echo "── 参数 : atten_lim=${ATTEN}dB, 目标响度 ${LUFS} LUFS"
+IS_VIDEO=$(ffprobe -v error -select_streams v:0 -show_entries stream=index \
+            -of csv=p=0 "$ABS_IN" | head -1)
+
+echo "[1/4] 抽取音轨 (${SR}Hz 单声道)"
+ffmpeg -hide_banner -v error -y -i "$ABS_IN" -vn -ar "$SR" -ac 1 \
+  -c:a pcm_s16le "$WORK/raw.wav"
+
+echo "[2/4] DeepFilterNet3 神经降噪"
+"$DF_PY" -W ignore -m df.enhance "$WORK/raw.wav" --output-dir "$WORK" \
+  --atten-lim "$ATTEN" --no-suffix --log-level error >/dev/null 2>"$WORK/df.log" \
+  || { echo "DeepFilterNet 失败:" >&2; cat "$WORK/df.log" >&2; exit 1; }
+mv "$WORK/raw.wav" "$WORK/denoised.wav"
+
+echo "[3/4] EBU R128 两遍归一化 -> ${LUFS} LUFS"
+M=$(ffmpeg -hide_banner -nostats -i "$WORK/denoised.wav" \
+      -af "loudnorm=I=${LUFS}:TP=-1.5:LRA=11:print_format=json" -f null - 2>&1 \
+    | sed -n '/^{/,/^}/p')
+g(){ "$DF_PY" -c "import json;print(json.loads('''$M''')['$1'])"; }
+# 两遍法: 第一遍只测量, 第二遍用测得值做线性增益 (linear=true)。
+# 注意 -ar 必须显式给: loudnorm 内部按 192kHz 做 true-peak,
+# 不加 -ar 输出会变成 192kHz。
+ffmpeg -hide_banner -v error -y -i "$WORK/denoised.wav" -af \
+  "loudnorm=I=${LUFS}:TP=-1.5:LRA=11:linear=true:measured_I=$(g input_i):measured_TP=$(g input_tp):measured_LRA=$(g input_lra):measured_thresh=$(g input_thresh):offset=$(g target_offset)" \
+  -ar "$SR" -ac 1 -c:a pcm_s16le "$WORK/final.wav"
+
+if [[ "$ONLY_AUDIO" == "1" ]]; then
+  OUT="$OUTDIR/${STEM}_人声增强.m4a"
+  ffmpeg -hide_banner -v error -y -i "$WORK/final.wav" -c:a aac -b:a 192k -ac 1 "$OUT"
+elif [[ -n "$IS_VIDEO" ]]; then
+  echo "[4/4] 回封视频 (视频流 copy, 不重编码)"
+  OUT="$OUTDIR/${STEM}_人声增强.mp4"
+  ffmpeg -hide_banner -v error -y -i "$ABS_IN" -i "$WORK/final.wav" \
+    -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 192k -ac 1 -ar "$SR" \
+    -movflags +faststart "$OUT"
+else
+  OUT="$OUTDIR/${STEM}_人声增强.wav"
+  cp "$WORK/final.wav" "$OUT"
+fi
+
+echo "── 完成 : $OUT"
+ffmpeg -hide_banner -nostats -i "$OUT" -af ebur128=peak=true -f null - 2>&1 \
+  | sed -n '/Summary:/,$p' | grep -E "I:|LRA:|Peak:" | sed 's/^ */   实测 /'
+ls -la "$OUT" | awk '{printf "   大小 %.1f MB\n", $5/1048576}'

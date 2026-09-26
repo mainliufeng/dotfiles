@@ -12,6 +12,7 @@ linux/apps/quartz-web
 linux/apps/screenshot-ocr
 linux/apps/tailnet-portal
 linux/apps/paseo
+linux/apps/vocal-enhance
 linux/desktop/awesome
 linux/desktop/gnome
 linux/desktop/hyprland
