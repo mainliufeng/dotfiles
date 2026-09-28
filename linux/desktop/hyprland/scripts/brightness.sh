@@ -4,6 +4,16 @@ set -euo pipefail
 action="${1:-}"
 step="${2:-5}"
 
+# Tell the cornice shell to draw its OSD for the new level. Best effort: no
+# shell, no cornice binary, no problem.
+report_to_cornice() {
+  local sock="${XDG_RUNTIME_DIR:-/tmp}/cornice-${USER:-user}.sock"
+  [[ -S $sock ]] || return 0
+  command -v cornice >/dev/null 2>&1 || return 0
+  ( cornice ipc osd brightness >/dev/null 2>&1 & ) 2>/dev/null || true
+  return 0
+}
+
 if [[ "$action" != "up" && "$action" != "down" ]]; then
   echo "Usage: $(basename "$0") up|down [step_percent]" >&2
   exit 2
@@ -20,6 +30,7 @@ if command -v light >/dev/null 2>&1; then
   else
     light -U "$step"
   fi
+  report_to_cornice
   exit 0
 fi
 
@@ -29,6 +40,7 @@ if command -v brightnessctl >/dev/null 2>&1; then
   else
     brightnessctl set "${step}%-"
   fi
+  report_to_cornice
   exit 0
 fi
 
@@ -52,11 +64,13 @@ if (( target > max )); then target="$max"; fi
 
 if [[ -w "$base/brightness" ]]; then
   printf '%s' "$target" > "$base/brightness"
+  report_to_cornice
   exit 0
 fi
 
 if command -v pkexec >/dev/null 2>&1; then
   pkexec /bin/sh -c "printf '%s' '$target' > '$base/brightness'"
+  report_to_cornice
   exit 0
 fi
 
