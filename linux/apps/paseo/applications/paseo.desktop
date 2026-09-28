@@ -1,0 +1,14 @@
+[Desktop Entry]
+Name=Paseo
+Comment=One interface for all your Claude Code, Codex and OpenCode agents
+# Paseo's own entry runs `paseo %U`, which resolves to the bundled CLI: a
+# terminal program. With Terminal=false a graphical launcher spawns it with no
+# tty, it exits silently and nothing happens. Point the entry at the Electron
+# app so the launcher opens the actual UI; the CLI stays available as `paseo`
+# in a terminal.
+Exec=/opt/Paseo/Paseo %U
+Terminal=false
+Type=Application
+Icon=paseo
+StartupWMClass=Paseo
+Categories=Development;
