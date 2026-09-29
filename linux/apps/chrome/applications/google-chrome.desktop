@@ -8,7 +8,7 @@ Name=Google Chrome (Wayland)
 GenericName=Web Browser
 Comment=Access the Internet
 StartupWMClass=Google-chrome
-Exec=/usr/bin/google-chrome-stable --force-device-scale-factor=2 %U
+Exec=/usr/bin/google-chrome-stable %U
 StartupNotify=true
 Terminal=false
 Icon=google-chrome
@@ -19,8 +19,8 @@ Actions=new-window;new-private-window;
 
 [Desktop Action new-window]
 Name=New Window
-Exec=/usr/bin/google-chrome-stable --force-device-scale-factor=2 --new-window %U
+Exec=/usr/bin/google-chrome-stable --new-window %U
 
 [Desktop Action new-private-window]
 Name=New Incognito Window
-Exec=/usr/bin/google-chrome-stable --force-device-scale-factor=2 --incognito %U
+Exec=/usr/bin/google-chrome-stable --incognito %U
