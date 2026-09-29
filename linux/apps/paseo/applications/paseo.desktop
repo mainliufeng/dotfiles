@@ -6,7 +6,7 @@ Comment=One interface for all your Claude Code, Codex and OpenCode agents
 # tty, it exits silently and nothing happens. Point the entry at the Electron
 # app so the launcher opens the actual UI; the CLI stays available as `paseo`
 # in a terminal.
-Exec=/opt/Paseo/Paseo %U
+Exec=/opt/Paseo/Paseo --force-device-scale-factor=2 %U
 Terminal=false
 Type=Application
 Icon=paseo
