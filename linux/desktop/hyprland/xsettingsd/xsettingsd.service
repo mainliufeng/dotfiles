@@ -1,0 +1,19 @@
+[Unit]
+Description=xsettingsd — publishes Xft.dpi and scaling hints to XWayland apps
+Documentation=https://github.com/mainliufeng/dotfiles
+# This is the piece Plasma gets from KWin: XWayland apps are told the real DPI so
+# they scale their own UI. Without it Chromium/Electron apps think they are on a
+# 1x screen and render tiny while the compositor draws everything crisply.
+PartOf=graphical-session.target
+After=graphical-session.target
+ConditionEnvironment=WAYLAND_DISPLAY
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/xsettingsd -c %h/.config/xsettingsd/xsettingsd.conf
+# A dead hint daemon silently makes every XWayland app small again — keep it up.
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target
