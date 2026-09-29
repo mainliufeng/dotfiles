@@ -21,3 +21,5 @@ linux/apps/tailnet-portal/sites.local.tsv
 
 # vocal-enhance 的 python 环境 (setup.sh 生成)
 linux/apps/vocal-enhance/.venv/
+core.*
+*.core
