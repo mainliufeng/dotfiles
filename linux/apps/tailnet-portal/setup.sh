@@ -68,9 +68,11 @@ if command -v tailscale >/dev/null 2>&1; then
   tailscale serve --bg --https=443 --set-path=/workbench "$WORKBENCH_TARGET" >/dev/null 2>&1 \
     && echo "[portal] tailscale serve: /workbench -> $WORKBENCH_TARGET" \
     || echo "[portal] WARN: could not set /workbench" >&2
-  # Knowledge Entity Index uses absolute URLs, so it needs its own port/root.
-  # It (like dsh) has no manifest/SW of its own, so both go through the
-  # PWA-injecting proxy instead of straight to the upstream.
+  tailscale serve --bg --https=443 --set-path=/knowledge/ "http://127.0.0.1:$ENTITY_PROXY_PORT/knowledge/" >/dev/null 2>&1 \
+    && echo "[portal] tailscale serve: /knowledge/ -> scoped PWA proxy" \
+    || echo "[portal] WARN: could not set /knowledge/" >&2
+  # Retain the old Knowledge port as a scoped compatibility endpoint.
+  # Both legacy ports retain their existing PWA proxy endpoints.
   tailscale serve --bg --https=10000 "http://127.0.0.1:$ENTITY_PROXY_PORT" >/dev/null 2>&1 \
     && echo "[portal] tailscale serve: https://<tailnet>:10000/ -> 127.0.0.1:$ENTITY_PROXY_PORT (pwa-proxy)" \
     || echo "[portal] WARN: could not set :10000" >&2

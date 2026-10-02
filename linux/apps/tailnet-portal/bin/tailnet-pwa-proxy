@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import gzip
 import http.client
+import json
 import os
 import re
 import signal
@@ -83,7 +84,8 @@ def read_conf():
             token_log = parts[6].strip() if len(parts) > 6 else ""
             sites.append({"name": name, "upstream": upstream, "port": int(port),
                           "app": app, "short": short, "icon": icon,
-                          "token_log": os.path.expanduser(token_log) if token_log else ""})
+                          "token_log": os.path.expanduser(token_log) if token_log else "",
+                          "mount": parts[7].strip().rstrip("/") if len(parts) > 7 else ""})
     return sites
 
 
@@ -103,9 +105,21 @@ def read_token(path: str) -> str | None:
 
 def make_handler(site):
     up = urllib.parse.urlsplit(site["upstream"])
-    tags = HEAD_TAGS.format(short=site["short"])
+    mount = site.get("mount", "")
+    if mount and not re.fullmatch(r"/[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*", mount):
+        raise ValueError("invalid PWA mount path")
+    tags = HEAD_TAGS.format(short=site["short"]).replace("/__pwa/", mount + "/__pwa/")
     manifest = (MANIFEST % {"name": site["app"], "short": site["short"]}).encode()
-    icon = open(os.path.join(ASSETS, site["icon"]), "rb").read()
+    if mount:
+        metadata = json.loads(manifest)
+        metadata.update(id=mount+"/", start_url=mount+"/", scope=mount+"/")
+        for entry in metadata["icons"]: entry["src"] = mount + entry["src"]
+        manifest = json.dumps(metadata, ensure_ascii=False).encode()
+    register = REGISTER_JS.replace("/__pwa/", mount+"/__pwa/").replace('scope:"/"', 'scope:"'+mount+'/"')
+    with open(os.path.join(ASSETS, site["icon"]), "rb") as fh:
+        icon = fh.read()
+    with open(os.path.join(ASSETS, "sw.js"), "rb") as fh:
+        worker = fh.read()
 
     class Handler(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
@@ -126,21 +140,29 @@ def make_handler(site):
                 self.wfile.write(body)
 
         def _proxy(self):
-            if self.path.startswith("/__pwa/"):
-                p = self.path.split("?")[0]
+            proxy_path = self.path
+            if mount:
+                pathname = urllib.parse.urlsplit(self.path).path
+                if pathname in ("/manifest.webmanifest", "/__pwa/manifest.webmanifest"):
+                    return self._local(manifest, "application/manifest+json")
+                if pathname == mount:
+                    return self._local(b"", "text/plain", 302, [("Location", mount+"/" + ("?"+urllib.parse.urlsplit(self.path).query if urllib.parse.urlsplit(self.path).query else ""))])
+                if not self.path.startswith(mount+"/"):
+                    return self._local(b"", "text/plain", 302, [("Location", mount+self.path)])
+                proxy_path = self.path[len(mount):]
+            if proxy_path.startswith("/__pwa/"):
+                p = proxy_path.split("?")[0]
                 if p.endswith("manifest.webmanifest"):
                     return self._local(manifest, "application/manifest+json")
                 if p.endswith("icon.png"):
                     return self._local(icon, "image/png")
                 if p.endswith("sw.js"):
-                    # the worker lives under /__pwa/ but must control the whole
-                    # origin, which the browser only allows when the response
-                    # explicitly widens the allowed scope
-                    return self._local(open(os.path.join(ASSETS, "sw.js"), "rb").read(),
+                    # Widen from the worker directory to this app mount only.
+                    return self._local(worker,
                                        "text/javascript",
-                                       extra=[("Service-Worker-Allowed", "/")])
+                                       extra=[("Service-Worker-Allowed", mount+"/")])
                 if p.endswith("register.js"):
-                    return self._local(REGISTER_JS.encode(), "text/javascript")
+                    return self._local(register.encode(), "text/javascript")
                 return self._local(b"not found", "text/plain", 404)
 
             length = int(self.headers.get("Content-Length") or 0)
@@ -149,10 +171,15 @@ def make_handler(site):
                        if k.lower() not in HOP_BY_HOP}
             headers["Accept-Encoding"] = "identity"
             headers["Host"] = up.netloc
+            if mount:
+                headers = {k: v for k, v in headers.items()
+                           if k.lower() not in ("if-none-match", "if-modified-since")}
 
             conn = http.client.HTTPConnection(up.hostname, up.port, timeout=120)
             try:
-                conn.request(self.command, self.path, body=body, headers=headers)
+                # Read mounted HEAD as GET so transformed representation metadata matches.
+                upstream_method = "GET" if mount and self.command == "HEAD" else self.command
+                conn.request(upstream_method, proxy_path, body=body, headers=headers)
                 resp = conn.getresponse()
             except Exception as exc:  # noqa: BLE001
                 return self._local(f"upstream error: {exc}".encode(), "text/plain", 502)
@@ -165,7 +192,7 @@ def make_handler(site):
                 token = read_token(site["token_log"])
                 conn.close()
                 if token:
-                    location = "/?token=" + token
+                    location = mount + "/?token=" + token
                     self.send_response(303)
                     self.send_header("Location", location)
                     self.send_header("Content-Length", "0")
@@ -202,15 +229,28 @@ def make_handler(site):
             # does), so decode here since we drop content-encoding downstream.
             enc = (resp.getheader("Content-Encoding") or "").lower()
             try:
-                if "gzip" in enc:
+                if data and "gzip" in enc:
                     data = gzip.decompress(data)
-                elif "deflate" in enc:
+                elif data and "deflate" in enc:
                     data = zlib.decompress(data)
             except Exception as exc:  # noqa: BLE001
                 return self._local(f"cannot decode upstream body: {exc}".encode(),
                                    "text/plain", 502)
+            if mount and data and proxy_path.split("?")[0] == "/graph.json" and "application/json" in ctype:
+                def rewrite_links(value):
+                    if isinstance(value, list): return [rewrite_links(x) for x in value]
+                    if isinstance(value, dict):
+                        return {k: mount+v if k=="href" and isinstance(v,str) and v.startswith("/") and not v.startswith("//") else rewrite_links(v) for k,v in value.items()}
+                    return value
+                data = json.dumps(rewrite_links(json.loads(data))).encode()
+            if mount and "javascript" in ctype:
+                data = data.replace(b'fetch("/graph.json")', ('fetch("'+mount+'/graph.json")').encode())
             if "text/html" in ctype:
                 text = data.decode("utf-8", "replace")
+                if mount:
+                    text = re.sub(r"<link\b[^>]*\brel=[\"']manifest[\"'][^>]*>", "", text, flags=re.I)
+                    text = re.sub(r"((?:href|src|action)=[\"'])/(?!/)", lambda m: m.group(1)+mount+"/", text)
+                    text = text.replace('fetch("/graph.json")', 'fetch("'+mount+'/graph.json")')
                 i = text.find("</head>")
                 if i >= 0 and 'name="tailnet-pwa"' not in text:
                     text = (text[:i] + '<!-- tailnet-pwa -->' + tags + text[i:])
@@ -218,8 +258,14 @@ def make_handler(site):
 
             self.send_response(resp.status)
             for k, v in passthrough:
+                if mount and k.lower() in ("etag", "cache-control"):
+                    continue
+                if mount and k.lower() == "location" and v.startswith("/") and not v.startswith("//"):
+                    v = mount + v
                 self.send_header(k, v)
-            self.send_header("Content-Length", str(len(data)))
+            if mount:
+                self.send_header("Cache-Control", "no-cache")
+            self.send_header("Content-Length", resp.getheader("Content-Length", "0") if self.command == "HEAD" and not mount else str(len(data)))
             self.end_headers()
             if self.command != "HEAD":
                 self.wfile.write(data)

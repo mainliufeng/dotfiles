@@ -8,7 +8,9 @@ https://liufeng-82tk.tail6b9726.ts.net/           → 302 → /home/（入口页
 ├── /workbench/     Knowledge Workbench
 ├── /gefei-knowledge/ 哥飞 · 出海知识库（Quartz）
 ├── /gefei-ask/       哥飞 · 问大咖（Quartz）
-├── :10000/         Knowledge Entity Index（绝对路径，需独占端口）
+├── /knowledge/     Knowledge 知识库（代理重写绝对路径）
+├── /topic-desk/    选题台（本机私有清单）
+├── :10000/         Knowledge 旧入口（转到 /knowledge/）
 └── :8443/          dsh · DeepSeek Harness
 ```
 
@@ -23,11 +25,14 @@ App 范围内，于是**当成更新同一个 App**（表现为：首页图标�
 所以入口页挪到 `/home/`（scope `/home/`），和子站成为**兄弟**而不是父子：从入口 App 点卡片
 会跳出到浏览器/子 App，安装就是独立 App。根路径 302 到 `/home/`，便于直接输域名。
 
-`:10000` 和 `:8443` 因为**端口不同 = 不同 origin**，各自的 scope `/` 与 443 上的路径互不干扰，
-所以它们可以占根路径。
+Android 已安装的 WebAPK 按 scheme、host 和 path 接管链接，intent filter 不包含端口。
+因此，不能靠不同端口隔离手机已有的根路径 Knowledge App。Knowledge 也改为
+`/knowledge/` 的独立 scope，并移除上游重复的 manifest 标签。
 
-⚠️ 另一个坑：manifest 里写相对 `"id": "."` 时 Chrome 会把它解析成 **origin 根 `/`**
-（而不是 manifest 所在目录），反而制造嵌套。**不要写显式 `id`**，用默认值（= `start_url`）即可。
+每个 App 使用自己的 `start_url`、`scope` 和稳定身份；显式 id 使用完整路径
+（例如 `/topic-desk/`），不使用会解析到根路径的 `id: "."`。
+旧 Knowledge App 的手机接管规则不会因服务器改动立即消失，需要在手机上卸载旧 App，
+再从 `/knowledge/` 重装一次。桌面 Chrome 安装检查通过不代表手机桌面已出现图标。
 
 ## 命令
 
@@ -59,38 +64,36 @@ sites.tsv 属于公开仓库，别把只在本机跑的服务写进去。两份�
 
 代价：手机上已安装的 Workbench 图标如果没自动更新 start_url，需要重装一次。
 
-## 为什么 Entity Index 独占 :10000
+## Knowledge 的独立路径
 
-`~/Code/self/knowledge/scripts/serve-knowledge.mjs` 的所有链接和 API 都是绝对路径
-（`/research`、`/api/catalog/...`、`/entity/...`），挂到子路径会全部指回根。
-Tailscale Serve 不做路径重写，所以给它根路径 = 独占一个 HTTPS 端口。
-
-Tailscale 只允许 **443 / 8443 / 10000** 三个 HTTPS 端口；443 现在归入口页，
-8443 归 dsh，10000 归 Entity Index —— 已用满。
+Knowledge 上游使用绝对路径。PWA 代理现在支持 wrapped.tsv 的第八列 `mount`：
+对 Knowledge 使用 `/knowledge`，去掉传给上游的前缀，再将 HTML 资源/导航地址、
+图谱 fetch 地址和图谱节点 href 加回该前缀。代理注入单一 manifest、独立 SW scope，
+不会改动上游 Knowledge 的源码或实体数据。dsh 保留原代理配置。
 
 ## 每个站点都能装成 App
 
 入口页、两个 Quartz 库、Workbench 自带 manifest + service worker，直接可装。
-Entity Index 和 dsh 是别人的服务、没有 manifest，由 **`tailnet-pwa-proxy`** 反向
-代理注入：
+Knowledge 和 dsh 由 **`tailnet-pwa-proxy`** 提供 PNG 图标及安装配置：
 
 ```
-:10000/ -> 127.0.0.1:8095 (pwa-proxy) -> http://100.79.161.127:8787  (Entity Index)
+/knowledge/ -> 127.0.0.1:8095/knowledge/ (pwa-proxy) -> Knowledge 上游
+:10000/    -> 同一代理，兼容旧路径
 :8443/  -> 127.0.0.1:8096 (pwa-proxy) -> http://127.0.0.1:8789        (dsh)
 ```
 
 代理做三件事：自己提供 `/__pwa/{manifest,icon,sw.js,register.js}`、把 PWA 的
-`<head>` 标签注入 `text/html` 响应、其余原样透传（cookie / 重定向 / SSE 都不动）。
+`<head>` 标签注入 `text/html` 响应、未指定 mount 时保留原转发行为；指定 mount 时同时重写站内导航和 Location。
 要包装新服务就加一行 [wrapped.tsv](wrapped.tsv)，然后跑 `bash setup.sh`。
 
-如果上游要求 `?token=` 认证（dsh 就是），在 wrapped.tsv 最后一列填它启动时
+如果上游要求 `?token=` 认证（dsh 就是），在 wrapped.tsv 第七列填它启动时
 **打印 token 的日志文件**。代理遇到 401 会自动带着 token 跳一次，浏览器拿到 cookie
 后就不再需要 token。token 每次重启都会变，所以是每次请求现读日志，不写死。
 
 三个坑：
 - 上游可能无视 `Accept-Encoding: identity` 仍返回 gzip（`serve-knowledge.mjs` 就是），
   代理必须先解压再注入。
-- SW 文件在 `/__pwa/` 下却要控制整个 origin，必须回 `Service-Worker-Allowed: /`，
+- SW 文件在安装资源目录下，需回 `Service-Worker-Allowed` 为该 App 的 scope，
   否则浏览器拒绝注册。
 
 ## 排障
