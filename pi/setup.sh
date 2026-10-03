@@ -40,11 +40,22 @@ for (let index = 0; index < paths.length; index += 2) {
     ? JSON.parse(fs.readFileSync(targetPath, "utf8"))
     : {};
 
-  fs.writeFileSync(targetPath, `${JSON.stringify(merge(target, source), null, 2)}\n`);
+  const merged = merge(target, source);
+  if (sourcePath.endsWith("/models.json")) {
+    // Magpie owns the gateway model catalog and key. Remove obsolete direct
+    // routes, but preserve its machine-specific wiring during setup.
+    merged.providers = target.providers?.magpie
+      ? { magpie: target.providers.magpie }
+      : {};
+  }
+  fs.writeFileSync(targetPath, `${JSON.stringify(merged, null, 2)}\n`);
 }
 NODE
 
 chmod 600 "$PI_AGENT_DIR/models.json"
+
+mkdir -p "$PI_AGENT_DIR/extensions"
+ln -sfn "$SCRIPT_DIR/extensions/magpie-only.ts" "$PI_AGENT_DIR/extensions/magpie-only.ts"
 
 # Skills use the private, harness-specific source list.
 private_installer="${DOTFILES_PRIVATE_HOME:-$HOME/dotfiles-private}/pi/install-skills.py"
