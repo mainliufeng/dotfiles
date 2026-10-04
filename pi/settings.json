@@ -1,6 +1,6 @@
 {
   "defaultProvider": "magpie",
-  "defaultModel": "deepseek/deepseek-flash",
+  "defaultModel": "group/auto-deepseek-flash",
   "defaultThinkingLevel": "high",
   "enabledModels": [
     "magpie/**"
