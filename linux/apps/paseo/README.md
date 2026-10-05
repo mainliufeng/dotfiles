@@ -140,6 +140,28 @@ grep -c '\[desktop\] app startup'         "$log"   # 连打 10 次 paseo 也不�
 
 ## Notes
 
+## Paseo 0.8.0 nightly schedule fix
+
+The bundled scheduler keeps a task list while awaiting long agent turns. A later
+tick can finish a second site first; the old list then starts that site again,
+and advances its next date twice. The local ESM loader revalidates each schedule
+at dispatch, rejects an already running site, and calculates cadence from the
+completed run's original scheduled date. Other sites still run concurrently.
+
+`link.sh` installs the user-service drop-in `95-schedule-fix.conf`. On the next
+service start, `NODE_OPTIONS` loads the patch only for the bundled schedule
+module. It leaves `/opt/Paseo` untouched and fails explicitly if upstream changes
+the patch anchors. Revalidate or remove the drop-in after an upstream scheduler
+fix; deleting the symlink and reloading/restarting the user service rolls back.
+
+The installer needs no sudo. `apply-schedule-fix.mjs <confirmed-worker-pid>` can
+apply the validated methods to a running daemon without restarting its agents;
+it opens and then closes a loopback-only Node inspector. Do not point it at an
+unverified PID. Regression command:
+`node linux/apps/paseo/test-schedule-fix.mjs /path/to/extracted-service.js`.
+The six cases cover overlapping ticks, double manual starts, recovery cadence,
+configuration refresh during a run, and paused/deleted schedules.
+
 - The desktop app is the GUI; the daemon is what the phone talks to.
 - `paseo-bin` conflicts with `paseo-cli`/`paseo` in AUR — installing this module
   replaces a CLI-only Paseo installation.
