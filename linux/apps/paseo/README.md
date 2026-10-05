@@ -138,8 +138,6 @@ grep -c 'second-instance openProjectPath' "$log"
 grep -c '\[desktop\] app startup'         "$log"   # 连打 10 次 paseo 也不涨
 ```
 
-## Notes
-
 ## Paseo 0.8.0 nightly schedule fix
 
 The bundled scheduler keeps a task list while awaiting long agent turns. A later
@@ -158,9 +156,11 @@ The installer needs no sudo. `apply-schedule-fix.mjs <confirmed-worker-pid>` can
 apply the validated methods to a running daemon without restarting its agents;
 it opens and then closes a loopback-only Node inspector. Do not point it at an
 unverified PID. Regression command:
-`node linux/apps/paseo/test-schedule-fix.mjs /path/to/extracted-service.js`.
+`node linux/apps/paseo/test-schedule-fix.mjs` (reads the installed archive).
 The six cases cover overlapping ticks, double manual starts, recovery cadence,
 configuration refresh during a run, and paused/deleted schedules.
+
+## Notes
 
 - The desktop app is the GUI; the daemon is what the phone talks to.
 - `paseo-bin` conflicts with `paseo-cli`/`paseo` in AUR — installing this module

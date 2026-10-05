@@ -1,8 +1,18 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, openSync, readSync, closeSync } from 'node:fs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { patchScheduleSource } from './schedule-patch.mjs';
-const original = readFileSync(process.argv[2] || '/tmp/paseo-schedule-service-diagnostic.js','utf8');
+function packagedSource() {
+ const fd=openSync('/opt/Paseo/resources/app.asar','r');
+ try {
+  const header=Buffer.alloc(16);readSync(fd,header,0,16,0);
+  const raw=Buffer.alloc(header.readUInt32LE(12));readSync(fd,raw,0,raw.length,16);
+  let entry=JSON.parse(raw.toString());
+  for(const name of 'node_modules/@getpaseo/server/dist/server/server/schedule/service.js'.split('/')) entry=entry.files[name];
+  const body=Buffer.alloc(entry.size);readSync(fd,body,0,body.length,8+header.readUInt32LE(4)+Number(entry.offset));return body.toString();
+ } finally { closeSync(fd); }
+}
+const original = process.argv[2] ? readFileSync(process.argv[2],'utf8') : packagedSource();
 const patched = patchScheduleSource(original);
 const extract = (source, start, end) => source.slice(source.indexOf(start),source.indexOf(end));
 const methods = extract(patched,'    async tick() {','    async completeScheduleIfDue(')
