@@ -61,5 +61,10 @@ else:
     idx = (idx + 1) % len(addresses)
 
 target = addresses[idx]
-subprocess.run(["hyprctl", "dispatch", "focuswindow", f"address:{target}"], check=False)
+marks = ''
+value = f'address:{target}'
+while ']' + marks + ']' in value:
+    marks += '='
+expression = 'hl.dsp.focus({window=[' + marks + '[\n' + value + ']' + marks + ']})'
+subprocess.run(["hyprctl", "dispatch", expression], check=False)
 PY

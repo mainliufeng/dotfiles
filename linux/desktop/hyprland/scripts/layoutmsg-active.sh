@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+lua_string() {
+  python3 - "$1" <<'LUA'
+import sys
+value = sys.argv[1]
+marks = ''
+while ']' + marks + ']' in value:
+    marks += '='
+print('[' + marks + '[\n' + value + ']' + marks + ']')
+LUA
+}
+
 if [[ $# -lt 1 ]]; then
   exit 0
 fi
@@ -50,12 +61,12 @@ fi
 if [[ -n "$active_win_ws_name" ]]; then
   if [[ "$active_win_ws_name" == special:* || ("$active_win_ws_id" =~ ^-?[0-9]+$ && "$active_win_ws_id" -lt 0) ]]; then
     if [[ -n "$active_ws_name" && "$active_win_ws_name" != "$active_ws_name" ]]; then
-      hyprctl dispatch workspace "$active_win_ws_name" || true
-      hyprctl dispatch layoutmsg "${msg[@]}" || true
-      hyprctl dispatch workspace "$active_ws_name" || true
+      hyprctl dispatch "hl.dsp.focus({workspace=$(lua_string "$active_win_ws_name")})" || true
+      hyprctl dispatch "hl.dsp.layout($(lua_string "${msg[*]}"))" || true
+      hyprctl dispatch "hl.dsp.focus({workspace=$(lua_string "$active_ws_name")})" || true
       exit 0
     fi
   fi
 fi
 
-hyprctl dispatch layoutmsg "${msg[@]}" || true
+hyprctl dispatch "hl.dsp.layout($(lua_string "${msg[*]}"))" || true

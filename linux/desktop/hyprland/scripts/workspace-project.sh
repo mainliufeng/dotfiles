@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+lua_string() {
+  python3 - "$1" <<'LUA'
+import sys
+value = sys.argv[1]
+marks = ''
+while ']' + marks + ']' in value:
+    marks += '='
+print('[' + marks + '[\n' + value + ']' + marks + ']')
+LUA
+}
+
 if [[ -n "${WORKSPACE_PROJECTS_ROOTS:-}" ]]; then
   IFS=':' read -r -a project_roots <<<"$WORKSPACE_PROJECTS_ROOTS"
 elif [[ -n "${WORKSPACE_PROJECTS_ROOT:-}" ]]; then
@@ -132,10 +143,10 @@ spawn_term() {
   repo_quoted="$(printf %q "$repo")"
   path_prefix_quoted="$(printf %q "$path_prefix")"
   shell_cmd="export PATH=${path_prefix_quoted}:\$PATH; cd $repo_quoted; printf '\033]0;${title}\007'; ${snippet}"
-  hypr dispatch exec "$term -e $shell $shell_args $(printf %q "$shell_cmd")"
+  hypr dispatch "hl.dsp.exec_cmd($(lua_string "$term -e $shell $shell_args $(printf %q "$shell_cmd")"))"
 }
 
-hypr dispatch workspace "name:${workspace}"
+hypr dispatch "hl.dsp.focus({workspace=$(lua_string "name:${workspace}")})"
 
 spawn_term "${workspace} Codex" "if [ -x $(printf %q "$codex_bin") ]; then $(printf %q "$codex_bin") $codex_args; elif command -v $codex_cmd >/dev/null 2>&1; then $codex_cmd $codex_args; else echo 'codex not found'; fi; exec $shell"
 sleep 0.2

@@ -23,32 +23,32 @@ selection="$(
 
 case "$selection" in
   "🪟 Window: Pin/Unpin (all workspaces)")
-    hyprctl dispatch pin
+    hyprctl dispatch 'hl.dsp.window.pin()'
     ;;
   "🪟 Window: Toggle floating")
-    hyprctl dispatch togglefloating
+    hyprctl dispatch 'hl.dsp.window.float()'
     ;;
   "🪟 Window: Fullscreen (toggle)")
-    hyprctl dispatch fullscreen 1
+    hyprctl dispatch 'hl.dsp.window.fullscreen({mode="maximized"})'
     ;;
   "🪟 Window: Kill active")
-    hyprctl dispatch killactive
+    hyprctl dispatch 'hl.dsp.window.close()'
     ;;
   "🪟 Window: Center + Resize (1300x800)")
-    hyprctl dispatch centerwindow
-    hyprctl dispatch resizeactive exact 1300 800
+    hyprctl dispatch 'hl.dsp.window.center()'
+    hyprctl dispatch 'hl.dsp.window.resize({x=1300,y=800,relative=false})'
     ;;
   "🖥️ Hyprland: Reload config")
     hyprctl reload
     ;;
   "🖥️ Hyprland: Toggle special workspace")
-    hyprctl dispatch togglespecialworkspace
+    hyprctl dispatch 'hl.dsp.workspace.toggle_special("")'
     ;;
   "🔒 System: Lock")
     ~/.config/hypr/scripts/lock.sh
     ;;
   "🚪 System: Exit Hyprland")
-    hyprctl dispatch exit
+    hyprctl dispatch 'hl.dsp.exit()'
     ;;
   *)
     exit 0
