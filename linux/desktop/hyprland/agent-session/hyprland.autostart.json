@@ -1,0 +1,20 @@
+[
+  "sh -c 'exec xsettingsd -c \"$HOME/.config/xsettingsd/xsettingsd.conf\"'",
+  "sh -c 'for i in $(seq 1 20); do xprop -root -f _XWAYLAND_GLOBAL_OUTPUT_SCALE 32c -set _XWAYLAND_GLOBAL_OUTPUT_SCALE 2 2>/dev/null && break; sleep 0.5; done'",
+  "fcitx5",
+  "/usr/bin/clash-verge",
+  "~/dotfiles/linux/desktop/mako/notify-log.py",
+  "nm-applet --indicator",
+  "wl-paste --type image --watch cliphist store",
+  "~/.config/hypr/scripts/fix-gtk-portal-scale.sh",
+  "libinput-gestures-setup start",
+  "~/.local/bin/chrome-agent",
+  "systemctl --user start paseo.service",
+  "/usr/bin/rustdesk --tray",
+  "~/.config/hypr/scripts/start-xdp-desktop-portal.sh",
+  "wl-paste --type text --watch cliphist store",
+  "wl-paste --type image --watch cliphist store",
+  "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE",
+  "~/.config/hypr/scripts/hyprvoice-session.sh",
+  "sh -c 'systemctl --user import-environment WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP && systemctl --user start cornice.service'"
+]

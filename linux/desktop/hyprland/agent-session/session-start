@@ -1,0 +1,60 @@
+#!/usr/bin/python3
+"""Initialize the real fork session before launching the user's applications."""
+import json
+import os
+import pathlib
+import subprocess
+import sys
+
+home=pathlib.Path.home()
+base=home/'.local/share/cornice-agent-desktop'
+release=pathlib.Path((base/'deployment-path').read_text())
+receipt=json.loads((release/'deployment.json').read_text())
+product=release/'cornice/share/cornice'
+env=os.environ.copy()
+env['CORNICE_PATH']=str(product)
+env['PATH']=str(home/'dotfiles/linux/desktop/hyprland/agent-session')+':'+str(home/'.local/bin')+':'+env['PATH']
+testing='--test-bootstrap' in sys.argv
+
+def run(args):
+    p=subprocess.run(list(map(str,args)),env=env,text=True,capture_output=True,timeout=20)
+    if p.returncode: raise RuntimeError(p.stderr.strip() or p.stdout.strip())
+    return p.stdout.strip()
+
+def cli(*args): return json.loads(run([product/'bin/cornice','desktop',*args]))
+
+try:
+    version=json.loads(run(['/usr/bin/hyprctl','-j','version']))
+    caps=json.loads(run(['/usr/bin/hyprctl','-j','seat','capabilities']))
+    if version['commit']!=receipt['hyprlandCommit'] or caps.get('dialect')!='lua':
+        raise RuntimeError('Refusing bootstrap in a different compositor')
+    run([product/'bin/cornice-desktop','ensure'])
+    outputs=json.loads(run(['/usr/bin/hyprctl','-j','monitors']))
+    output=next((m['name'] for m in outputs if m.get('focused')),outputs[0]['name'])
+    existing={item['name'] for item in cli('list')['desktops']}
+    for index in range(3):
+        name='agent'+str(index+1)
+        if name not in existing: cli('create',name,'--workspace',str(10+index),'--output',output)
+    if testing:
+        print(json.dumps(cli('list'),ensure_ascii=False));sys.exit(0)
+    config=home/'.config/cornice/config.json'
+    settings=json.loads(config.read_text())
+    settings['agentDesktop']={'enabled':True,'desktops':[]}
+    left=settings.setdefault('bar',{}).setdefault('layout',{}).setdefault('left',[])
+    if not any(item.get('id')=='cn.agent-desktop' for item in left):left.append({'id':'cn.agent-desktop'})
+    temporary=config.with_suffix('.agent-session.tmp')
+    temporary.write_text(json.dumps(settings,ensure_ascii=False,indent=2)+'\n');temporary.chmod(config.stat().st_mode & 0o777);temporary.replace(config)
+    run(['systemctl','--user','import-environment','WAYLAND_DISPLAY','HYPRLAND_INSTANCE_SIGNATURE','XDG_CURRENT_DESKTOP','CORNICE_PATH','PATH'])
+    run(['dbus-update-activation-environment','--systemd','WAYLAND_DISPLAY','HYPRLAND_INSTANCE_SIGNATURE','XDG_CURRENT_DESKTOP','PATH'])
+    run(['systemctl','--user','reset-failed','cornice.service'])
+    run(['systemctl','--user','restart','cornice.service'])
+    commands=json.loads((home/'dotfiles/linux/desktop/hyprland/agent-session/hyprland.autostart.json').read_text())
+    logdir=home/'.local/state/cornice-agent-desktop';logdir.mkdir(parents=True,exist_ok=True)
+    with (logdir/'session-autostart.log').open('a') as log:
+        for command in commands:
+            if 'cornice.service' in command:continue
+            subprocess.Popen(['/bin/sh','-c',command],env=env,stdout=log,stderr=log,start_new_session=True)
+    (logdir/'native-session.json').write_text(json.dumps({'version':version,'instance':env['HYPRLAND_INSTANCE_SIGNATURE'],'release':str(release),'output':output,'desktops':cli('list')['desktops']},ensure_ascii=False,indent=2)+'\n')
+except Exception as error:
+    print('cornice agent session: '+str(error),file=sys.stderr)
+    sys.exit(1)
