@@ -1,6 +1,3 @@
 #!/usr/bin/env bash
-set -euo pipefail
-base="$HOME/.local/share/cornice-agent-desktop"
-release=$(cat "$base/deployment-path")
-export CORNICE_PATH="$release/cornice/share/cornice"
-exec "$release/hyprland/bin/Hyprland" -c "$HOME/.config/hypr/cornice-agent-session.lua" "$@"
+unset CORNICE_PATH CORNICE_QS
+exec /usr/bin/Hyprland "$@"

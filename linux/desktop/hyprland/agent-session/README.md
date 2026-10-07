@@ -4,7 +4,9 @@
 
 `hyprland.lua` 是已迁移的原生 Lua 配置，之后直接维护该文件；`hyprland.autostart.json` 保留启动项。原 hyprland.conf 保留供撤销。桌面脚本直接调用新版 Lua API，`hyprctl` 使用系统正式工具，不提供旧命令兼容层。
 
-登录后先创建 agent1/2/3（WS10/11/12，各自私有虚拟输出，默认暂停），再启用 Cornice Agent 面板并启动原有应用。
+数字工作区 1–10 绑定到笔记本屏幕，供 Super+数字切换；Agent 从 11 开始，避免私有输出占用人的快捷键。
+
+登录后先创建 agent1/2/3（WS11/12/13，各自私有虚拟输出，默认暂停），再启用 Cornice Agent 面板并启动原有应用。
 
 ```sh
 hyprctl -j version

@@ -34,7 +34,7 @@ try:
     existing={item['name'] for item in cli('list')['desktops']}
     for index in range(3):
         name='agent'+str(index+1)
-        if name not in existing: cli('create',name,'--workspace',str(10+index),'--virtual-output','1920x1080')
+        if name not in existing: cli('create',name,'--workspace',str(11+index),'--virtual-output','1920x1080')
     if testing:
         print(json.dumps(cli('list'),ensure_ascii=False));sys.exit(0)
     config=home/'.config/cornice/config.json'

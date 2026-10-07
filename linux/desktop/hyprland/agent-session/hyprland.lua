@@ -11,6 +11,10 @@ hl.animation({["leaf"]="specialWorkspace",["enabled"]=true,["speed"]=2.0,["bezie
 hl.animation({["leaf"]="specialWorkspaceIn",["enabled"]=true,["speed"]=2.0,["bezier"]="myBezier",["style"]="slidevert top"})
 hl.animation({["leaf"]="specialWorkspaceOut",["enabled"]=true,["speed"]=2.0,["bezier"]="myBezier",["style"]="slidevert top"})
 hl.monitor({["output"]="",["mode"]="highres",["position"]="auto",["scale"]=2})
+-- Keep Super+1 through Super+0 on the laptop; private agent outputs start at 11.
+for workspace = 1, 10 do
+  hl.workspace_rule({workspace=tostring(workspace),monitor="eDP-1"})
+end
 hl.env("XCURSOR_SIZE","16")
 hl.env("GTK_IM_MODULE","fcitx")
 hl.env("QT_IM_MODULE","fcitx")
