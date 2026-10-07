@@ -1,17 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-lua_string() {
-  python3 - "$1" <<'LUA'
-import sys
-value = sys.argv[1]
-marks = ''
-while ']' + marks + ']' in value:
-    marks += '='
-print('[' + marks + '[\n' + value + ']' + marks + ']')
-LUA
-}
-
 direction="${1:-next}"
 if [[ "$direction" != "next" && "$direction" != "prev" ]]; then
   direction="next"
@@ -44,9 +33,9 @@ fi
 
 if [[ "$mode" == "group" ]]; then
   if [[ "$direction" == "prev" ]]; then
-    hyprctl dispatch 'hl.dsp.group.prev()' || true
+    hyprctl dispatch changegroupactive b || true
   else
-    hyprctl dispatch 'hl.dsp.group.next()' || true
+    hyprctl dispatch changegroupactive f || true
   fi
   CACHE_FILE="$cache_file" python3 - <<'PY' || true
 import json
@@ -106,7 +95,7 @@ except Exception:
     pass
 PY
   if [[ "$internal" =~ ^[0-3]$ ]] && [[ "$client" =~ ^[0-3]$ ]] && { [[ "$internal" != "0" ]] || [[ "$client" != "0" ]]; }; then
-    hyprctl dispatch "hl.dsp.window.fullscreen_state({internal=$internal,client=$client,action=\"set\"})"
+    hyprctl dispatch fullscreenstate "$internal" "$client" set
   fi
   exit 0
 fi
@@ -318,9 +307,9 @@ PY
 )"
 
 if [[ -n "$target" ]]; then
-  hyprctl dispatch "hl.dsp.focus({window=$(lua_string "address:${target}")})"
+  hyprctl dispatch focuswindow "address:${target}"
 fi
 
 if [[ "$internal" =~ ^[0-3]$ ]] && [[ "$client" =~ ^[0-3]$ ]] && { [[ "$internal" != "0" ]] || [[ "$client" != "0" ]]; }; then
-  hyprctl dispatch "hl.dsp.window.fullscreen_state({internal=$internal,client=$client,action=\"set\"})"
+  hyprctl dispatch fullscreenstate "$internal" "$client" set
 fi

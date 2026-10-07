@@ -1,17 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-lua_string() {
-  python3 - "$1" <<'LUA'
-import sys
-value = sys.argv[1]
-marks = ''
-while ']' + marks + ']' in value:
-    marks += '='
-print('[' + marks + '[\n' + value + ']' + marks + ']')
-LUA
-}
-
 prompt_pick() {
   wofi --show dmenu --prompt "$1" --insensitive
 }
@@ -350,12 +339,12 @@ main() {
     [[ -z "${name}" ]] && exit 0
     # Allow entering "name:xxx" explicitly; otherwise treat as a named workspace.
     if [[ "$name" == name:* ]]; then
-      hypr dispatch "hl.dsp.focus({workspace=$(lua_string "$name")})"
+      hypr dispatch workspace "$name"
       remember_workspace "${name#name:}"
     elif [[ "$name" =~ ^[0-9]+$ ]]; then
-      hypr dispatch "hl.dsp.focus({workspace=$(lua_string "$name")})"
+      hypr dispatch workspace "$name"
     else
-      hypr dispatch "hl.dsp.focus({workspace=$(lua_string "name:${name}")})"
+      hypr dispatch workspace "name:${name}"
       remember_workspace "$name"
     fi
     exit 0
@@ -363,7 +352,7 @@ main() {
 
   if [[ "$type" == "WS" ]]; then
     [[ -n "$data" ]] || exit 0
-    hypr dispatch "hl.dsp.focus({workspace=$(lua_string "$data")})"
+    hypr dispatch workspace "$data"
     remember_workspace "$data"
     exit 0
   fi
@@ -374,9 +363,9 @@ main() {
     reload) hypr reload ;;
     wallpaper) "${HOME}/dotfiles/swww/scripts/wallpaper-random.sh" ;;
     lock) ~/.config/hypr/scripts/lock.sh ;;
-    exit) hypr dispatch 'hl.dsp.exit()' ;;
-    togglespecial) hypr dispatch 'hl.dsp.workspace.toggle_special("")' ;;
-    pin) hypr dispatch 'hl.dsp.window.pin()' ;;
+    exit) hypr dispatch exit ;;
+    togglespecial) hypr dispatch togglespecialworkspace ;;
+    pin) hypr dispatch pin ;;
     *) exit 0 ;;
   esac
 }

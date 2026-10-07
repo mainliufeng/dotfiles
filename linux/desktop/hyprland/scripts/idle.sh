@@ -61,14 +61,14 @@ case "$action" in
     ;;
 
   display-off)
-    if ((dry)); then echo 'would run: hyprctl dispatch hl.dsp.dpms({action="off"})'; exit 0; fi
-    hyprctl dispatch 'hl.dsp.dpms({action="off"})' >/dev/null 2>&1 || true
+    if ((dry)); then echo "would run: hyprctl dispatch dpms off"; exit 0; fi
+    hyprctl dispatch dpms off >/dev/null 2>&1 || true
     echo "display off"
     ;;
 
   display-on)
-    if ((dry)); then echo 'would run: hyprctl dispatch hl.dsp.dpms({action="on"})'; exit 0; fi
-    hyprctl dispatch 'hl.dsp.dpms({action="on"})' >/dev/null 2>&1 || true
+    if ((dry)); then echo "would run: hyprctl dispatch dpms on"; exit 0; fi
+    hyprctl dispatch dpms on >/dev/null 2>&1 || true
     echo "display on"
     ;;
 
