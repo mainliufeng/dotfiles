@@ -19,3 +19,9 @@ cornice desktop pause agent1
 首次登录后需要再次验证 DRM 物理显示器、输入、缩放和 Agent 操作。嵌套验证不能证明物理会话已经切换。
 
 撤销：`cornice takeover --undo` 恢复登录 profile 与 Cornice 设置，再注销重登恢复系统版。紧急情况下从 TTY 执行同一命令；不需要 sudo。启动入口配置的备份路径保存在 `~/.local/state/cornice-agent-desktop/native-backup-path`。
+
+兼容层支持 Hyprvoice 的旧 `dispatch sendshortcut`，包括普通应用 `CTRL+V` 和终端
+`CTRL+SHIFT+V`。纯转换回归：`python3 linux/desktop/hyprland/agent-session/test-compat.py`。
+2026-10-07 已用日常安装的 `38351820` 合成器在私有嵌套会话验证：旧命令经包装器
+转换后，真实 GTK 输入框收到中文剪贴板文字。记录：`/tmp/ad-wrryt1bu`。
+此次修复只补转换规则，无需注销、重启 Hyprvoice 或替换合成器。

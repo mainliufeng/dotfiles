@@ -59,6 +59,13 @@ def dispatch(name, argument=''):
         parts = argument.split(); exact = parts[0] == 'exact'
         if exact: parts = parts[1:]
         return call('window.resize', {'x': float(parts[0]), 'y': float(parts[1]), 'relative': not exact})
+    if name == 'sendshortcut':
+        parts = [part.strip() for part in argument.split(',', 2)]
+        if len(parts) < 2 or not parts[1]:
+            raise ValueError('sendshortcut requires modifiers, key, optional window')
+        params = {'mods': parts[0], 'key': parts[1]}
+        if len(parts) == 3 and parts[2]: params['window'] = parts[2]
+        return call('send_shortcut', params)
     if name == 'submap': return call('submap', argument)
     if name == 'dpms': return call('dpms', {'action': argument})
     raise ValueError('Unsupported legacy dispatcher: ' + name)
