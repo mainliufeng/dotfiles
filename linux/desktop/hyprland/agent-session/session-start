@@ -8,7 +8,7 @@ import sys
 
 home=pathlib.Path.home()
 base=home/'.local/share/cornice-agent-desktop'
-release=pathlib.Path((base/'deployment-path').read_text())
+release=pathlib.Path((base/'deployment-path').read_text().strip())
 receipt=json.loads((release/'deployment.json').read_text())
 product=release/'cornice/share/cornice'
 env=os.environ.copy()
