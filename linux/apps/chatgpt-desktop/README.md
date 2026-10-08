@@ -16,6 +16,12 @@ Preview a missing-package installation without changing the machine:
 ~/dotfiles/linux/apps/chatgpt-desktop/setup.sh --dry-run
 ```
 
+The package's `/usr/bin/chatgpt` launcher reads `chatgpt-flags.conf` from
+`XDG_CONFIG_HOME` (or `~/.config`). Setup links the supplied native Wayland flags
+when this file is absent, and preserves existing flags. Native Wayland follows
+the monitor scale; fixed scale factors must not be multiplied on top of it.
+Restart the app after changing launch flags. Remove the created symlink to undo.
+
 The retired `ilysenko/codex-desktop-linux` wrapper and its
 `codex-update-manager` are intentionally not installed by dotfiles anymore.
 

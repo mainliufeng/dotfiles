@@ -3,6 +3,20 @@ set -euo pipefail
 
 package="chatgpt-desktop-bin"
 dry_run=0
+module_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+install_flags() {
+  local destination="${XDG_CONFIG_HOME:-$HOME/.config}/chatgpt-flags.conf"
+  if [[ -e "$destination" || -L "$destination" ]]; then
+    echo "[chatgpt-desktop] preserving existing launch flags: $destination"
+  elif [[ "$dry_run" == "1" ]]; then
+    echo "[dry-run] link native Wayland flags to $destination"
+  else
+    mkdir -p "$(dirname "$destination")"
+    ln -s "$module_dir/chatgpt-flags.conf" "$destination"
+    echo "[chatgpt-desktop] linked native Wayland launch flags"
+  fi
+}
 
 usage() {
   cat <<'EOF'
@@ -39,6 +53,7 @@ fi
 if pacman -Q "$package" >/dev/null 2>&1; then
   version="$(pacman -Q "$package" | awk '{print $2}')"
   echo "[chatgpt-desktop] official app already installed: $version"
+  install_flags
   exit 0
 fi
 
@@ -60,3 +75,4 @@ fi
 
 "${installer[@]}"
 pacman -Q "$package"
+install_flags
