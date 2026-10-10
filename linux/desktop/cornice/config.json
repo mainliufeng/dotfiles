@@ -68,6 +68,9 @@
         },
         {
           "id": "cn.menu"
+        },
+        {
+          "id": "cn.recording"
         }
       ]
     }
@@ -97,5 +100,8 @@
         }
       }
     }
+  },
+  "recording": {
+    "directory": "~/Videos/Cornice"
   }
 }
