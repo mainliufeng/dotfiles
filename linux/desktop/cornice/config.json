@@ -1,0 +1,101 @@
+{
+  "background": {
+    "enabled": true,
+    "dir": "~/Pictures/wallpapers",
+    "mode": "fill",
+    "perWorkspace": {},
+    "force": false
+  },
+  "notifications": {
+    "takeover": true
+  },
+  "theme": "mono",
+  "idle": {
+    "dimAc": 60,
+    "dimBattery": 0,
+    "screenOffAc": 120,
+    "screenOffBattery": 300,
+    "lock": 300
+  },
+  "bar": {
+    "layout": {
+      "left": [
+        {
+          "id": "cn.launcher"
+        },
+        {
+          "id": "cn.workspaces"
+        },
+        {
+          "id": "cn.active-window"
+        },
+        {
+          "id": "cn.media"
+        }
+      ],
+      "center": [
+        {
+          "id": "cn.clock"
+        },
+        {
+          "id": "cn.spacer"
+        },
+        {
+          "id": "cn.weather"
+        }
+      ],
+      "right": [
+        {
+          "id": "cn.indicators"
+        },
+        {
+          "id": "cn.tray"
+        },
+        {
+          "id": "cn.network"
+        },
+        {
+          "id": "cn.bluetooth"
+        },
+        {
+          "id": "cn.audio"
+        },
+        {
+          "id": "cn.brightness"
+        },
+        {
+          "id": "cn.power"
+        },
+        {
+          "id": "cn.menu"
+        }
+      ]
+    }
+  },
+  "language": "zh-CN",
+  "weather": {
+    "autoLocate": true,
+    "unit": "metric",
+    "intervalMinutes": 15,
+    "place": {
+      "name": "Liaoyang",
+      "latitude": 41.27194,
+      "longitude": 123.17306
+    }
+  },
+  "clock": {
+    "zone": {
+      "name": "上海",
+      "zone": "Asia/Shanghai"
+    }
+  },
+  "desktopApplications": {
+    "rules": {
+      "chrome": {
+        "profilePaths": {
+          "desktop2": "~/.local/share/chrome-agent"
+        }
+      }
+    }
+  }
+}

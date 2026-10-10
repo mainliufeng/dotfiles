@@ -8,7 +8,6 @@
   "wl-paste --type image --watch cliphist store",
   "~/.config/hypr/scripts/fix-gtk-portal-scale.sh",
   "libinput-gestures-setup start",
-  "~/.local/bin/chrome-agent",
   "systemctl --user start paseo.service",
   "/usr/bin/rustdesk --tray",
   "~/.config/hypr/scripts/start-xdp-desktop-portal.sh",
