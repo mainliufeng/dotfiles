@@ -48,6 +48,9 @@ hl.bind("SUPER + SHIFT + R", hl.dsp.force_renderer_reload(), {})
 hl.bind("SUPER + SHIFT + L", hl.dsp.exec_cmd("~/.config/hypr/scripts/lock.sh"), {})
 hl.bind("SUPER + F", hl.dsp.window.float(), {})
 hl.bind("SUPER + R", hl.dsp.exec_cmd("sh -c 'exec \"$HOME/.local/bin/cornice\" \"$@\"' cornice launcher"), {})
+
+-- Independent fallback when the Cornice/Quickshell launcher is unavailable.
+hl.bind("SUPER + SHIFT + Space", hl.dsp.exec_cmd("/usr/bin/rofi -show drun"), {})
 hl.bind("SUPER + V", hl.dsp.exec_cmd("sh -c 'exec \"$HOME/.local/bin/cornice\" \"$@\"' cornice clipboard"), {})
 hl.bind("SUPER + E", hl.dsp.exec_cmd("sh -c 'exec \"$HOME/.local/bin/cornice\" \"$@\"' cornice emojis"), {})
 hl.bind("SUPER + N", hl.dsp.exec_cmd("sh -c 'exec \"$HOME/.local/bin/cornice\" \"$@\"' cornice notifications"), {})
