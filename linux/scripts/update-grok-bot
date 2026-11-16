@@ -1,0 +1,271 @@
+#!/usr/bin/env python3
+"""Install the official Grok Bot Linux payload, never execute AUR build scripts."""
+import argparse
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import platform
+import re
+import shutil
+import struct
+import subprocess
+import sys
+import tarfile
+import tempfile
+import urllib.parse
+import urllib.request
+
+METADATA = 'https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=grok-bot-bin'
+DOWNLOAD = 'https://downloads.cursor.com/grokbot/stable/{commit}/linux/x64/grok-bot_{version}_amd64.deb'
+
+
+def candidate(text):
+    def field(name, pattern):
+        m = re.search(r'^' + name + r'=[\'\"]?(' + pattern + r')[\'\"]?\s*$', text, re.M)
+        if not m:
+            raise ValueError('Unrecognized AUR metadata: ' + name)
+        return m.group(1)
+    version = field('pkgver', r'\d+\.\d+\.\d+')
+    commit = field('_commit', r'[0-9a-f]{40}')
+    m = re.search(r"sha256sums=\(\s*'([0-9a-f]{64})'", text)
+    if not m or 'https://downloads.cursor.com/grokbot/stable/${_commit}/linux/x64/grok-bot_${pkgver}_amd64.deb' not in text:
+        raise ValueError('Upstream URL/checksum format changed; inspect manually, do not execute PKGBUILD')
+    return version, DOWNLOAD.format(commit=commit, version=version), m.group(1)
+
+
+class RestrictedRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        old, new = urllib.parse.urlsplit(req.full_url), urllib.parse.urlsplit(newurl)
+        if new.scheme != 'https' or new.hostname != old.hostname:
+            raise ValueError('Refusing cross-host or non-HTTPS redirect')
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def fetch(url, target):
+    opener = urllib.request.build_opener(RestrictedRedirect())
+    req = urllib.request.Request(url, headers={'User-Agent': 'dotfiles-grok-bot-updater/1'})
+    with opener.open(req, timeout=60) as response, target.open('wb') as out:
+        shutil.copyfileobj(response, out)
+
+
+def version_in_asar(path):
+    with path.open('rb') as f:
+        header = struct.unpack('<4I', f.read(16))
+        if header[3] > 32 * 1024 * 1024:
+            raise ValueError('Invalid asar header')
+        index = json.loads(f.read(header[3]))['files']['package.json']
+        f.seek(8 + header[1] + int(index['offset']))
+        return json.loads(f.read(index['size']))['version']
+
+
+def check_release(root, version):
+    app = root / 'opt/Grok Bot'
+    if version_in_asar(app / 'resources/app.asar') != version:
+        raise ValueError('Payload version does not match candidate')
+    with (app / 'grok-bot').open('rb') as f:
+        h = f.read(20)
+    if h[:5] != b'\x7fELF\x02' or h[18:20] != b'\x3e\x00':
+        raise ValueError('Payload is not x86_64 ELF')
+    if not os.access(app / 'grok-bot', os.X_OK):
+        raise ValueError('Executable permission missing')
+
+
+def extract(deb, root, temp):
+    members = subprocess.check_output(['ar', 't', str(deb)], text=True).splitlines()
+    names = [n for n in members if n.startswith('data.tar.')]
+    if len(names) != 1:
+        raise ValueError('Invalid Debian archive')
+    payload = temp / names[0]
+    with payload.open('wb') as out:
+        subprocess.run(['ar', 'p', str(deb), names[0]], stdout=out, check=True)
+    # Extract only the application. No Debian scripts, AppArmor, SUID, or /etc files.
+    with tarfile.open(payload) as archive:
+        for member in archive:
+            name = member.name.removeprefix('./')
+            if not (name == 'opt/Grok Bot' or name.startswith('opt/Grok Bot/')):
+                continue
+            if member.mode & 0o6000:
+                raise ValueError('Unexpected privileged file mode: ' + name)
+            archive.extract(member, root, filter='data')
+
+
+def atomic_link(path, target):
+    tmp = path.with_name(path.name + '.next-' + str(os.getpid()))
+    try:
+        tmp.symlink_to(target)
+        os.replace(tmp, path)
+    finally:
+        tmp.unlink(missing_ok=True)
+
+
+def atomic_write(path, text, mode):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, name = tempfile.mkstemp(dir=path.parent, prefix='.' + path.name)
+    try:
+        with os.fdopen(fd, 'w') as out:
+            out.write(text)
+        os.chmod(name, mode)
+        os.replace(name, path)
+    finally:
+        Path(name).unlink(missing_ok=True)
+
+
+def active_processes():
+    result = []
+    for entry in Path('/proc').glob('[0-9]*'):
+        try:
+            exe = os.readlink(entry / 'exe')
+            if exe.endswith('/Grok Bot/grok-bot') and entry.stat().st_uid == os.getuid():
+                result.append(entry.name)
+        except (OSError, PermissionError):
+            pass
+    return result
+
+
+def activate(home, base, release):
+    """Switch code pointer and launchers; restore all previous entries on failure."""
+    paths = [base / 'current', home / '.local/bin/grok-bot', home / '.local/share/applications/grok-bot.desktop', base / 'previous']
+    saved = []
+    for p in paths:
+        if p.is_symlink():
+            saved.append(('link', os.readlink(p), None))
+        elif p.is_file():
+            saved.append(('file', p.read_bytes(), p.stat().st_mode & 0o777))
+        elif p.exists():
+            raise ValueError('Refusing to replace directory: ' + str(p))
+        else:
+            saved.append(('missing', None, None))
+    app = base / 'current/opt/Grok Bot'
+    try:
+        atomic_link(paths[0], release)
+        atomic_write(paths[1], '#!/bin/sh\nexec "' + str(app / 'grok-bot') + '" "$@"\n', 0o755)
+        atomic_write(paths[2], '[Desktop Entry]\nName=Grok Bot\nExec="' + str(app / 'grok-bot') + '" -- %U\nTerminal=false\nType=Application\nIcon=' + str(app / 'resources/icon.png') + '\nStartupWMClass=grok-bot\nMimeType=x-scheme-handler/grokbot;x-scheme-handler/sand;\nCategories=Development;\n', 0o644)
+        if shutil.which('desktop-file-validate'):
+            subprocess.run(['desktop-file-validate', str(paths[2])], check=True)
+        old = saved[0][1] if saved[0][0] == 'link' else None
+        if old and Path(old) != release:
+            atomic_link(base / 'previous', old)
+    except BaseException:
+        for p, (kind, value, mode) in zip(paths, saved):
+            if kind == 'link':
+                atomic_link(p, value)
+            elif kind == 'file':
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_bytes(value)
+                p.chmod(mode)
+            else:
+                p.unlink(missing_ok=True)
+        raise
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--check', action='store_true', help='Print candidate only; no install')
+    parser.add_argument('--rollback', action='store_true', help='Switch to previous executable version; do not downgrade profile data')
+    parser.add_argument('--version', help='Explicit version, requires --url and --sha256')
+    parser.add_argument('--url', help='Official downloads.cursor.com URL')
+    parser.add_argument('--sha256', help='Expected checksum for this exact release')
+    args = parser.parse_args()
+    if platform.system() != 'Linux' or platform.machine() != 'x86_64':
+        parser.error('Only Linux x86_64 is supported')
+    if sys.version_info < (3, 12):
+        parser.error('Python 3.12+ is required for safe archive extraction')
+    if os.getuid() == 0:
+        parser.error('Run as the desktop user, without sudo')
+    home = Path.home()
+    if any(c in str(home) for c in '\n"`$\\%'):
+        parser.error('Unsupported HOME characters for desktop launcher')
+    base = home / '.local/opt/grok-bot'
+    base.mkdir(parents=True, exist_ok=True)
+    with (base / '.update.lock').open('w') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        if args.rollback:
+            if args.check or args.version or args.url or args.sha256:
+                parser.error('--rollback cannot be combined with other options')
+            if active_processes():
+                raise RuntimeError('请先从 Grok Bot 菜单退出应用，再运行回退；不会强杀进程。')
+            previous = base / 'previous'
+            if not previous.is_symlink() or not previous.resolve().is_dir():
+                raise RuntimeError('No previous release recorded')
+            activate(home, base, previous.resolve())
+            print('已回退程序；未恢复或覆盖账号数据。请打开 Grok Bot 验证。')
+            return
+        with tempfile.TemporaryDirectory(prefix='.download-', dir=base) as tmp:
+            temp = Path(tmp)
+            explicit = [args.version, args.url, args.sha256]
+            if any(explicit):
+                if not all(explicit):
+                    parser.error('--version / --url / --sha256 must be supplied together')
+                version, url, checksum = explicit
+            else:
+                metadata = temp / 'PKGBUILD.txt'
+                fetch(METADATA, metadata)
+                version, url, checksum = candidate(metadata.read_text())
+            if not re.fullmatch(r'\d+\.\d+\.\d+', version) or not re.fullmatch(r'[0-9a-f]{64}', checksum):
+                raise ValueError('Invalid version or checksum')
+            pattern = r'https://downloads\.cursor\.com/grokbot/stable/[0-9a-f]{40}/linux/x64/grok-bot_' + re.escape(version) + r'_amd64\.deb'
+            if not re.fullmatch(pattern, url):
+                raise ValueError('Refusing non-official or mismatched download URL')
+            print('候选版本:', version, '\n官方包:', url, '\nSHA256:', checksum, flush=True)
+            print('版本线索/校验值来自 AUR 元数据，不运行 PKGBUILD；不代表上游保证的最新版本。', flush=True)
+            if args.check:
+                return
+            if active_processes():
+                raise RuntimeError('请先从 Grok Bot 菜单退出应用，再执行更新；不会强杀进程。')
+            release = base / version
+            current = base / 'current'
+            if current.is_symlink() and current.resolve().name == version:
+                check_release(current.resolve(), version)
+                print('当前已经是此版本。')
+                return
+            if current.is_symlink():
+                old_version = version_in_asar(current / 'opt/Grok Bot/resources/app.asar')
+                if tuple(map(int, version.split('.'))) < tuple(map(int, old_version.split('.'))):
+                    raise ValueError('Refusing downgrade; use --rollback intentionally')
+            deb = temp / 'official.deb'
+            fetch(url, deb)
+            with deb.open('rb') as package:
+                actual = hashlib.file_digest(package, 'sha256').hexdigest()
+            if actual != checksum:
+                raise ValueError('SHA256 mismatch; existing installation untouched')
+            stage = temp / 'release'
+            stage.mkdir()
+            extract(deb, stage, temp)
+            check_release(stage, version)
+            if active_processes():
+                raise RuntimeError('Grok Bot 在下载期间启动了；请退出后重试，尚未切换版本。')
+            # Keep profile backups private and local; never print or transmit content.
+            backup = base / 'backups' / (version + '-' + str(os.getpid()))
+            backup.mkdir(parents=True, mode=0o700)
+            profile = home / '.config/Grok Bot'
+            if profile.exists():
+                shutil.copytree(profile, backup / 'profile', symlinks=True)
+            for name, p in [('launcher', home / '.local/bin/grok-bot'), ('desktop', home / '.local/share/applications/grok-bot.desktop')]:
+                if p.is_file():
+                    shutil.copy2(p, backup / name)
+            # Never overwrite an existing release directory: verify it is the same payload.
+            if release.exists():
+                check_release(release, version)
+                for relative in ['opt/Grok Bot/resources/app.asar', 'opt/Grok Bot/grok-bot']:
+                    with (release / relative).open('rb') as a, (stage / relative).open('rb') as b:
+                        if hashlib.file_digest(a, 'sha256').digest() != hashlib.file_digest(b, 'sha256').digest():
+                            raise ValueError('Existing version directory differs; refusing overwrite')
+            else:
+                os.replace(stage, release)
+            # Adopt the prior user-level 1.1.0 installation if upgrading from the first manual setup.
+            if not current.exists() and (base / '1.1.0').is_dir() and version != '1.1.0':
+                check_release(base / '1.1.0', '1.1.0')
+                atomic_link(current, base / '1.1.0')
+            activate(home, base, release)
+            print('已安装', version, '。账号数据未覆盖；旧版和备份已保留。')
+            print('请从应用菜单打开 Grok Bot 验证；本脚本不自动登录、不启动后台任务。')
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (Exception, KeyboardInterrupt) as e:
+        print('更新未完成：' + str(e), file=sys.stderr)
+        sys.exit(1)
