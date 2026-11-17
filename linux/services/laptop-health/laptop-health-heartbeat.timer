@@ -1,0 +1,8 @@
+[Unit]
+Description=Independent laptop health heartbeat check
+[Timer]
+OnActiveSec=5min
+OnUnitActiveSec=5min
+Unit=laptop-health-heartbeat.service
+[Install]
+WantedBy=timers.target

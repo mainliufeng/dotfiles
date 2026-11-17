@@ -1,0 +1,9 @@
+[Unit]
+Description=Collect laptop health every minute
+[Timer]
+OnActiveSec=5s
+OnUnitInactiveSec=60s
+AccuracySec=5s
+Unit=laptop-health.service
+[Install]
+WantedBy=timers.target

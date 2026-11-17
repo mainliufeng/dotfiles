@@ -1,0 +1,11 @@
+[Unit]
+Description=Bounded tool-free Codex health diagnosis
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/health-agent-worker
+TimeoutStartSec=210
+MemoryMax=768M
+CPUQuota=35%
+Nice=15
+UMask=0077
+NoNewPrivileges=yes

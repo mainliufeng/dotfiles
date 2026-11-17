@@ -42,3 +42,4 @@ linux/services/redis
 linux/services/resolv
 linux/services/tailscale
 linux/services/timesyncd
+linux/services/laptop-health

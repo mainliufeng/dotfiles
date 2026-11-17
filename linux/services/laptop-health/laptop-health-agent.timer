@@ -1,0 +1,9 @@
+[Unit]
+Description=Process deduplicated laptop diagnostic queue
+[Timer]
+OnActiveSec=2min
+OnUnitInactiveSec=2min
+AccuracySec=10s
+Unit=laptop-health-agent.service
+[Install]
+WantedBy=timers.target

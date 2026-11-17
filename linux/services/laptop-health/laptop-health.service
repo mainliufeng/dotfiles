@@ -1,0 +1,13 @@
+[Unit]
+Description=Unified read-only laptop health collection
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/healthctl collect
+TimeoutStartSec=90
+Nice=10
+CPUQuota=15%
+MemoryMax=192M
+UMask=0077
+NoNewPrivileges=yes
+[Install]
+WantedBy=default.target

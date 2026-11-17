@@ -1,0 +1,7 @@
+[Unit]
+Description=Check laptop monitor heartbeat
+[Service]
+Type=oneshot
+ExecStart=/bin/sh %h/.local/bin/health-heartbeat
+TimeoutStartSec=10
+UMask=0077

@@ -1,0 +1,26 @@
+{
+  "cpu_percent": 90,
+  "cpu_consecutive_samples": 5,
+  "memory_available_percent": 10,
+  "disks": [
+    "/",
+    "/home"
+  ],
+  "disk_available_percent": 10,
+  "restart_threshold": 3,
+  "restart_window_seconds": 300,
+  "veth_per_minute": 10,
+  "consecutive_samples": 3,
+  "recovery_samples": 2,
+  "notification_cooldown_seconds": 1800,
+  "desktop_notifications": true,
+  "planned_stopped_containers": [],
+  "ignored_failed_units": [],
+  "watched_units": {
+    "user": [],
+    "system": []
+  },
+  "scheduled_units": [],
+  "probes": [],
+  "expected_running_containers": []
+}
